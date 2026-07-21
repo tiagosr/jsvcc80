@@ -83,6 +83,28 @@ function example(name) { ... }
 3. **Attributes**: Handle `__attribute__(...)` via AttributeHandler pattern
 4. **Backends**: Copy z80codegen.js structure for new target architectures
 
+## Current Implementation Status
+
+### ✅ Completed
+- Preprocessor/lexer with pragma support (#pragma once, #pragma pack)
+- PEG parser combinator framework (seq, alt, many, some, opt, lit, any, pred)
+- AST node definitions for full C syntax
+- Nanopass IR with instruction classes and symbol tables
+- Z80 code generator backend (LOAD, STORE, binary ops, jumps, calls)
+- Plugin architecture interfaces
+- 52 passing tests
+
+### 🔄 In Progress
+- Concrete C grammar parser using the combinator framework (basic structure ready)
+- AST → IR translation passes
+
+### 🔜 Next Steps
+1. Refine C grammar parser - fix rule references and complete all grammar rules in `src/parser/cparser.js`
+2. Implement AST construction - convert parsed token sequences into proper AST nodes with correct types
+3. Add AST → IR passes - translate each AST node type to corresponding IL instructions
+4. Implement Z80 optimizations - register allocation, peephole optimization for the target architecture
+5. Build object file assembler/linker - support WLA DX-compatible assembly output
+
 ## Pre-commit Checklist
 - Verify tests pass: `npm test`
 - Check syntax: `node --check src/**/*.js`

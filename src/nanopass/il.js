@@ -1,0 +1,476 @@
+/**
+ * Base class for all IL instructions
+ */
+export class Instruction {
+  /**
+   * Creates an instruction
+   * @param {string} opcode - Opcode identifier
+   * @param {*} [operands] - Operands for the instruction
+   * @param {Object} [meta] - Additional metadata
+   */
+  constructor(opcode, operands = null, meta = {}) {
+    this.opcode = opcode;
+    this.operands = operands;
+    this.meta = meta;
+  }
+
+  /**
+   * Returns a string representation of the instruction
+   * @returns {string} Assembly-like string
+   */
+  toString() {
+    if (this.operands) {
+      return `${this.opcode} ${Array.isArray(this.operands) ? this.operands.join(', ') : this.operands}`;
+    }
+    return this.opcode;
+  }
+
+  /**
+   * Returns a JSON-serializable representation
+   * @returns {Object} JSON representation
+   */
+  toJSON() {
+    return {
+      opcode: this.opcode,
+      operands: this.operands,
+      meta: this.meta
+    };
+  }
+}
+
+/**
+ * Instruction for loading a value into a register or memory location
+ */
+export class LoadInstruction extends Instruction {
+  /**
+   * Creates a load instruction
+   * @param {string} dest - Destination (register name or 'mem')
+   * @param {*} src - Source value, label, or immediate
+   * @returns {LoadInstruction}
+   */
+  constructor(dest, src) {
+    super('LOAD', [dest, src]);
+  }
+}
+
+/**
+ * Instruction for storing a value from register to memory
+ */
+export class StoreInstruction extends Instruction {
+  /**
+   * Creates a store instruction
+   * @param {string} dest - Destination memory location
+   * @param {string} src - Source register
+   * @returns {StoreInstruction}
+   */
+  constructor(dest, src) {
+    super('STORE', [dest, src]);
+  }
+}
+
+/**
+ * Instruction for binary operations
+ */
+export class BinaryOpInstruction extends Instruction {
+  /**
+   * Creates a binary operation instruction
+   * @param {string} dest - Destination register
+   * @param {string} op - Operation ('add', 'sub', 'mul', 'div', 'and', 'or', 'xor')
+   * @param {string} src1 - First operand (register or immediate)
+   * @param {string} src2 - Second operand (register or immediate)
+   * @returns {BinaryOpInstruction}
+   */
+  constructor(dest, op, src1, src2) {
+    super('BINOP', [dest, op, src1, src2]);
+  }
+}
+
+/**
+ * Instruction for unary operations
+ */
+export class UnaryOpInstruction extends Instruction {
+  /**
+   * Creates a unary operation instruction
+   * @param {string} dest - Destination register
+   * @param {string} op - Operation ('neg', 'not')
+   * @param {string} src - Source register or immediate
+   * @returns {UnaryOpInstruction}
+   */
+  constructor(dest, op, src) {
+    super('UNOP', [dest, op, src]);
+  }
+}
+
+/**
+ * Instruction for function calls
+ */
+export class CallInstruction extends Instruction {
+  /**
+   * Creates a call instruction
+   * @param {string} func - Function label or address
+   * @param {string[]} args - Arguments (registers or immediates)
+   * @returns {CallInstruction}
+   */
+  constructor(func, args = []) {
+    super('CALL', [func, ...args]);
+  }
+}
+
+/**
+ * Instruction for returns from functions
+ */
+export class ReturnInstruction extends Instruction {
+  /**
+   * Creates a return instruction
+   * @param {string|null} value - Return value register (null for void)
+   * @returns {ReturnInstruction}
+   */
+  constructor(value = null) {
+    super('RET', [value]);
+  }
+}
+
+/**
+ * Instruction for conditional jumps
+ */
+export class JumpIfInstruction extends Instruction {
+  /**
+   * Creates a conditional jump instruction
+   * @param {string} condition - Condition ('eq', 'ne', 'lt', 'le', 'gt', 'ge')
+   * @param {string} value - Value register to test
+   * @param {string} target - Jump target label
+   * @returns {JumpIfInstruction}
+   */
+  constructor(condition, value, target) {
+    super('JUMP_IF', [condition, value, target]);
+  }
+}
+
+/**
+ * Instruction for unconditional jumps
+ */
+export class JumpInstruction extends Instruction {
+  /**
+   * Creates an unconditional jump instruction
+   * @param {string} target - Jump target label
+   * @returns {JumpInstruction}
+   */
+  constructor(target) {
+    super('JUMP', [target]);
+  }
+}
+
+/**
+ * Instruction for labels in the code
+ */
+export class LabelInstruction extends Instruction {
+  /**
+   * Creates a label instruction
+   * @param {string} name - Label name
+   * @returns {LabelInstruction}
+   */
+  constructor(name) {
+    super('LABEL', [name]);
+  }
+}
+
+/**
+ * Instruction for allocating stack space
+ */
+export class AllocStackInstruction extends Instruction {
+  /**
+   * Creates a stack allocation instruction
+   * @param {number} bytes - Number of bytes to allocate
+   * @returns {AllocStackInstruction}
+   */
+  constructor(bytes) {
+    super('ALLOC_STACK', [bytes]);
+  }
+}
+
+/**
+ * Instruction for freeing/deallocating stack space
+ */
+export class FreeStackInstruction extends Instruction {
+  /**
+   * Creates a stack deallocation instruction
+   * @param {number} bytes - Number of bytes to free
+   * @returns {FreeStackInstruction}
+   */
+  constructor(bytes) {
+    super('FREE_STACK', [bytes]);
+  }
+}
+
+/**
+ * Instruction for pushing values onto the stack (for function calls)
+ */
+export class PushInstruction extends Instruction {
+  /**
+   * Creates a push instruction
+   * @param {string} value - Value to push (register or immediate)
+   * @returns {PushInstruction}
+   */
+  constructor(value) {
+    super('PUSH', [value]);
+  }
+}
+
+/**
+ * Instruction for popping values from the stack
+ */
+export class PopInstruction extends Instruction {
+  /**
+   * Creates a pop instruction
+   * @param {string} dest - Destination register or memory location
+   * @returns {PopInstruction}
+   */
+  constructor(dest) {
+    super('POP', [dest]);
+  }
+}
+
+/**
+ * Intermediate representation for basic blocks and functions
+ */
+export class BasicBlock {
+  /**
+   * Creates a basic block
+   * @param {string} name - Block label/name
+   * @param {Instruction[]} instructions - Instructions in the block
+   * @param {BasicBlock|null} [successor] - Successor block (for control flow)
+   */
+  constructor(name, instructions = [], successor = null) {
+    this.name = name;
+    this.instructions = instructions;
+    this.successor = successor;
+  }
+
+  /**
+   * Adds an instruction to the block
+   * @param {Instruction} instr - Instruction to add
+   */
+  add(instr) {
+    this.instructions.push(instr);
+  }
+
+  /**
+   * Returns a string representation of the block
+   * @returns {string}
+   */
+  toString() {
+    const lines = [`${this.name}:`];
+    for (const instr of this.instructions) {
+      lines.push(`  ${instr}`);
+    }
+    if (this.successor) {
+      lines.push(`  ; -> ${this.successor.name}`);
+    }
+    return lines.join('\n');
+  }
+
+  /**
+   * Returns a JSON representation of the block
+   * @returns {Object}
+   */
+  toJSON() {
+    return {
+      name: this.name,
+      instructions: this.instructions.map(i => i.toJSON()),
+      successor: this.successor ? this.successor.name : null
+    };
+  }
+}
+
+/**
+ * Intermediate representation for a function
+ */
+export class FunctionIR {
+  /**
+   * Creates an IR function representation
+   * @param {string} name - Function name
+   * @param {BasicBlock[]} blocks - Basic blocks in the function
+   * @param {Object} [metadata] - Function metadata (return type, parameters, etc.)
+   */
+  constructor(name, blocks = [], metadata = {}) {
+    this.name = name;
+    this.blocks = blocks;
+    this.metadata = metadata;
+  }
+
+  /**
+   * Adds a basic block to the function
+   * @param {BasicBlock} block - Block to add
+   */
+  addBlock(block) {
+    this.blocks.push(block);
+  }
+
+  /**
+   * Gets the entry block of the function
+   * @returns {BasicBlock|null} First block or null if empty
+   */
+  getEntry() {
+    return this.blocks.length > 0 ? this.blocks[0] : null;
+  }
+
+  /**
+   * Returns a string representation of the function
+   * @returns {string}
+   */
+  toString() {
+    const lines = [`function ${this.name}`];
+    
+    for (const block of this.blocks) {
+      lines.push(block.toString());
+    }
+
+    return lines.join('\n');
+  }
+
+  /**
+   * Returns a JSON representation of the function
+   * @returns {Object}
+   */
+  toJSON() {
+    return {
+      name: this.name,
+      metadata: this.metadata,
+      blocks: this.blocks.map(b => b.toJSON())
+    };
+  }
+}
+
+/**
+ * Intermediate representation for a complete program
+ */
+export class ProgramIR {
+  /**
+   * Creates a program IR representation
+   * @param {FunctionIR[]} functions - All functions in the program
+   * @param {Object[]} globals - Global variable declarations
+   */
+  constructor(functions = [], globals = []) {
+    this.functions = functions;
+    this.globals = globals;
+  }
+
+  /**
+   * Adds a function to the program
+   * @param {FunctionIR} func - Function to add
+   */
+  addFunction(func) {
+    this.functions.push(func);
+  }
+
+  /**
+   * Gets a function by name
+   * @param {string} name - Function name
+   * @returns {FunctionIR|null} Function or null if not found
+   */
+  getFunction(name) {
+    return this.functions.find(f => f.name === name) || null;
+  }
+
+  /**
+   * Returns a string representation of the program
+   * @returns {string}
+   */
+  toString() {
+    const lines = ['=== Program IR ==='];
+    
+    for (const func of this.functions) {
+      lines.push(func.toString());
+      lines.push('');
+    }
+
+    return lines.join('\n');
+  }
+
+  /**
+   * Returns a JSON representation of the program
+   * @returns {Object}
+   */
+  toJSON() {
+    return {
+      functions: this.functions.map(f => f.toJSON()),
+      globals: this.globals
+    };
+  }
+}
+
+/**
+ * Represents a symbol in the symbol table
+ * @typedef {Object} Symbol
+ * @property {string} name - Symbol name
+ * @property {string} kind - 'function', 'variable', 'label', or 'type'
+ * @property {*} type - Type information
+ * @property {number} [offset] - Memory offset (for variables)
+ * @property {string} [address] - Address label (for labels)
+ */
+
+/**
+ * Symbol table for tracking symbols during compilation
+ */
+export class SymbolTable {
+  constructor(parent = null) {
+    this.symbols = new Map();
+    this.parent = parent;
+  }
+
+  /**
+   * Defines a symbol in the current scope
+   * @param {string} name - Symbol name (must be unique in scope)
+   * @param {Symbol} symbol - Symbol definition
+   */
+  define(name, symbol) {
+    if (this.symbols.has(name)) {
+      throw new Error(`Duplicate symbol: ${name}`);
+    }
+    this.symbols.set(name, symbol);
+  }
+
+  /**
+   * Looks up a symbol name in current scope and parent scopes
+   * @param {string} name - Symbol name to look up
+   * @returns {Symbol|null} Symbol or null if not found
+   */
+  lookup(name) {
+    if (this.symbols.has(name)) {
+      return this.symbols.get(name);
+    }
+
+    if (this.parent) {
+      return this.parent.lookup(name);
+    }
+
+    return null;
+  }
+
+  /**
+   * Checks if a symbol exists in current scope only
+   * @param {string} name - Symbol name to check
+   * @returns {boolean} True if found in current scope
+   */
+  hasLocal(name) {
+    return this.symbols.has(name);
+  }
+
+  /**
+   * Creates a new child scope
+   * @returns {SymbolTable} New symbol table with this as parent
+   */
+  pushScope() {
+    return new SymbolTable(this);
+  }
+
+  /**
+   * Pops the current scope (must not be root)
+   */
+  popScope() {
+    if (!this.parent) {
+      throw new Error('Cannot pop root scope');
+    }
+    // Return parent - caller should reassign
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "vcc80",
+  "version": "0.1.0",
+  "description": "A C compiler for Z80 CPU implemented in ES2025 Node.js",
+  "type": "module",
+  "main": "./src/index.js",
+  "bin": {
+    "vcc80": "./bin/vcc80.js"
+  },
+  "scripts": {
+    "start": "node bin/vcc80.js",
+    "test": "node --test src/**/*.test.js",
+    "lint": "eslint src/"
+  },
+  "keywords": ["z80", "compiler", "c", "embedded"],
+  "license": "MIT"
+}

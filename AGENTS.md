@@ -1,0 +1,90 @@
+# vcc80 - Z80 C Compiler Agent Instructions
+
+## Project Overview
+A C compiler for Z80 CPU implemented in ES2025 Node.js. Compiles C source to Z80 assembly via nanopass IR.
+
+## Commands
+- `npm start` or `node bin/vcc80.js <source.c>` - Compile to stdout
+- `node bin/vcc80.js -o output.z80 program.c` - Output to file
+- `npm test` - Run all tests (uses node:test runner)
+
+## Architecture Patterns
+
+### File Structure Rules
+- **1-7 functions per file** - Spread implementation across multiple small files
+- **JSDoc required** - All types and function signatures must be documented
+- **ES modules only** - Use `import`/`export`, no CommonJS
+
+### Core Modules (Read in Order)
+1. `src/compiler.js` - Entry point, orchestrates all stages
+2. `src/preprocessor/lexer.js` - Tokenizer with pragma support
+3. `src/parser/combinators.js` - PEG parser framework
+4. `src/nanopass/il.js` - Intermediate representation
+5. `src/backend/z80codegen.js` - Z80 assembly generator
+
+### Key Patterns
+
+**Plugin System**: Extensible architecture via interfaces in `src/plugins/interfaces.js`. Register extensions using `globalRegistry.register(category, name, plugin)`.
+
+**Nanopass Style**: Each compilation phase is a pass that transforms IR. Optimization passes defined as objects with `.run(ir)` method.
+
+**AST to JSON**: All AST nodes have `.toJSON()` for inspectable output. Use this for debugging and analysis.
+
+## Common Mistakes to Avoid
+
+### Module Resolution
+- Always use relative paths starting from current file location
+- Test imports work: `node --check src/file.js` before running tests
+- ES modules require `.js` extension in imports (even for .js files)
+
+### Parser Combinators
+- Use exported classes directly: `new LitParser('INT')`, not via `Parser.lit()`
+- Return parse results as `{success, value?, nextPos?, error?}` objects
+- Collect errors at initial position only for meaningful diagnostics
+
+### Z80 Code Generation
+- Z80 has no 16-bit arithmetic - use repeated addition/subtraction for mul/div
+- Stack grows downward: SP decrements on push
+- All arithmetic operations work with accumulator (A) by default
+- Use HL register pair for 16-bit addresses and values
+
+### JSDoc Comments
+```js
+/**
+ * Description of function behavior
+ * @param {string} name - Parameter description
+ * @returns {ReturnType} Return description
+ */
+function example(name) { ... }
+```
+
+## Testing Conventions
+- Tests use `node:test` runner via `npm test`
+- Test files in `src/tests/*.test.js` import from `../../src/...` (two levels up)
+- Use `describe()` and `it()` for test organization
+- All assertions must be strict (`assert.strictEqual`, not loose equality)
+
+## Z80 Architecture Notes
+- 8-bit accumulator (A), general registers B, C, D, E, H, L
+- HL pair used as 16-bit address register
+- IX/IY optional index registers
+- SP for stack operations
+- Memory addresses: `(addr)` syntax in assembly output
+
+## Debugging Tips
+- Use `--emit-ir` flag to see intermediate representation before codegen
+- AST nodes serialize to JSON via `.toJSON()` method for inspection
+- Check token types with `tokens.map(t => t.type)`
+- Location tracking provides `{file, line, column}` on all errors
+
+## Extensibility Points
+1. **Parser extensions**: Add rules in `src/parser/combinators.js` style
+2. **Optimization passes**: Implement `.run(ir)` interface from `src/plugins/interfaces.js`
+3. **Attributes**: Handle `__attribute__(...)` via AttributeHandler pattern
+4. **Backends**: Copy z80codegen.js structure for new target architectures
+
+## Pre-commit Checklist
+- Verify tests pass: `npm test`
+- Check syntax: `node --check src/**/*.js`
+- Ensure JSDoc comments on all exported functions
+- No hardcoded paths - use relative imports from current file

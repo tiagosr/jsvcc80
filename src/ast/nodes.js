@@ -1,0 +1,563 @@
+/**
+ * Base class for all AST nodes
+ */
+export class ASTNode {
+  /**
+   * Creates an AST node
+   * @param {string} type - Node type identifier
+   * @param {SourceLocation} location - Source location
+   * @param {*} [meta] - Additional metadata
+   */
+  constructor(type, location, meta = {}) {
+    this.type = type;
+    this.location = location;
+    this.meta = meta;
+  }
+
+  /**
+   * Returns a JSON-serializable representation of the node
+   * @returns {Object} JSON representation
+   */
+  toJSON() {
+    const result = {};
+    
+    for (const key of Object.keys(this)) {
+      if (key === 'location') {
+        result[key] = this.location;
+      } else if (typeof this[key] !== 'function' && !key.startsWith('_')) {
+        const value = this[key];
+        
+        if (value instanceof ASTNode) {
+          result[key] = value.toJSON();
+        } else if (Array.isArray(value)) {
+          result[key] = value.map(item => 
+            item instanceof ASTNode ? item.toJSON() : item
+          );
+        } else {
+          result[key] = value;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Creates a string representation of the node
+   * @returns {string} Debug string
+   */
+  toString() {
+    return this.toJSON();
+  }
+}
+
+/**
+ * AST node for binary operations
+ */
+export class BinaryOpNode extends ASTNode {
+  constructor(op, left, right, location) {
+    super('BinaryOp', location);
+    this.op = op;
+    this.left = left;
+    this.right = right;
+  }
+}
+
+/**
+ * AST node for unary operations
+ */
+export class UnaryOpNode extends ASTNode {
+  constructor(op, operand, location) {
+    super('UnaryOp', location);
+    this.op = op;
+    this.operand = operand;
+  }
+}
+
+/**
+ * AST node for literal values
+ */
+export class LiteralNode extends ASTNode {
+  /**
+   * Creates a literal node
+   * @param {string} type - 'int', 'float', 'char', or 'string'
+   * @param {*} value - Literal value
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(type, value, location) {
+    super('Literal', location);
+    this.type = type;
+    this.value = value;
+  }
+}
+
+/**
+ * AST node for identifiers/variables
+ */
+export class IdentifierNode extends ASTNode {
+  /**
+   * Creates an identifier node
+   * @param {string} name - Variable/function name
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(name, location) {
+    super('Identifier', location);
+    this.name = name;
+  }
+}
+
+/**
+ * AST node for function calls
+ */
+export class CallNode extends ASTNode {
+  /**
+   * Creates a call node
+   * @param {IdentifierNode|ExpressionNode} callee - Function being called
+   * @param {ExpressionNode[]} args - Call arguments
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(callee, args, location) {
+    super('Call', location);
+    this.callee = callee;
+    this.args = args;
+  }
+}
+
+/**
+ * AST node for array indexing
+ */
+export class IndexNode extends ASTNode {
+  /**
+   * Creates an index node
+   * @param {ExpressionNode} base - Array expression
+   * @param {ExpressionNode} index - Index expression
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(base, index, location) {
+    super('Index', location);
+    this.base = base;
+    this.index = index;
+  }
+}
+
+/**
+ * AST node for member access (struct/union dot notation)
+ */
+export class MemberNode extends ASTNode {
+  /**
+   * Creates a member access node
+   * @param {ExpressionNode} object - Object expression
+   * @param {IdentifierNode} field - Field name
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(object, field, location) {
+    super('Member', location);
+    this.object = object;
+    this.field = field;
+  }
+}
+
+/**
+ * AST node for pointer member access (struct/union arrow notation)
+ */
+export class PointerMemberNode extends ASTNode {
+  /**
+   * Creates a pointer member access node
+   * @param {ExpressionNode} object - Object expression
+   * @param {IdentifierNode} field - Field name
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(object, field, location) {
+    super('PointerMember', location);
+    this.object = object;
+    this.field = field;
+  }
+}
+
+/**
+ * AST node for variable declarations
+ */
+export class DeclNode extends ASTNode {
+  /**
+   * Creates a declaration node
+   * @param {string} kind - 'var', 'const', or 'typedef'
+   * @param {TypeSpecNode} type - Variable type specification
+   * @param {IdentifierNode} name - Variable name
+   * @param {ExpressionNode} [init] - Optional initializer
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(kind, type, name, init = null, location) {
+    super('Decl', location);
+    this.kind = kind;
+    this.type = type;
+    this.name = name;
+    this.init = init;
+  }
+}
+
+/**
+ * AST node for control flow statements
+ */
+export class ControlFlowNode extends ASTNode {
+  /**
+   * Creates a control flow node
+   * @param {string} kind - 'if', 'while', 'do_while', 'for'
+   * @param {ExpressionNode} condition - Loop/condition expression
+   * @param {StatementNode} body - Body statement(s)
+   * @param {StatementNode} [elseBody] - Else branch for if statements
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(kind, condition, body, elseBody = null, location) {
+    super('ControlFlow', location);
+    this.kind = kind;
+    this.condition = condition;
+    this.body = body;
+    this.elseBody = elseBody;
+  }
+}
+
+/**
+ * AST node for switch statements
+ */
+export class SwitchNode extends ASTNode {
+  /**
+   * Creates a switch statement node
+   * @param {ExpressionNode} expression - Expression to switch on
+   * @param {CaseClauseNode[]} cases - Case clauses
+   * @param {StatementNode} [defaultClause] - Default clause
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(expression, cases, defaultClause = null, location) {
+    super('Switch', location);
+    this.expression = expression;
+    this.cases = cases;
+    this.defaultClause = defaultClause;
+  }
+}
+
+/**
+ * AST node for case clauses in switch statements
+ */
+export class CaseClauseNode extends ASTNode {
+  /**
+   * Creates a case clause node
+   * @param {ExpressionNode} [value] - Case value (null for default)
+   * @param {StatementNode[]} statements - Statements in the case
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(value, statements, location) {
+    super('CaseClause', location);
+    this.value = value;
+    this.statements = statements;
+  }
+}
+
+/**
+ * AST node for return statements
+ */
+export class ReturnNode extends ASTNode {
+  /**
+   * Creates a return statement node
+   * @param {ExpressionNode} [value] - Optional return value
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(value = null, location) {
+    super('Return', location);
+    this.value = value;
+  }
+}
+
+/**
+ * AST node for break/continue statements
+ */
+export class JumpNode extends ASTNode {
+  /**
+   * Creates a jump statement node
+   * @param {string} kind - 'break' or 'continue'
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(kind, location) {
+    super('Jump', location);
+    this.kind = kind;
+  }
+}
+
+/**
+ * AST node for labeled statements (goto targets)
+ */
+export class LabelNode extends ASTNode {
+  /**
+   * Creates a label statement node
+   * @param {IdentifierNode} label - Label name
+   * @param {StatementNode} body - Labeled statement(s)
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(label, body, location) {
+    super('Label', location);
+    this.label = label;
+    this.body = body;
+  }
+}
+
+/**
+ * AST node for goto statements
+ */
+export class GotoNode extends ASTNode {
+  /**
+   * Creates a goto statement node
+   * @param {IdentifierNode} target - Label to jump to
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(target, location) {
+    super('Goto', location);
+    this.target = target;
+  }
+}
+
+/**
+ * AST node for compound statements (blocks)
+ */
+export class CompoundNode extends ASTNode {
+  /**
+   * Creates a compound statement node
+   * @param {StatementNode[]} statements - Statements in the block
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(statements, location) {
+    super('Compound', location);
+    this.statements = statements;
+  }
+}
+
+/**
+ * AST node for expression statements
+ */
+export class ExprStmtNode extends ASTNode {
+  /**
+   * Creates an expression statement node
+   * @param {ExpressionNode} expression - Expression to evaluate
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(expression, location) {
+    super('ExprStmt', location);
+    this.expression = expression;
+  }
+}
+
+/**
+ * AST node for type specifications
+ */
+export class TypeSpecNode extends ASTNode {
+  /**
+   * Creates a type specification node
+   * @param {string} baseType - Base type (e.g., 'int', 'char')
+   * @param {boolean} isSigned - Whether signed type
+   * @param {boolean} isConst - Whether const qualified
+   * @param {number} [bitWidth] - Optional bit width for enums/fields
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(baseType, isSigned = true, isConst = false, bitWidth = null, location) {
+    super('TypeSpec', location);
+    this.baseType = baseType;
+    this.isSigned = isSigned;
+    this.isConst = isConst;
+    this.bitWidth = bitWidth;
+  }
+}
+
+/**
+ * AST node for function declarations/definitions
+ */
+export class FunctionNode extends ASTNode {
+  /**
+   * Creates a function node
+   * @param {IdentifierNode} name - Function name
+   * @param {TypeSpecNode} returnType - Return type
+   * @param {ParameterList[]} parameters - Function parameters
+   * @param {StatementNode} body - Function body
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(name, returnType, parameters, body, location) {
+    super('Function', location);
+    this.name = name;
+    this.returnType = returnType;
+    this.parameters = parameters;
+    this.body = body;
+  }
+}
+
+/**
+ * AST node for function parameters
+ */
+export class ParameterNode extends ASTNode {
+  /**
+   * Creates a parameter node
+   * @param {TypeSpecNode} type - Parameter type
+   * @param {IdentifierNode} name - Parameter name (null for unnamed)
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(type, name = null, location) {
+    super('Parameter', location);
+    this.type = type;
+    this.name = name;
+  }
+}
+
+/**
+ * AST node for struct/union definitions
+ */
+export class StructNode extends ASTNode {
+  /**
+   * Creates a struct/union definition node
+   * @param {string} kind - 'struct' or 'union'
+   * @param {IdentifierNode} name - Type name (null for anonymous)
+   * @param {StructField[]} fields - Struct fields
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(kind, name, fields, location) {
+    super('Struct', location);
+    this.kind = kind;
+    this.name = name;
+    this.fields = fields;
+  }
+}
+
+/**
+ * AST node for struct/union fields
+ */
+export class StructFieldNode extends ASTNode {
+  /**
+   * Creates a struct field node
+   * @param {TypeSpecNode} type - Field type
+   * @param {IdentifierNode} name - Field name (null for anonymous)
+   * @param {number} [bitWidth] - Bit width for bit-fields
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(type, name = null, bitWidth = null, location) {
+    super('StructField', location);
+    this.type = type;
+    this.name = name;
+    this.bitWidth = bitWidth;
+  }
+}
+
+/**
+ * AST node for enum definitions
+ */
+export class EnumNode extends ASTNode {
+  /**
+   * Creates an enum definition node
+   * @param {IdentifierNode} name - Enum type name (null for anonymous)
+   * @param {EnumValue[]} values - Enum values with assigned names
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(name, values, location) {
+    super('Enum', location);
+    this.name = name;
+    this.values = values;
+  }
+}
+
+/**
+ * AST node for enum value definitions
+ */
+export class EnumValueNode extends ASTNode {
+  /**
+   * Creates an enum value node
+   * @param {IdentifierNode} name - Value name
+   * @param {ExpressionNode} [value] - Assigned value (auto-incremented if null)
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(name, value = null, location) {
+    super('EnumValue', location);
+    this.name = name;
+    this.value = value;
+  }
+}
+
+/**
+ * AST node for preprocessor directives (preserved in AST)
+ */
+export class PreprocNode extends ASTNode {
+  /**
+   * Creates a preprocessor directive node
+   * @param {string} kind - 'include', 'define', 'undef', 'ifdef', 'ifndef', 'else', 'endif'
+   * @param {*} value - Directive-specific content
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(kind, value = null, location) {
+    super('Preproc', location);
+    this.kind = kind;
+    this.value = value;
+  }
+}
+
+/**
+ * AST node for pragma directives (processed by preprocessor)
+ */
+export class PragmacNode extends ASTNode {
+  /**
+   * Creates a pragma directive node
+   * @param {string} type - Pragma type ('once', 'pack', etc.)
+   * @param {*} value - Pragma-specific data
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(type, value = null, location) {
+    super('Pragma', location);
+    this.type = type;
+    this.value = value;
+  }
+}
+
+/**
+ * AST node for inline assembly code
+ */
+export class InlineAsmNode extends ASTNode {
+  /**
+   * Creates an inline assembly node
+   * @param {string} asm - Assembly code string
+   * @param {{[key: string]: ExpressionNode}} [inputs] - Input operands (name => expression)
+   * @param {{[key: string]: ExpressionNode}} [outputs] - Output operands (name => expression)
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(asm, inputs = null, outputs = null, location) {
+    super('InlineAsm', location);
+    this.asm = asm;
+    this.inputs = inputs || {};
+    this.outputs = outputs || {};
+  }
+}
+
+/**
+ * AST node for attribute specifications (__attribute__)
+ */
+export class AttributeNode extends ASTNode {
+  /**
+   * Creates an attribute specification node
+   * @param {string} name - Attribute name (e.g., 'packed', 'aligned')
+   * @param {*} args - Attribute arguments
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(name, args = null, location) {
+    super('Attribute', location);
+    this.name = name;
+    this.args = args;
+  }
+}
+
+/**
+ * AST node for attribute-annotated declarations
+ */
+export class AnnotatedDeclNode extends ASTNode {
+  /**
+   * Creates an annotated declaration node
+   * @param {DeclNode|FunctionNode|StructNode} declaration - Original declaration
+   * @param {AttributeNode[]} attributes - Applied attributes
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(declaration, attributes, location) {
+    super('AnnotatedDecl', location);
+    this.declaration = declaration;
+    this.attributes = attributes;
+  }
+}

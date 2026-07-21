@@ -48,6 +48,15 @@ export class CPegParser {
     this.buildAssignmentExpr();
     this.buildExpression();
     this.buildStatementList();
+    this.buildWhileStmt();
+    this.buildDoWhileStmt();
+    this.buildForStmt();
+    this.buildSwitchStmt();
+    this.buildBreakContinueStmt();
+    this.buildGotoLabelStmt();
+    this.buildStructDecl();
+    this.buildEnumDecl();
+    this.buildTypedefDecl();
     this.buildStatement();
   }
 
@@ -469,6 +478,282 @@ export class CPegParser {
   }
 
   /**
+   * Build while loop statement
+   */
+  buildWhileStmt() {
+    this.ruleRefs.whileStmt = map(
+      Parser.seq(
+        kw('while'),
+        Parser.lit('('),
+        lazy(() => this.ruleRefs.conditionalExpr),
+        Parser.lit(')'),
+        lazy(() => this.ruleRefs.statement)
+      ),
+      ([keyword, , condition, , body]) => {
+        return new AST.ControlFlowNode('while', condition, body, null, locFromToken(keyword));
+      }
+    );
+  }
+
+  /**
+   * Build do-while loop statement
+   */
+  buildDoWhileStmt() {
+    this.ruleRefs.doWhileStmt = map(
+      Parser.seq(
+        kw('do'),
+        lazy(() => this.ruleRefs.statement),
+        kw('while'),
+        Parser.lit('('),
+        lazy(() => this.ruleRefs.conditionalExpr),
+        Parser.lit(')'),
+        Parser.lit(';')
+      ),
+      ([doKw, body, , lparen, condition, , semi]) => {
+        return new AST.ControlFlowNode('do_while', condition, body, null, locFromToken(doKw));
+      }
+    );
+  }
+
+  /**
+   * Build for loop statement
+   */
+  buildForStmt() {
+    const forInitDecl = map(
+      Parser.seq(
+        kw('int'),
+        pred(t => t.type === 'IDENTIFIER'),
+        Parser.opt(Parser.seq(Parser.lit('='), lazy(() => this.ruleRefs.expression)))
+      ),
+      ([keyword, name, init]) => {
+        let initValue = null;
+        if (init) {
+          initValue = Array.isArray(init[1]) ? init[1][0] : init[1];
+        }
+        return new AST.DeclNode('var',
+          new AST.TypeSpecNode('int', true, false, null, locFromToken(keyword)),
+          new AST.IdentifierNode(name.value, locFromToken(name)),
+          initValue, locFromToken(keyword));
+      }
+    );
+
+    const forInitExpr = map(
+      Parser.opt(lazy(() => this.ruleRefs.expression)),
+      (expr) => {
+        if (!expr) return null;
+        return Array.isArray(expr) ? expr[0] : expr;
+      }
+    );
+
+    this.ruleRefs.forStmt = map(
+      Parser.seq(
+        kw('for'),
+        Parser.lit('('),
+        Parser.alt(forInitDecl, forInitExpr),
+        Parser.lit(';'),
+        Parser.opt(lazy(() => this.ruleRefs.expression)),
+        Parser.lit(';'),
+        Parser.opt(lazy(() => this.ruleRefs.expression)),
+        Parser.lit(')'),
+        lazy(() => this.ruleRefs.statement)
+      ),
+      ([keyword, , init, , condExpr, , incrExpr, , body]) => {
+        const condition = Array.isArray(condExpr) ? (condExpr[0] || null) : (condExpr || null);
+        const increment = Array.isArray(incrExpr) ? (incrExpr[0] || null) : (incrExpr || null);
+        return new AST.ControlFlowNode('for', condition, body, null, locFromToken(keyword), init, increment);
+      }
+    );
+  }
+
+  /**
+   * Build switch statement with case/default clauses
+   */
+  buildSwitchStmt() {
+    const caseClause = map(
+      Parser.seq(
+        kw('case'),
+        lazy(() => this.ruleRefs.conditionalExpr),
+        Parser.lit(':'),
+        Parser.many(lazy(() => this.ruleRefs.statement))
+      ),
+      ([, value, , statements]) => {
+        return new AST.CaseClauseNode(value, statements, locFromToken(value));
+      }
+    );
+
+    const defaultClause = map(
+      Parser.seq(
+        kw('default'),
+        Parser.lit(':'),
+        Parser.many(lazy(() => this.ruleRefs.statement))
+      ),
+      ([keyword, , statements]) => {
+        return new AST.CaseClauseNode(null, statements, locFromToken(keyword));
+      }
+    );
+
+    this.ruleRefs.switchStmt = map(
+      Parser.seq(
+        kw('switch'),
+        Parser.lit('('),
+        lazy(() => this.ruleRefs.conditionalExpr),
+        Parser.lit(')'),
+        Parser.lit('{'),
+        Parser.many(Parser.alt(caseClause, defaultClause)),
+        Parser.lit('}')
+      ),
+      ([keyword, , expression, , lbrace, cases,]) => {
+        const regularCases = cases.filter(c => c.value !== null);
+        const defClause = cases.find(c => c.value === null);
+        return new AST.SwitchNode(expression, regularCases, defClause, locFromToken(keyword));
+      }
+    );
+  }
+
+  /**
+   * Build break and continue statements
+   */
+  buildBreakContinueStmt() {
+    this.ruleRefs.breakStmt = map(
+      Parser.seq(
+        Parser.alt(kw('break'), kw('continue')),
+        Parser.lit(';')
+      ),
+      ([keyword]) => {
+        return new AST.JumpNode(keyword.value, locFromToken(keyword));
+      }
+    );
+  }
+
+  /**
+   * Build goto statement and labeled statement
+   */
+  buildGotoLabelStmt() {
+    this.ruleRefs.gotoStmt = map(
+      Parser.seq(
+        kw('goto'),
+        pred(t => t.type === 'IDENTIFIER'),
+        Parser.lit(';')
+      ),
+      ([keyword, target]) => {
+        return new AST.GotoNode(new AST.IdentifierNode(target.value, locFromToken(target)), locFromToken(keyword));
+      }
+    );
+
+    this.ruleRefs.labelStmt = map(
+      Parser.seq(
+        pred(t => t.type === 'IDENTIFIER'),
+        Parser.lit(':'),
+        lazy(() => this.ruleRefs.statement)
+      ),
+      ([label, , body]) => {
+        return new AST.LabelNode(new AST.IdentifierNode(label.value, locFromToken(label)), body, locFromToken(label));
+      }
+    );
+  }
+
+  /**
+   * Build struct/union declaration
+   */
+  buildStructDecl() {
+    const structField = map(
+      Parser.seq(
+        kw('int'),
+        pred(t => t.type === 'IDENTIFIER'),
+        Parser.opt(Parser.seq(Parser.lit('='), lazy(() => this.ruleRefs.expression))),
+        Parser.lit(';')
+      ),
+      ([keyword, name, init]) => {
+        let initValue = null;
+        if (init) {
+          initValue = Array.isArray(init[1]) ? init[1][0] : init[1];
+        }
+        return new AST.StructFieldNode(
+          new AST.TypeSpecNode('int', true, false, null, locFromToken(keyword)),
+          new AST.IdentifierNode(name.value, locFromToken(name)),
+          null, locFromToken(keyword));
+      }
+    );
+
+    this.ruleRefs.structDecl = map(
+      Parser.seq(
+        Parser.alt(kw('struct'), kw('union')),
+        Parser.opt(pred(t => t.type === 'IDENTIFIER')),
+        Parser.lit('{'),
+        Parser.many(structField),
+        Parser.lit('}'),
+        Parser.many(Parser.seq(
+          pred(t => t.type === 'IDENTIFIER'),
+          Parser.opt(Parser.lit('='))
+        )),
+        Parser.lit(';')
+      ),
+      ([keyword, nameOpt, lbrace, fields, rbrace, declarators, semi]) => {
+        const name = nameOpt ? new AST.IdentifierNode(nameOpt.value, locFromToken(nameOpt)) : null;
+        return new AST.StructNode(keyword.value, name, fields, locFromToken(keyword));
+      }
+    );
+  }
+
+  /**
+   * Build enum declaration
+   */
+  buildEnumDecl() {
+    const enumValue = map(
+      Parser.seq(
+        pred(t => t.type === 'IDENTIFIER'),
+        Parser.opt(Parser.seq(Parser.lit('='), lazy(() => this.ruleRefs.conditionalExpr)))
+      ),
+      ([name, valueOpt]) => {
+        const value = valueOpt ? (Array.isArray(valueOpt[1]) ? valueOpt[1][0] : valueOpt[1]) : null;
+        return new AST.EnumValueNode(
+          new AST.IdentifierNode(name.value, locFromToken(name)),
+          value, locFromToken(name));
+      }
+    );
+
+    this.ruleRefs.enumDecl = map(
+      Parser.seq(
+        kw('enum'),
+        Parser.opt(pred(t => t.type === 'IDENTIFIER')),
+        Parser.lit('{'),
+        Parser.many(Parser.seq(enumValue, Parser.opt(Parser.lit(',')))),
+        Parser.lit('}'),
+        Parser.many(Parser.seq(
+          pred(t => t.type === 'IDENTIFIER'),
+          Parser.opt(Parser.lit('='))
+        )),
+        Parser.lit(';')
+      ),
+      ([keyword, nameOpt, lbrace, values, rbrace, declarators, semi]) => {
+        const name = nameOpt ? new AST.IdentifierNode(nameOpt.value, locFromToken(nameOpt)) : null;
+        const enumValues = values.map(v => v[0]);
+        return new AST.EnumNode(name, enumValues, locFromToken(keyword));
+      }
+    );
+  }
+
+  /**
+   * Build typedef declaration
+   */
+  buildTypedefDecl() {
+    this.ruleRefs.typedefDecl = map(
+      Parser.seq(
+        kw('typedef'),
+        kw('int'),
+        pred(t => t.type === 'IDENTIFIER'),
+        Parser.lit(';')
+      ),
+      ([typedefKw, typeKw, name, semi]) => {
+        return new AST.DeclNode('typedef',
+          new AST.TypeSpecNode('int', true, false, null, locFromToken(typeKw)),
+          new AST.IdentifierNode(name.value, locFromToken(name)),
+          null, locFromToken(typedefKw));
+      }
+    );
+  }
+
+  /**
    * Build statement list (sequence of statements)
    */
   buildStatementList() {
@@ -553,6 +838,13 @@ export class CPegParser {
     this.ruleRefs.statement = Parser.alt(
       compoundStmt,
       ifStmt,
+      this.ruleRefs.whileStmt,
+      this.ruleRefs.doWhileStmt,
+      this.ruleRefs.forStmt,
+      this.ruleRefs.switchStmt,
+      this.ruleRefs.breakStmt,
+      this.ruleRefs.gotoStmt,
+      this.ruleRefs.labelStmt,
       returnStmt,
       localDecl,
       exprStmt
@@ -614,7 +906,13 @@ export class CPegParser {
       }
     );
 
-    const globalDecl = Parser.alt(functionDef, variableDecl);
+    const globalDecl = Parser.alt(
+      this.ruleRefs.structDecl,
+      this.ruleRefs.enumDecl,
+      this.ruleRefs.typedefDecl,
+      functionDef,
+      variableDecl
+    );
     const programParser = Parser.many(globalDecl);
     
     const result = programParser.parse(tokens, 0);

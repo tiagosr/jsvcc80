@@ -206,13 +206,17 @@ export class ControlFlowNode extends ASTNode {
    * @param {StatementNode} body - Body statement(s)
    * @param {StatementNode} [elseBody] - Else branch for if statements
    * @param {SourceLocation} location - Source location
+   * @param {ExpressionNode} [init] - For loop init expression/declaration
+   * @param {ExpressionNode} [increment] - For loop increment expression
    */
-  constructor(kind, condition, body, elseBody = null, location) {
+  constructor(kind, condition, body, elseBody = null, location, init = null, increment = null) {
     super('ControlFlow', location);
     this.kind = kind;
     this.condition = condition;
     this.body = body;
     this.elseBody = elseBody;
+    this.init = init;
+    this.increment = increment;
   }
 }
 

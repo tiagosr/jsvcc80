@@ -98,17 +98,17 @@ function example(name) { ... }
 - C grammar PEG parser with proper forward reference handling via `lazy()`
 - AST construction via `map()` combinator - all parsed results converted to proper AST nodes
 - AST → IR translation pass (`src/nanopass/ast_to_ir.js`) - functions, declarations, expressions, control flow
-- 71 passing tests
+- C grammar parser extended with while/do-while/for loops, switch/case, goto/break/continue, struct/union/enum/typedef
+- 95 passing tests
 
 ### 🔄 In Progress
 - None
 
 ### 🔜 Next Steps
-1. Extend C grammar parser - add while/for loops, switch/case, goto/break/continue, struct/enum/typedef
-2. Extend AST → IR translation - complete binary operations with proper operand handling, function calls with arguments
-3. Implement Z80 optimizations - register allocation, peephole optimization for the target architecture
-4. Wire up compiler.js - integrate lexer → parser → AST → IR → codegen pipeline end-to-end
-5. Build object file assembler/linker - support WLA DX-compatible assembly output
+1. Extend AST → IR translation - complete binary operations with proper operand handling, function calls with arguments, loop/control flow IR
+2. Implement Z80 optimizations - register allocation, peephole optimization for the target architecture
+3. Wire up compiler.js - integrate lexer → parser → AST → IR → codegen pipeline end-to-end
+4. Build object file assembler/linker - support WLA DX-compatible assembly output
 
 ## Pre-commit Checklist
 - Verify tests pass: `npm test`

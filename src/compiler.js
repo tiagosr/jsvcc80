@@ -5,6 +5,7 @@ import { Lexer, PreprocessedSource } from './preprocessor/lexer.js';
 import { Parser } from './parser/combinators.js';
 import { globalRegistry } from './core/plugins.js';
 import { ProgramIR } from './nanopass/il.js';
+import { ParserError } from './core/errors.js';
 
 /**
  * Compiler options and configuration
@@ -193,15 +194,24 @@ export class Compiler {
   }
 
   /**
-   * Parsing stage - builds AST from tokens
+   * Parsing stage - builds AST from tokens using PEG parser
    * @param {Token[]} tokens - Token array to parse
    * @returns {ASTNode} Parsed AST root node
    */
-  parse(tokens) {
-    // This would use the PEG parser with registered extensions
-    // For now, return null as placeholder
-    this.parser = new Parser();
-    return null;
+  async parse(tokens) {
+    // Use the C grammar PEG parser
+    const { CPegParser } = await import('./parser/cparser.js');
+    this.parser = new CPegParser();
+    
+    try {
+      return this.parser.parse(tokens);
+    } catch (error) {
+      if (error.name === 'ParserError') {
+        throw error;
+      }
+      // Wrap other errors as parser errors
+      throw new ParserError(error.message, tokens[0]?.location || null);
+    }
   }
 
   /**

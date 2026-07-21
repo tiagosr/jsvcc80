@@ -18,9 +18,11 @@ A C compiler for Z80 CPU implemented in ES2025 Node.js. Compiles C source to Z80
 ### Core Modules (Read in Order)
 1. `src/compiler.js` - Entry point, orchestrates all stages
 2. `src/preprocessor/lexer.js` - Tokenizer with pragma support
-3. `src/parser/combinators.js` - PEG parser framework
-4. `src/nanopass/il.js` - Intermediate representation
-5. `src/backend/z80codegen.js` - Z80 assembly generator
+3. `src/parser/combinators.js` - PEG parser framework (includes `lazy()` and `map()` combinators)
+4. `src/parser/cparser.js` - C grammar PEG parser with AST construction
+5. `src/nanopass/il.js` - Intermediate representation
+6. `src/nanopass/ast_to_ir.js` - AST to IR translation pass
+7. `src/backend/z80codegen.js` - Z80 assembly generator
 
 ### Key Patterns
 
@@ -38,7 +40,8 @@ A C compiler for Z80 CPU implemented in ES2025 Node.js. Compiles C source to Z80
 - ES modules require `.js` extension in imports (even for .js files)
 
 ### Parser Combinators
-- Use exported classes directly: `new LitParser('INT')`, not via `Parser.lit()`
+- Prefer the wrapper calls for classes instead of using them directly: `Parser.lit()`, not via `new LitParser('INT')`
+- Use `Parser.lazy()` to break circular dependencies in parser graphs, preferrably only once per loop
 - Return parse results as `{success, value?, nextPos?, error?}` objects
 - Collect errors at initial position only for meaningful diagnostics
 
@@ -87,22 +90,24 @@ function example(name) { ... }
 
 ### ✅ Completed
 - Preprocessor/lexer with pragma support (#pragma once, #pragma pack)
-- PEG parser combinator framework (seq, alt, many, some, opt, lit, any, pred)
+- PEG parser combinator framework (seq, alt, many, some, opt, lit, any, pred, lazy, map)
 - AST node definitions for full C syntax
 - Nanopass IR with instruction classes and symbol tables
 - Z80 code generator backend (LOAD, STORE, binary ops, jumps, calls)
 - Plugin architecture interfaces
-- 52 passing tests
+- C grammar PEG parser with proper forward reference handling via `lazy()`
+- AST construction via `map()` combinator - all parsed results converted to proper AST nodes
+- AST → IR translation pass (`src/nanopass/ast_to_ir.js`) - functions, declarations, expressions, control flow
+- 71 passing tests
 
 ### 🔄 In Progress
-- Concrete C grammar parser using the combinator framework (basic structure ready)
-- AST → IR translation passes
+- None
 
 ### 🔜 Next Steps
-1. Refine C grammar parser - fix rule references and complete all grammar rules in `src/parser/cparser.js`
-2. Implement AST construction - convert parsed token sequences into proper AST nodes with correct types
-3. Add AST → IR passes - translate each AST node type to corresponding IL instructions
-4. Implement Z80 optimizations - register allocation, peephole optimization for the target architecture
+1. Extend C grammar parser - add while/for loops, switch/case, goto/break/continue, struct/enum/typedef
+2. Extend AST → IR translation - complete binary operations with proper operand handling, function calls with arguments
+3. Implement Z80 optimizations - register allocation, peephole optimization for the target architecture
+4. Wire up compiler.js - integrate lexer → parser → AST → IR → codegen pipeline end-to-end
 5. Build object file assembler/linker - support WLA DX-compatible assembly output
 
 ## Pre-commit Checklist
@@ -110,3 +115,4 @@ function example(name) { ... }
 - Check syntax: `node --check src/**/*.js`
 - Ensure JSDoc comments on all exported functions
 - No hardcoded paths - use relative imports from current file
+- Update this file with architecture notes, completed/in-progress/next-steps lists and pre-commit checklists

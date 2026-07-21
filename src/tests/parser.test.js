@@ -123,7 +123,7 @@ describe('Parser Combinators', () => {
   // SeqParser and AltParser tests disabled due to module resolution issues
   /*
   it('should chain parsers with sequence', () => {
-    const parser = new SeqParser(
+    const parser = Parser.seq(
       new LitParser('INT'),
       new LitParser('OP', '+'),
       new LitParser('INT')

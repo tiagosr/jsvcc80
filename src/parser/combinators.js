@@ -369,6 +369,71 @@ class LocationParser extends Parser {
 }
 
 /**
+ * Parser that maps a transform function over the inner parser's result.
+ */
+class MapParser extends Parser {
+  /**
+   * @param {Parser} inner - Parser whose result will be transformed
+   * @param {Function} fn - Transform function(value) => newValue
+   */
+  constructor(inner, fn) {
+    super();
+    this.inner = inner;
+    this.fn = fn;
+  }
+
+  parse(tokens, pos) {
+    const result = this.inner.parse(tokens, pos);
+    if (result.success) {
+      result.value = this.fn(result.value);
+    }
+    return result;
+  }
+}
+
+/**
+ * Maps a function over a parser's result.
+ * @param {Parser} parser - Parser to wrap
+ * @param {Function} fn - Transform function(value) => newValue
+ * @returns {Parser} Mapped parser
+ */
+export function map(parser, fn) {
+  return new MapParser(parser, fn);
+}
+
+/**
+ * Parser that lazily resolves its inner parser at parse time.
+ * Used to break circular dependencies between grammar rules.
+ */
+class LazyParser extends Parser {
+  /**
+   * @param {Function} resolver - Function that returns the inner parser
+   */
+  constructor(resolver) {
+    super();
+    this.resolver = resolver;
+    this._inner = null;
+  }
+
+  parse(tokens, pos) {
+    if (!this._inner) {
+      this._inner = this.resolver();
+    }
+    return this._inner.parse(tokens, pos);
+  }
+}
+
+/**
+ * Creates a lazy parser that resolves its inner parser at parse time.
+ * Use this to break circular dependencies between grammar rules.
+ * @param {Function} resolver - Function returning the parser to resolve
+ * @returns {Parser} Lazy parser
+ */
+export function lazy(resolver) {
+  return new LazyParser(resolver);
+}
+
+/**
  * Wraps a parser to capture location information on all results
  */
 export function withLocation(inner) {

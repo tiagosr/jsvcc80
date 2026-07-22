@@ -22,7 +22,9 @@ A C compiler for Z80 CPU implemented in ES2025 Node.js. Compiles C source to Z80
 4. `src/parser/cparser.js` - C grammar PEG parser with AST construction
 5. `src/nanopass/il.js` - Intermediate representation
 6. `src/nanopass/ast_to_ir.js` - AST to IR translation pass
-7. `src/backend/z80codegen.js` - Z80 assembly generator
+7. `src/nanopass/optimizations.js` - Z80 optimization passes (peephole, register allocation)
+8. `src/nanopass/register_passes.js` - Optimization pass registration
+9. `src/backend/z80codegen.js` - Z80 assembly generator
 
 ### Key Patterns
 
@@ -102,15 +104,16 @@ function example(name) { ... }
 - C grammar parser binary expression rules fixed - proper right operand parsing with correct precedence levels
 - C grammar parser operator mapping - relational (< > <= >=) to (lt gt le ge), equality (== !=) to (eq ne), bitwise (& | ^) to (and or xor), logical (&& ||) to (land lor), unary (- ~ !) to (neg not lognot)
 - C grammar parser extended with while/do-while/for loops, switch/case, goto/break/continue, struct/union/enum/typedef
-- 118 passing tests
+- Z80 optimization passes - peephole optimizer (dead code elimination, constant folding, redundant move/jump elimination, stack op merging) and register allocator (physical Z80 register assignment with spilling)
+- Optimization pass registration via global registry
+- 149 passing tests
 
 ### 🔄 In Progress
 - None
 
 ### 🔜 Next Steps
-1. Implement Z80 optimizations - register allocation, peephole optimization for the target architecture
-2. Wire up compiler.js - integrate lexer → parser → AST → IR → codegen pipeline end-to-end
-3. Build object file assembler/linker - support WLA DX-compatible assembly output
+1. Wire up compiler.js - integrate lexer → parser → AST → IR → codegen pipeline end-to-end
+2. Build object file assembler/linker - support WLA DX-compatible assembly output
 
 ## Pre-commit Checklist
 - Verify tests pass: `npm test`

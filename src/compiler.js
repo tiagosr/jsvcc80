@@ -6,6 +6,9 @@ import { Parser } from './parser/combinators.js';
 import { globalRegistry } from './core/plugins.js';
 import { ProgramIR } from './nanopass/il.js';
 import { ParserError } from './core/errors.js';
+import { AstToIr } from './nanopass/ast_to_ir.js';
+import { Z80Codegen } from './backend/z80codegen.js';
+import './nanopass/register_passes.js';
 
 /**
  * Compiler options and configuration
@@ -230,8 +233,8 @@ export class Compiler {
    * @returns {ProgramIR} Program intermediate representation
    */
   generateIR(ast) {
-    // Placeholder for IR emission pass
-    return new ProgramIR();
+    const translator = new AstToIr();
+    return translator.translate(ast);
   }
 
   /**
@@ -261,7 +264,6 @@ export class Compiler {
    * @returns {string} Generated Z80 assembly code
    */
   generateCode(ir) {
-    const { Z80Codegen } = require('./backend/z80codegen.js');
     const codegen = new Z80Codegen({
       debugInfo: this.options.debugInfo,
       optimizeStack: true

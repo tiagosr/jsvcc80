@@ -91,6 +91,8 @@ function example(name) { ... }
 ## Current Implementation Status
 
 ### ✅ Completed
+- **Binary object file format** - `src/linker/objectfile_loader.js` with VCC80O magic header, serialization/deserialization of sections, symbols, relocations, and CLI support for loading .o files
+- 242 passing tests
 - Preprocessor/lexer with pragma support (#pragma once, #pragma pack)
 - PEG parser combinator framework (seq, alt, many, some, opt, lit, any, pred, lazy, map)
 - AST node definitions for full C syntax

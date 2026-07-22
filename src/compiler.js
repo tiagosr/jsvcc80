@@ -11,6 +11,7 @@ import { AstToIr } from './nanopass/ast_to_ir.js';
 import { Z80Codegen } from './backend/z80codegen.js';
 import { IrToObjectFile } from './linker/objectfile.js';
 import { Linker, LinkerOptions } from './linker/linker.js';
+import { loadObjectFile, saveObjectFile } from './linker/objectfile_loader.js';
 import './nanopass/register_passes.js';
 
 /**
@@ -407,7 +408,7 @@ export class Compiler {
   }
 
   /**
-   * Writes an object file to disk
+   * Writes an object file to disk in binary format
    * @param {Object} compileResult - Result from compileToObjectFile
    * @param {string} outputPath - Output file path
    */
@@ -415,7 +416,30 @@ export class Compiler {
     if (!compileResult.success || !compileResult.objectFile) {
       throw new Error('Cannot write object file: compilation failed');
     }
-    writeFileSync(outputPath, JSON.stringify(compileResult.objectFile.toJSON(), null, 2));
+    saveObjectFile(compileResult.objectFile, outputPath);
+  }
+
+  /**
+   * Loads a pre-compiled object file from disk
+   * @param {string} filePath - Path to .o file
+   * @returns {Object} Result object with objectFile
+   */
+  loadObjectFile(filePath) {
+    const result = {
+      success: false,
+      objectFile: null,
+      warnings: [],
+      errors: []
+    };
+
+    try {
+      result.objectFile = loadObjectFile(filePath);
+      result.success = true;
+    } catch (error) {
+      result.errors.push(error.message);
+    }
+
+    return result;
   }
 
   /**

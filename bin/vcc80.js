@@ -8,7 +8,7 @@
 
 import { readFileSync, writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { dirname, extname } from 'path';
 import { ArgumentParser } from 'argparse';
 
 // Get __dirname equivalent in ES modules
@@ -89,6 +89,34 @@ function parseArgs() {
 }
 
 /**
+ * Processes a single file: compiles .c files, loads .o files
+ * @param {string} file - Input file path
+ * @param {Compiler} compiler - Compiler instance
+ * @param {Object} options - CLI options
+ * @returns {Object} Compilation/load result
+ */
+function processFile(file, compiler, options) {
+  const ext = extname(file);
+
+  if (ext === '.o') {
+    console.error(`Loading ${file}...`);
+    return compiler.loadObjectFile(file);
+  }
+
+  console.error(`Compiling ${file}...`);
+
+  let source;
+  try {
+    source = readFileSync(file, 'utf-8');
+  } catch (error) {
+    const result = { success: false, objectFile: null, errors: [`Error reading ${file}: ${error.message}`] };
+    return result;
+  }
+
+  return compiler.compileToObjectFile(source);
+}
+
+/**
  * Main entry point
  */
 async function main() {
@@ -100,22 +128,19 @@ async function main() {
     process.exit(1);
   }
 
+  const hasObjectFiles = options.files.some(f => extname(f) === '.o');
+  const hasSourceFiles = options.files.some(f => extname(f) === '.c');
+
+  // If only a single .c file and no compile-only flag, do direct compilation
+  const singleSourceCompile = hasSourceFiles && !hasObjectFiles && options.files.length === 1 && !options.compileOnly;
+
   // Import compiler modules
   const { Compiler, CompilerOptions } = await import('../src/compiler.js');
 
   try {
-    const results = [];
-
-    for (const file of options.files) {
-      console.error(`Compiling ${file}...`);
-
-      let source;
-      try {
-        source = readFileSync(file, 'utf-8');
-      } catch (error) {
-        console.error(`Error reading ${file}: ${error.message}`);
-        continue;
-      }
+    if (singleSourceCompile) {
+      const file = options.files[0];
+      const source = readFileSync(file, 'utf-8');
 
       const compilerOptions = new CompilerOptions({
         source: file,
@@ -127,89 +152,21 @@ async function main() {
       });
 
       const compiler = new Compiler(compilerOptions);
+      const result = compiler.compileSource(source);
 
-      if (options.compileOnly) {
-        const result = compiler.compileToObjectFile(source);
-        results.push({ file, objectFile: result.objectFile, success: result.success, errors: result.errors });
-
-        if (!result.success) {
-          console.error(`Compilation failed for ${file}:`);
-          for (const error of result.errors) {
-            console.error(`  Error: ${error}`);
-          }
-          process.exit(1);
-        }
-
-        const outPath = options.output || file.replace(/\.c$/, '.o');
-        compiler.writeObjectFile(result, outPath);
-        console.error(`Object file written to ${outPath}`);
-      } else {
-        const result = compiler.compileSource(source);
-        results.push({ file, code: result.code, ir: result.ir, success: result.success, errors: result.errors });
-
-        if (!result.success) {
-          console.error(`Compilation failed for ${file}:`);
-          for (const error of result.errors) {
-            console.error(`  Error: ${error}`);
-          }
-          process.exit(1);
-        }
-      }
-    }
-
-    if (options.compileOnly) {
-      return;
-    }
-
-    if (options.files.length > 1) {
-      const objResults = [];
-      for (const file of options.files) {
-        const compilerOptions = new CompilerOptions({
-          source: file,
-          opt: options.opt,
-          debug: options.debug,
-          outputFormat: options.format
-        });
-        const compiler = new Compiler(compilerOptions);
-        const source = readFileSync(file, 'utf-8');
-        const objResult = compiler.compileToObjectFile(source);
-        objResults.push(objResult);
-      }
-
-      const compilerOptions = new CompilerOptions({
-        source: options.files[0],
-        opt: options.opt,
-        outputFormat: options.format
-      });
-      const linkerCompiler = new Compiler(compilerOptions);
-      const linkResult = linkerCompiler.link(objResults);
-
-      if (!linkResult.success) {
-        console.error('Linking failed:');
-        for (const error of linkResult.errors) {
+      if (!result.success) {
+        console.error(`Compilation failed for ${file}:`);
+        for (const error of result.errors) {
           console.error(`  Error: ${error}`);
         }
         process.exit(1);
       }
 
-      if (options.map) {
-        console.error('--- Link Map ---');
-        console.error(linkResult.map);
-        console.error('--- End Map ---');
-      }
+      const output = result.code;
 
-      if (options.output) {
-        linkerCompiler.writeLinkOutput(linkResult, options.output);
-        console.error(`Output written to ${options.output}`);
-      } else {
-        console.log(linkResult.output);
-      }
-    } else {
-      const output = results[0].code;
-
-      if (options.emitIr && results[0].ir) {
+      if (options.emitIr && result.ir) {
         console.error('--- IR Output ---');
-        console.log(results[0].ir);
+        console.log(result.ir);
         console.error('--- End IR ---\n');
       }
 
@@ -219,6 +176,71 @@ async function main() {
       } else {
         console.log(output);
       }
+
+      return;
+    }
+
+    const objResults = [];
+
+    for (const file of options.files) {
+      const compilerOptions = new CompilerOptions({
+        source: file,
+        opt: options.opt,
+        debug: options.debug,
+        outputFormat: options.format
+      });
+
+      const compiler = new Compiler(compilerOptions);
+      const result = processFile(file, compiler, options);
+
+      if (!result.success) {
+        console.error(`Failed for ${file}:`);
+        for (const error of result.errors) {
+          console.error(`  Error: ${error}`);
+        }
+        process.exit(1);
+      }
+
+      if (options.compileOnly) {
+        const outPath = options.output || file.replace(/\.[^.]+$/, '.o');
+        compiler.writeObjectFile(result, outPath);
+        console.error(`Object file written to ${outPath}`);
+      } else {
+        objResults.push(result);
+      }
+    }
+
+    if (options.compileOnly) {
+      return;
+    }
+
+    const compilerOptions = new CompilerOptions({
+      source: options.files[0],
+      opt: options.opt,
+      outputFormat: options.format
+    });
+    const linkerCompiler = new Compiler(compilerOptions);
+    const linkResult = linkerCompiler.link(objResults);
+
+    if (!linkResult.success) {
+      console.error('Linking failed:');
+      for (const error of linkResult.errors) {
+        console.error(`  Error: ${error}`);
+      }
+      process.exit(1);
+    }
+
+    if (options.map) {
+      console.error('--- Link Map ---');
+      console.error(linkResult.map);
+      console.error('--- End Map ---');
+    }
+
+    if (options.output) {
+      linkerCompiler.writeLinkOutput(linkResult, options.output);
+      console.error(`Output written to ${options.output}`);
+    } else {
+      console.log(linkResult.output);
     }
 
   } catch (error) {

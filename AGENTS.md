@@ -92,7 +92,7 @@ function example(name) { ... }
 
 ### ✅ Completed
 - **Binary object file format** - `src/linker/objectfile_loader.js` with VCC80O magic header, serialization/deserialization of sections, symbols, relocations, and CLI support for loading .o files
-- 242 passing tests
+- 268 passing tests
 - Preprocessor/lexer with pragma support (#pragma once, #pragma pack)
 - PEG parser combinator framework (seq, alt, many, some, opt, lit, any, pred, lazy, map)
 - AST node definitions for full C syntax
@@ -117,15 +117,15 @@ function example(name) { ... }
 - **WLA DX code generator** - `src/linker/wladxcodegen.js` generates WLA DX-compatible Z80 assembly with section directives, DB/DW/DS data, and relocation support
 - **Linker** - `src/linker/linker.js` combines object files, resolves symbols/relocations, generates binary/WLA DX output and link maps
 - **Z80 codegen quality improvements** - Proper stack frame management using IX as frame pointer, basic block label emission, fixed comparison logic (le/ge flags), valid Z80 stack alloc/free instructions, complete division/mod/shl/shr implementation, copy propagation optimization, fixed constant folding with correct IR op names
-- 226 passing tests
+- 268 passing tests
 - **Linker wired into compiler pipeline** - CLI flags `-c` for compile-only (object file output), `--format` for output format selection (assembly/wladx/binary), `--map` for link map generation, multi-file compilation with automatic linking
+- **Static library (.a) support** - `src/linker/archive.js` with Archive/ArchiveMember classes, VCC80A binary format, serialization/deserialization, CLI handling of .a files, Compiler.loadArchive method, and 22 archive tests
 
 ### 🔄 In Progress
 - None
 
 ### 🔜 Next Steps
-1. Add static library (.a) support
-2. Implement standard library functions (printf, memset, memcpy, etc.)
+1. Implement standard library functions (printf, memset, memcpy, etc.)
 
 ## Pre-commit Checklist
 - Verify tests pass: `npm test`

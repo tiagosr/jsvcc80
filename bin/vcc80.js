@@ -89,18 +89,32 @@ function parseArgs() {
 }
 
 /**
- * Processes a single file: compiles .c files, loads .o files
+ * Processes a single file: compiles .c files, loads .o files, expands .a archives
  * @param {string} file - Input file path
  * @param {Compiler} compiler - Compiler instance
  * @param {Object} options - CLI options
- * @returns {Object} Compilation/load result
+ * @returns {Object[]} Array of compilation/load results
  */
 function processFile(file, compiler, options) {
   const ext = extname(file);
 
+  if (ext === '.a') {
+    console.error(`Loading archive ${file}...`);
+    const result = compiler.loadArchive(file);
+    if (!result.success) {
+      return [{ success: false, objectFile: null, errors: result.errors }];
+    }
+    return result.objectFiles.map(of => ({
+      success: true,
+      objectFile: of,
+      warnings: [],
+      errors: []
+    }));
+  }
+
   if (ext === '.o') {
     console.error(`Loading ${file}...`);
-    return compiler.loadObjectFile(file);
+    return [compiler.loadObjectFile(file)];
   }
 
   console.error(`Compiling ${file}...`);
@@ -109,11 +123,10 @@ function processFile(file, compiler, options) {
   try {
     source = readFileSync(file, 'utf-8');
   } catch (error) {
-    const result = { success: false, objectFile: null, errors: [`Error reading ${file}: ${error.message}`] };
-    return result;
+    return [{ success: false, objectFile: null, errors: [`Error reading ${file}: ${error.message}`] }];
   }
 
-  return compiler.compileToObjectFile(source);
+  return [compiler.compileToObjectFile(source)];
 }
 
 /**
@@ -130,9 +143,10 @@ async function main() {
 
   const hasObjectFiles = options.files.some(f => extname(f) === '.o');
   const hasSourceFiles = options.files.some(f => extname(f) === '.c');
+  const hasArchiveFiles = options.files.some(f => extname(f) === '.a');
 
   // If only a single .c file and no compile-only flag, do direct compilation
-  const singleSourceCompile = hasSourceFiles && !hasObjectFiles && options.files.length === 1 && !options.compileOnly;
+  const singleSourceCompile = hasSourceFiles && !hasObjectFiles && !hasArchiveFiles && options.files.length === 1 && !options.compileOnly;
 
   // Import compiler modules
   const { Compiler, CompilerOptions } = await import('../src/compiler.js');
@@ -191,22 +205,24 @@ async function main() {
       });
 
       const compiler = new Compiler(compilerOptions);
-      const result = processFile(file, compiler, options);
+      const results = processFile(file, compiler, options);
 
-      if (!result.success) {
-        console.error(`Failed for ${file}:`);
-        for (const error of result.errors) {
-          console.error(`  Error: ${error}`);
+      for (const result of results) {
+        if (!result.success) {
+          console.error(`Failed for ${file}:`);
+          for (const error of result.errors) {
+            console.error(`  Error: ${error}`);
+          }
+          process.exit(1);
         }
-        process.exit(1);
-      }
 
-      if (options.compileOnly) {
-        const outPath = options.output || file.replace(/\.[^.]+$/, '.o');
-        compiler.writeObjectFile(result, outPath);
-        console.error(`Object file written to ${outPath}`);
-      } else {
-        objResults.push(result);
+        if (options.compileOnly) {
+          const outPath = options.output || file.replace(/\.[^.]+$/, '.o');
+          compiler.writeObjectFile(result, outPath);
+          console.error(`Object file written to ${outPath}`);
+        } else {
+          objResults.push(result);
+        }
       }
     }
 

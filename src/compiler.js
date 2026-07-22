@@ -12,6 +12,7 @@ import { Z80Codegen } from './backend/z80codegen.js';
 import { IrToObjectFile } from './linker/objectfile.js';
 import { Linker, LinkerOptions } from './linker/linker.js';
 import { loadObjectFile, saveObjectFile } from './linker/objectfile_loader.js';
+import { loadArchive, Archive } from './linker/archive.js';
 import './nanopass/register_passes.js';
 
 /**
@@ -434,6 +435,32 @@ export class Compiler {
 
     try {
       result.objectFile = loadObjectFile(filePath);
+      result.success = true;
+    } catch (error) {
+      result.errors.push(error.message);
+    }
+
+    return result;
+  }
+
+  /**
+   * Loads a static library archive from disk
+   * @param {string} filePath - Path to .a file
+   * @returns {Object} Result object with archive and objectFiles
+   */
+  loadArchive(filePath) {
+    const result = {
+      success: false,
+      archive: null,
+      objectFiles: [],
+      warnings: [],
+      errors: []
+    };
+
+    try {
+      const archive = loadArchive(filePath);
+      result.archive = archive;
+      result.objectFiles = archive.getObjectFiles();
       result.success = true;
     } catch (error) {
       result.errors.push(error.message);

@@ -111,14 +111,17 @@ function example(name) { ... }
 - **Comparison codegen** - Z80 comparison operations (lt, gt, le, ge, eq, ne) generate proper cp/jp sequences
 - **Register allocator cross-block** - Fixed virtual register tracking across basic block boundaries
 - Parser extended for typed function parameters (int a, int b) with void support
-- 155 passing tests
+- **Object file format** - `src/linker/objectfile.js` with ObjectFile, ObjectSection, ObjectSymbol, ObjectRelocation classes and IrToObjectFile converter
+- **WLA DX code generator** - `src/linker/wladxcodegen.js` generates WLA DX-compatible Z80 assembly with section directives, DB/DW/DS data, and relocation support
+- **Linker** - `src/linker/linker.js` combines object files, resolves symbols/relocations, generates binary/WLA DX output and link maps
+- 207 passing tests
 
 ### 🔄 In Progress
 - None
 
 ### 🔜 Next Steps
-1. Build object file assembler/linker - support WLA DX-compatible assembly output
-2. Improve Z80 codegen quality (eliminate redundant instructions, proper stack frame management)
+1. Improve Z80 codegen quality (eliminate redundant instructions, proper stack frame management)
+2. Wire linker into compiler pipeline via CLI flags (-c for object file, -o for linked output)
 
 ## Pre-commit Checklist
 - Verify tests pass: `npm test`

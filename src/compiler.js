@@ -1,7 +1,7 @@
 /**
  * Main Compiler class - orchestrates all compilation stages
  */
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 import { Lexer, PreprocessedSource } from './preprocessor/lexer.js';
 import { CPegParser } from './parser/cparser.js';
 import { globalRegistry } from './core/plugins.js';
@@ -9,6 +9,8 @@ import { ProgramIR } from './nanopass/il.js';
 import { ParserError } from './core/errors.js';
 import { AstToIr } from './nanopass/ast_to_ir.js';
 import { Z80Codegen } from './backend/z80codegen.js';
+import { IrToObjectFile } from './linker/objectfile.js';
+import { Linker, LinkerOptions } from './linker/linker.js';
 import './nanopass/register_passes.js';
 
 /**
@@ -26,6 +28,9 @@ export class CompilerOptions {
     this.debugInfo = !!options.debug;
     this.emitIR = !!options.emitIr;
     this.plugins = options.plugins || [];
+    this.compileOnly = !!options.compileOnly;
+    this.outputFormat = options.outputFormat || 'assembly';
+    this.linkerOptions = options.linkerOptions || {};
   }
 
   /**
@@ -349,5 +354,133 @@ export class Compiler {
     });
 
     return codegen.generate(ir);
+  }
+
+  /**
+   * Compiles source code to an object file
+   * @param {string} source - C source code
+   * @returns {Object} Compilation result with object file
+   */
+  compileToObjectFile(source) {
+    const result = {
+      success: false,
+      objectFile: null,
+      warnings: [],
+      errors: []
+    };
+
+    try {
+      const preprocessed = this.preprocess(source);
+      const tokens = this.tokenize(preprocessed);
+      const ast = this.parse(tokens);
+      const analyzedAst = this.analyze(ast);
+      const ir = this.generateIR(analyzedAst);
+      const optimizedIr = this.optimize(ir);
+
+      const converter = new IrToObjectFile(this.options.sourceFile);
+      result.objectFile = converter.convert(optimizedIr);
+      result.success = true;
+    } catch (error) {
+      if (error.name && error.name.includes('Error')) {
+        result.errors.push(error.message);
+        if (error.location) {
+          result.errors[result.errors.length - 1] +=
+            ` at ${error.location.file || '<unknown>'}:${error.location.line}:${error.location.column}`;
+        }
+      } else {
+        throw error;
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Compiles a file to an object file
+   * @param {string} filePath - Path to C source file
+   * @returns {Object} Compilation result with object file
+   */
+  compileFileToObject(filePath) {
+    const source = readFileSync(filePath, 'utf-8');
+    this.options.sourceFile = filePath;
+    return this.compileToObjectFile(source);
+  }
+
+  /**
+   * Writes an object file to disk
+   * @param {Object} compileResult - Result from compileToObjectFile
+   * @param {string} outputPath - Output file path
+   */
+  writeObjectFile(compileResult, outputPath) {
+    if (!compileResult.success || !compileResult.objectFile) {
+      throw new Error('Cannot write object file: compilation failed');
+    }
+    writeFileSync(outputPath, JSON.stringify(compileResult.objectFile.toJSON(), null, 2));
+  }
+
+  /**
+   * Links compiled object files together
+   * @param {Object[]} compileResults - Array of compilation results with object files
+   * @returns {Object} Link result with output
+   */
+  link(compileResults) {
+    const result = {
+      success: false,
+      output: '',
+      binary: null,
+      map: '',
+      warnings: [],
+      errors: []
+    };
+
+    try {
+      const linker = new Linker(new LinkerOptions(this.options.linkerOptions));
+
+      for (const compileResult of compileResults) {
+        if (compileResult.objectFile) {
+          linker.addObjectFile(compileResult.objectFile);
+        }
+      }
+
+      const linkResult = linker.link();
+
+      if (!linkResult.success) {
+        result.errors = linkResult.errors;
+        result.warnings = linkResult.warnings;
+        return result;
+      }
+
+      result.warnings = linkResult.warnings;
+      result.map = linker.generateMap();
+
+      if (this.options.outputFormat === 'binary') {
+        result.binary = linker.generateBinary();
+      } else {
+        result.output = linker.generateWlaDx();
+      }
+
+      result.success = true;
+    } catch (error) {
+      result.errors.push(error.message);
+    }
+
+    return result;
+  }
+
+  /**
+   * Writes linked output to disk
+   * @param {Object} linkResult - Result from link()
+   * @param {string} outputPath - Output file path
+   */
+  writeLinkOutput(linkResult, outputPath) {
+    if (!linkResult.success) {
+      throw new Error('Cannot write output: linking failed');
+    }
+
+    if (this.options.outputFormat === 'binary' && linkResult.binary) {
+      writeFileSync(outputPath, Buffer.from(linkResult.binary));
+    } else {
+      writeFileSync(outputPath, linkResult.output);
+    }
   }
 }

@@ -115,13 +115,16 @@ function example(name) { ... }
 - **WLA DX code generator** - `src/linker/wladxcodegen.js` generates WLA DX-compatible Z80 assembly with section directives, DB/DW/DS data, and relocation support
 - **Linker** - `src/linker/linker.js` combines object files, resolves symbols/relocations, generates binary/WLA DX output and link maps
 - **Z80 codegen quality improvements** - Proper stack frame management using IX as frame pointer, basic block label emission, fixed comparison logic (le/ge flags), valid Z80 stack alloc/free instructions, complete division/mod/shl/shr implementation, copy propagation optimization, fixed constant folding with correct IR op names
-- 207 passing tests
+- 226 passing tests
+- **Linker wired into compiler pipeline** - CLI flags `-c` for compile-only (object file output), `--format` for output format selection (assembly/wladx/binary), `--map` for link map generation, multi-file compilation with automatic linking
 
 ### 🔄 In Progress
 - None
 
 ### 🔜 Next Steps
-1. Wire linker into compiler pipeline via CLI flags (-c for object file, -o for linked output)
+1. Add support for loading pre-compiled .o object files for linking
+2. Add static library (.a) support
+3. Implement standard library functions (printf, memset, memcpy, etc.)
 
 ## Pre-commit Checklist
 - Verify tests pass: `npm test`

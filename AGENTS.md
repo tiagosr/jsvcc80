@@ -124,9 +124,8 @@ function example(name) { ... }
 - None
 
 ### 🔜 Next Steps
-1. Add support for loading pre-compiled .o object files for linking
-2. Add static library (.a) support
-3. Implement standard library functions (printf, memset, memcpy, etc.)
+1. Add static library (.a) support
+2. Implement standard library functions (printf, memset, memcpy, etc.)
 
 ## Pre-commit Checklist
 - Verify tests pass: `npm test`

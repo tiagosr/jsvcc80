@@ -107,7 +107,12 @@ export class CPegParser {
       ([operators, operand]) => {
         let node = operand;
         for (const op of Array.isArray(operators) ? operators : [operators]) {
-          node = new AST.UnaryOpNode(op.type, node, locFromToken(op));
+          let mappedOp = op.type;
+          if (op.type === '-') mappedOp = 'neg';
+          else if (op.type === '~') mappedOp = 'not';
+          else if (op.type === '!') mappedOp = 'lognot';
+          else if (op.type === '+') mappedOp = 'pos';
+          node = new AST.UnaryOpNode(mappedOp, node, locFromToken(op));
         }
         return node;
       }
@@ -207,12 +212,15 @@ export class CPegParser {
     this.ruleRefs.multiplicativeExpr = map(
       Parser.seq(
         this.ruleRefs.postfixExpr,
-        Parser.many(pred(t => ['*', '/', '%'].includes(t.type)))
+        Parser.many(Parser.seq(
+          pred(t => ['*', '/', '%'].includes(t.type)),
+          lazy(() => this.ruleRefs.multiplicativeExpr)
+        ))
       ),
       ([left, ops]) => {
         let node = left;
-        for (const op of ops) {
-          node = new AST.BinaryOpNode(op.type, node, null, locFromToken(op));
+        for (const [op, right] of ops) {
+          node = new AST.BinaryOpNode(op.type, node, right, locFromToken(op));
         }
         return node;
       }
@@ -226,12 +234,15 @@ export class CPegParser {
     this.ruleRefs.additiveExpr = map(
       Parser.seq(
         this.ruleRefs.multiplicativeExpr,
-        Parser.many(pred(t => ['+', '-'].includes(t.type)))
+        Parser.many(Parser.seq(
+          pred(t => ['+', '-'].includes(t.type)),
+          lazy(() => this.ruleRefs.additiveExpr)
+        ))
       ),
       ([left, ops]) => {
         let node = left;
-        for (const op of ops) {
-          node = new AST.BinaryOpNode(op.type, node, null, locFromToken(op));
+        for (const [op, right] of ops) {
+          node = new AST.BinaryOpNode(op.type, node, right, locFromToken(op));
         }
         return node;
       }
@@ -245,12 +256,15 @@ export class CPegParser {
     this.ruleRefs.shiftExpr = map(
       Parser.seq(
         this.ruleRefs.additiveExpr,
-        Parser.many(pred(t => t.type === '<<' || t.type === '>>'))
+        Parser.many(Parser.seq(
+          pred(t => t.type === '<<' || t.type === '>>'),
+          lazy(() => this.ruleRefs.shiftExpr)
+        ))
       ),
       ([left, ops]) => {
         let node = left;
-        for (const op of ops) {
-          node = new AST.BinaryOpNode(op.type, node, null, locFromToken(op));
+        for (const [op, right] of ops) {
+          node = new AST.BinaryOpNode(op.type, node, right, locFromToken(op));
         }
         return node;
       }
@@ -264,12 +278,21 @@ export class CPegParser {
     this.ruleRefs.relationalExpr = map(
       Parser.seq(
         this.ruleRefs.shiftExpr,
-        Parser.many(pred(t => ['<', '>', '<=', '>='].includes(t.type)))
+        Parser.many(Parser.seq(
+          pred(t => ['<', '>', '<=', '>='].includes(t.type)),
+          lazy(() => this.ruleRefs.relationalExpr)
+        ))
       ),
       ([left, ops]) => {
         let node = left;
-        for (const op of ops) {
-          node = new AST.BinaryOpNode(op.type, node, null, locFromToken(op));
+        for (const [op, right] of ops) {
+          const opStr = op.type;
+          let mappedOp = opStr;
+          if (opStr === '<') mappedOp = 'lt';
+          else if (opStr === '>') mappedOp = 'gt';
+          else if (opStr === '<=') mappedOp = 'le';
+          else if (opStr === '>=') mappedOp = 'ge';
+          node = new AST.BinaryOpNode(mappedOp, node, right, locFromToken(op));
         }
         return node;
       }
@@ -283,12 +306,16 @@ export class CPegParser {
     this.ruleRefs.equalityExpr = map(
       Parser.seq(
         this.ruleRefs.relationalExpr,
-        Parser.many(pred(t => t.type === '==' || t.type === '!='))
+        Parser.many(Parser.seq(
+          pred(t => t.type === '==' || t.type === '!='),
+          lazy(() => this.ruleRefs.equalityExpr)
+        ))
       ),
       ([left, ops]) => {
         let node = left;
-        for (const op of ops) {
-          node = new AST.BinaryOpNode(op.type, node, null, locFromToken(op));
+        for (const [op, right] of ops) {
+          const mappedOp = op.type === '==' ? 'eq' : 'ne';
+          node = new AST.BinaryOpNode(mappedOp, node, right, locFromToken(op));
         }
         return node;
       }
@@ -302,12 +329,15 @@ export class CPegParser {
     this.ruleRefs.bitwiseAndExpr = map(
       Parser.seq(
         this.ruleRefs.equalityExpr,
-        Parser.many(pred(t => t.type === '&'))
+        Parser.many(Parser.seq(
+          pred(t => t.type === '&'),
+          lazy(() => this.ruleRefs.bitwiseAndExpr)
+        ))
       ),
       ([left, ops]) => {
         let node = left;
-        for (const op of ops) {
-          node = new AST.BinaryOpNode(op.type, node, null, locFromToken(op));
+        for (const [op, right] of ops) {
+          node = new AST.BinaryOpNode('and', node, right, locFromToken(op));
         }
         return node;
       }
@@ -321,12 +351,15 @@ export class CPegParser {
     this.ruleRefs.bitwiseXorExpr = map(
       Parser.seq(
         this.ruleRefs.bitwiseAndExpr,
-        Parser.many(pred(t => t.type === '^'))
+        Parser.many(Parser.seq(
+          pred(t => t.type === '^'),
+          lazy(() => this.ruleRefs.bitwiseXorExpr)
+        ))
       ),
       ([left, ops]) => {
         let node = left;
-        for (const op of ops) {
-          node = new AST.BinaryOpNode(op.type, node, null, locFromToken(op));
+        for (const [op, right] of ops) {
+          node = new AST.BinaryOpNode('xor', node, right, locFromToken(op));
         }
         return node;
       }
@@ -340,12 +373,15 @@ export class CPegParser {
     this.ruleRefs.bitwiseOrExpr = map(
       Parser.seq(
         this.ruleRefs.bitwiseXorExpr,
-        Parser.many(pred(t => t.type === '|'))
+        Parser.many(Parser.seq(
+          pred(t => t.type === '|'),
+          lazy(() => this.ruleRefs.bitwiseOrExpr)
+        ))
       ),
       ([left, ops]) => {
         let node = left;
-        for (const op of ops) {
-          node = new AST.BinaryOpNode(op.type, node, null, locFromToken(op));
+        for (const [op, right] of ops) {
+          node = new AST.BinaryOpNode('or', node, right, locFromToken(op));
         }
         return node;
       }
@@ -359,12 +395,15 @@ export class CPegParser {
     this.ruleRefs.logicalAndExpr = map(
       Parser.seq(
         this.ruleRefs.bitwiseOrExpr,
-        Parser.many(pred(t => t.type === '&&'))
+        Parser.many(Parser.seq(
+          pred(t => t.type === '&&'),
+          lazy(() => this.ruleRefs.logicalAndExpr)
+        ))
       ),
       ([left, ops]) => {
         let node = left;
-        for (const op of ops) {
-          node = new AST.BinaryOpNode(op.type, node, null, locFromToken(op));
+        for (const [op, right] of ops) {
+          node = new AST.BinaryOpNode('land', node, right, locFromToken(op));
         }
         return node;
       }
@@ -378,12 +417,15 @@ export class CPegParser {
     this.ruleRefs.logicalOrExpr = map(
       Parser.seq(
         this.ruleRefs.logicalAndExpr,
-        Parser.many(pred(t => t.type === '||'))
+        Parser.many(Parser.seq(
+          pred(t => t.type === '||'),
+          lazy(() => this.ruleRefs.logicalOrExpr)
+        ))
       ),
       ([left, ops]) => {
         let node = left;
-        for (const op of ops) {
-          node = new AST.BinaryOpNode(op.type, node, null, locFromToken(op));
+        for (const [op, right] of ops) {
+          node = new AST.BinaryOpNode('lor', node, right, locFromToken(op));
         }
         return node;
       }
@@ -443,14 +485,22 @@ export class CPegParser {
       ([lhs, assign]) => {
         if (assign) {
           const [op, rhs] = assign;
-          if (lhs.type === 'Identifier') {
-            return new AST.BinaryOpNode(op.type, 
-              new AST.IdentifierNode(lhs.value, locFromToken(lhs)), 
-              rhs, locFromToken(op));
+          const resolvedRhs = Array.isArray(rhs) ? (rhs[0] || null) : rhs;
+          if (Array.isArray(lhs)) {
+            const resolvedLhs = lhs[0];
+            return new AST.BinaryOpNode(op.type, resolvedLhs, resolvedRhs, locFromToken(op));
           }
-          return new AST.BinaryOpNode(op.type, lhs, rhs, locFromToken(op));
+          if (lhs.type === 'Identifier') {
+            return new AST.BinaryOpNode(op.type,
+              new AST.IdentifierNode(lhs.value, locFromToken(lhs)),
+              resolvedRhs, locFromToken(op));
+          }
+          return new AST.BinaryOpNode(op.type, lhs, resolvedRhs, locFromToken(op));
         }
-        if (lhs.type === 'Identifier') {
+        if (Array.isArray(lhs)) {
+          return lhs[0] || null;
+        }
+        if (lhs && lhs.type === 'Identifier') {
           return new AST.IdentifierNode(lhs.value, locFromToken(lhs));
         }
         return lhs;
@@ -784,7 +834,7 @@ export class CPegParser {
         lazy(() => this.ruleRefs.statement),
         Parser.opt(Parser.seq(
           kw('else'),
-          this.ruleRefs.statement
+          lazy(() => this.ruleRefs.statement)
         ))
       ),
       ([keyword, , condition, , body, elsePart]) => {

@@ -13,6 +13,8 @@ export class AstToIr {
     this.nextLabel = 0;
     this.nextTemp = 0;
     this.currentFunction = null;
+    this.loopBreakLabel = null;
+    this.loopContinueLabel = null;
   }
 
   /**
@@ -62,6 +64,8 @@ export class AstToIr {
   translateFunction(func) {
     this.currentFunction = func.name.name;
     this.symbolTable = new IL.SymbolTable();
+    this.loopBreakLabel = null;
+    this.loopContinueLabel = null;
 
     for (const param of func.parameters) {
       if (param.name) {
@@ -102,6 +106,18 @@ export class AstToIr {
     if (stmt instanceof AST.ControlFlowNode) {
       return this.translateControlFlow(stmt);
     }
+    if (stmt instanceof AST.SwitchNode) {
+      return this.translateSwitch(stmt);
+    }
+    if (stmt instanceof AST.JumpNode) {
+      return this.translateJump(stmt);
+    }
+    if (stmt instanceof AST.GotoNode) {
+      return this.translateGoto(stmt);
+    }
+    if (stmt instanceof AST.LabelNode) {
+      return this.translateLabel(stmt);
+    }
     if (stmt instanceof AST.ExprStmtNode) {
       return this.translateExprStmt(stmt);
     }
@@ -133,18 +149,10 @@ export class AstToIr {
    */
   translateReturn(ret) {
     if (ret.value) {
-      const exprBlocks = this.translateExpression(ret.value);
-      const lastBlock = exprBlocks[exprBlocks.length - 1];
-      const lastInstr = lastBlock.instructions[lastBlock.instructions.length - 1];
-      
-      if (lastInstr && lastInstr.opcode === 'LOAD') {
-        const srcReg = lastInstr.operands[0];
-        lastBlock.add(new IL.ReturnInstruction(srcReg));
-      } else {
-        lastBlock.add(new IL.ReturnInstruction(null));
-      }
-      
-      return exprBlocks;
+      const result = this.translateExpression(ret.value);
+      const lastBlock = result.blocks[result.blocks.length - 1];
+      lastBlock.add(new IL.ReturnInstruction(result.result));
+      return result.blocks;
     } else {
       const block = new IL.BasicBlock(this.label('ret'));
       block.add(new IL.ReturnInstruction(null));
@@ -153,13 +161,22 @@ export class AstToIr {
   }
 
   /**
-   * Translate control flow (if/while/for)
+   * Translate control flow (if/while/for/do-while)
    * @param {AST.ControlFlowNode} control - Control flow node
    * @returns {IL.BasicBlock[]} Basic blocks
    */
   translateControlFlow(control) {
     if (control.kind === 'if') {
       return this.translateIf(control);
+    }
+    if (control.kind === 'while') {
+      return this.translateWhile(control);
+    }
+    if (control.kind === 'do_while') {
+      return this.translateDoWhile(control);
+    }
+    if (control.kind === 'for') {
+      return this.translateFor(control);
     }
     return [new IL.BasicBlock(this.label('block'), [])];
   }
@@ -170,15 +187,12 @@ export class AstToIr {
    * @returns {IL.BasicBlock[]} Basic blocks
    */
   translateIf(ifNode) {
-    const condBlocks = this.translateExpression(ifNode.condition);
+    const condResult = this.translateExpression(ifNode.condition);
     const elseLabel = this.label('else');
     const endLabel = this.label('endif');
 
-    const testBlock = condBlocks[condBlocks.length - 1];
-    const temp = this.temp();
-
-    testBlock.add(new IL.LoadInstruction(temp, 'condition'));
-    testBlock.add(new IL.JumpIfInstruction('eq', temp, elseLabel));
+    const testBlock = condResult.blocks[condResult.blocks.length - 1];
+    testBlock.add(new IL.JumpIfInstruction('eq', condResult.result, elseLabel));
 
     const thenBlocks = this.translateStatement(ifNode.body);
 
@@ -193,7 +207,228 @@ export class AstToIr {
       thenBlocks.push(new IL.BasicBlock(elseLabel, []));
     }
 
-    return [...condBlocks, ...thenBlocks];
+    return [...condResult.blocks, ...thenBlocks];
+  }
+
+  /**
+   * Translate a while loop
+   * @param {AST.ControlFlowNode} whileNode - While loop
+   * @returns {IL.BasicBlock[]} Basic blocks
+   */
+  translateWhile(whileNode) {
+    const breakLabel = this.label('break');
+    const continueLabel = this.label('cond');
+    const prevBreak = this.loopBreakLabel;
+    const prevContinue = this.loopContinueLabel;
+
+    this.loopBreakLabel = breakLabel;
+    this.loopContinueLabel = continueLabel;
+
+    const blocks = [];
+    blocks.push(new IL.BasicBlock(continueLabel, []));
+    const condResult = this.translateExpression(whileNode.condition);
+    blocks.push(...condResult.blocks);
+
+    const testBlock = condResult.blocks[condResult.blocks.length - 1];
+    testBlock.add(new IL.JumpIfInstruction('eq', condResult.result, breakLabel));
+
+    const bodyBlocks = this.translateStatement(whileNode.body);
+    blocks.push(...bodyBlocks);
+    blocks.push(new IL.BasicBlock(this.label('loop'), [
+      new IL.JumpInstruction(continueLabel)
+    ]));
+    blocks.push(new IL.BasicBlock(breakLabel, []));
+
+    this.loopBreakLabel = prevBreak;
+    this.loopContinueLabel = prevContinue;
+
+    return blocks;
+  }
+
+  /**
+   * Translate a do-while loop
+   * @param {AST.ControlFlowNode} doNode - Do-while loop
+   * @returns {IL.BasicBlock[]} Basic blocks
+   */
+  translateDoWhile(doNode) {
+    const breakLabel = this.label('break');
+    const continueLabel = this.label('body');
+    const condLabel = this.label('cond');
+    const prevBreak = this.loopBreakLabel;
+    const prevContinue = this.loopContinueLabel;
+
+    this.loopBreakLabel = breakLabel;
+    this.loopContinueLabel = continueLabel;
+
+    const blocks = [];
+    blocks.push(new IL.BasicBlock(continueLabel, []));
+    const bodyBlocks = this.translateStatement(doNode.body);
+    blocks.push(...bodyBlocks);
+    blocks.push(new IL.BasicBlock(this.label('loop'), [
+      new IL.JumpInstruction(condLabel)
+    ]));
+
+    blocks.push(new IL.BasicBlock(condLabel, []));
+    const condResult = this.translateExpression(doNode.condition);
+    blocks.push(...condResult.blocks);
+
+    const testBlock = condResult.blocks[condResult.blocks.length - 1];
+    testBlock.add(new IL.JumpIfInstruction('ne', condResult.result, continueLabel));
+    blocks.push(new IL.BasicBlock(breakLabel, []));
+
+    this.loopBreakLabel = prevBreak;
+    this.loopContinueLabel = prevContinue;
+
+    return blocks;
+  }
+
+  /**
+   * Translate a for loop
+   * @param {AST.ControlFlowNode} forNode - For loop
+   * @returns {IL.BasicBlock[]} Basic blocks
+   */
+  translateFor(forNode) {
+    const breakLabel = this.label('break');
+    const continueLabel = this.label('inc');
+    const condLabel = this.label('cond');
+    const bodyLabel = this.label('body');
+    const prevBreak = this.loopBreakLabel;
+    const prevContinue = this.loopContinueLabel;
+
+    this.loopBreakLabel = breakLabel;
+    this.loopContinueLabel = continueLabel;
+
+    const blocks = [];
+
+    if (forNode.init) {
+      if (forNode.init instanceof AST.DeclNode) {
+        blocks.push(...this.translateDeclStmt(forNode.init));
+      } else {
+        const initResult = this.translateExpression(forNode.init);
+        blocks.push(...initResult.blocks);
+      }
+    }
+
+    blocks.push(new IL.BasicBlock(condLabel, []));
+    if (forNode.condition) {
+      const condResult = this.translateExpression(forNode.condition);
+      blocks.push(...condResult.blocks);
+      const testBlock = condResult.blocks[condResult.blocks.length - 1];
+      testBlock.add(new IL.JumpIfInstruction('eq', condResult.result, breakLabel));
+    }
+
+    blocks.push(new IL.BasicBlock(bodyLabel, []));
+    const bodyBlocks = this.translateStatement(forNode.body);
+    blocks.push(...bodyBlocks);
+
+    blocks.push(new IL.BasicBlock(continueLabel, []));
+    if (forNode.increment) {
+      const incResult = this.translateExpression(forNode.increment);
+      blocks.push(...incResult.blocks);
+    }
+    blocks.push(new IL.BasicBlock(this.label('loop'), [
+      new IL.JumpInstruction(condLabel)
+    ]));
+    blocks.push(new IL.BasicBlock(breakLabel, []));
+
+    this.loopBreakLabel = prevBreak;
+    this.loopContinueLabel = prevContinue;
+
+    return blocks;
+  }
+
+  /**
+   * Translate a switch statement
+   * @param {AST.SwitchNode} switchNode - Switch statement
+   * @returns {IL.BasicBlock[]} Basic blocks
+   */
+  translateSwitch(switchNode) {
+    const endLabel = this.label('endswitch');
+    const prevBreak = this.loopBreakLabel;
+    this.loopBreakLabel = endLabel;
+    this.loopContinueLabel = endLabel;
+
+    const blocks = [];
+    const condResult = this.translateExpression(switchNode.expression);
+    blocks.push(...condResult.blocks);
+    const switchValue = condResult.result;
+
+    const caseLabels = [];
+    for (const clause of switchNode.cases) {
+      caseLabels.push(this.label('case'));
+    }
+
+    if (switchNode.defaultClause) {
+      caseLabels.push(this.label('default'));
+    }
+
+    const defaultLabel = caseLabels[caseLabels.length - 1] || endLabel;
+
+    for (let i = 0; i < switchNode.cases.length; i++) {
+      const clause = switchNode.cases[i];
+      const caseLabel = caseLabels[i];
+
+      const cmpBlock = new IL.BasicBlock(this.label('cmp'));
+      const temp = this.temp();
+      cmpBlock.add(new IL.LoadInstruction(temp, clause.value));
+      cmpBlock.add(new IL.BinaryOpInstruction(temp, 'eq', switchValue, temp));
+      cmpBlock.add(new IL.JumpIfInstruction('ne', temp, caseLabels[i + 1] || defaultLabel));
+      blocks.push(cmpBlock);
+
+      blocks.push(new IL.BasicBlock(caseLabel, []));
+      for (const stmt of clause.statements) {
+        blocks.push(...this.translateStatement(stmt));
+      }
+    }
+
+    if (switchNode.defaultClause) {
+      blocks.push(new IL.BasicBlock(defaultLabel, []));
+      blocks.push(...this.translateStatement(switchNode.defaultClause));
+    }
+
+    blocks.push(new IL.BasicBlock(endLabel, []));
+    this.loopBreakLabel = prevBreak;
+    this.loopContinueLabel = null;
+
+    return blocks;
+  }
+
+  /**
+   * Translate a break or continue statement
+   * @param {AST.JumpNode} jumpNode - Jump statement
+   * @returns {IL.BasicBlock[]} Basic blocks
+   */
+  translateJump(jumpNode) {
+    const block = new IL.BasicBlock(this.label('jump'));
+    if (jumpNode.kind === 'break' && this.loopBreakLabel) {
+      block.add(new IL.JumpInstruction(this.loopBreakLabel));
+    } else if (jumpNode.kind === 'continue' && this.loopContinueLabel) {
+      block.add(new IL.JumpInstruction(this.loopContinueLabel));
+    }
+    return [block];
+  }
+
+  /**
+   * Translate a goto statement
+   * @param {AST.GotoNode} gotoNode - Goto statement
+   * @returns {IL.BasicBlock[]} Basic blocks
+   */
+  translateGoto(gotoNode) {
+    const block = new IL.BasicBlock(this.label('goto'));
+    block.add(new IL.JumpInstruction(gotoNode.target.name));
+    return [block];
+  }
+
+  /**
+   * Translate a labeled statement
+   * @param {AST.LabelNode} labelNode - Labeled statement
+   * @returns {IL.BasicBlock[]} Basic blocks
+   */
+  translateLabel(labelNode) {
+    const blocks = [];
+    blocks.push(new IL.BasicBlock(labelNode.label.name, []));
+    blocks.push(...this.translateStatement(labelNode.body));
+    return blocks;
   }
 
   /**
@@ -202,7 +437,8 @@ export class AstToIr {
    * @returns {IL.BasicBlock[]} Basic blocks
    */
   translateExprStmt(exprStmt) {
-    return this.translateExpression(exprStmt.expression);
+    const result = this.translateExpression(exprStmt.expression);
+    return result.blocks;
   }
 
   /**
@@ -220,14 +456,11 @@ export class AstToIr {
     });
 
     if (decl.init) {
-      const initBlocks = this.translateExpression(decl.init);
-      blocks.push(...initBlocks);
-      const lastBlock = blocks[blocks.length - 1];
-      const lastInstr = lastBlock.instructions[lastBlock.instructions.length - 1];
-      if (lastInstr && lastInstr.opcode === 'LOAD') {
-        const srcReg = lastInstr.operands[0];
-        lastBlock.add(new IL.StoreInstruction(decl.name.name, srcReg));
-      }
+      const result = this.translateExpression(decl.init);
+      blocks.push(...result.blocks);
+      blocks[blocks.length - 1].add(
+        new IL.StoreInstruction(decl.name.name, result.result)
+      );
     }
 
     return blocks;
@@ -248,35 +481,230 @@ export class AstToIr {
 
   /**
    * Translate an expression to IR instructions
-   * @param {AST.ASTNode} expr - Expression AST node
-   * @returns {IL.BasicBlock[]} Basic blocks with instructions
+   * Returns an object with `blocks` (array of BasicBlock) and `result` (the temp register holding the result)
+   * @param {AST.ASTNode|Object} expr - Expression AST node or parser result
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
    */
   translateExpression(expr) {
-    const block = new IL.BasicBlock(this.label('expr'));
-
-    if (expr instanceof AST.LiteralNode) {
-      block.add(new IL.LoadInstruction(this.temp(), expr.value));
-    } else if (expr instanceof AST.IdentifierNode) {
-      const temp = this.temp();
-      block.add(new IL.LoadInstruction(temp, expr.name));
-    } else if (expr instanceof AST.BinaryOpNode) {
-      const leftBlocks = this.translateExpression(expr.left);
-      const rightBlocks = this.translateExpression(expr.right);
-      const dest = this.temp();
-      block.add(new IL.BinaryOpInstruction(dest, expr.op, 'left', 'right'));
-      return [...leftBlocks, ...rightBlocks, block];
-    } else if (expr instanceof AST.UnaryOpNode) {
-      const operandBlocks = this.translateExpression(expr.operand);
-      const dest = this.temp();
-      block.add(new IL.UnaryOpInstruction(dest, expr.op, 'operand'));
-      return [...operandBlocks, block];
-    } else if (expr instanceof AST.CallNode) {
-      const calleeBlocks = this.translateExpression(expr.callee);
-      block.add(new IL.CallInstruction(expr.callee.name, []));
-      return [...calleeBlocks, block];
+    // Handle array results from comma-separated expression parser
+    if (Array.isArray(expr)) {
+      let lastResult = null;
+      const allBlocks = [];
+      for (const item of expr) {
+        if (item !== null) {
+          const result = this.translateExpression(item);
+          allBlocks.push(...result.blocks);
+          lastResult = result.result;
+        }
+      }
+      return { blocks: allBlocks, result: lastResult || this.temp() };
     }
 
-    return [block];
+    // Handle Conditional expression from parser
+    if (expr && typeof expr === 'object' && expr.type === 'Conditional') {
+      return this.translateConditional(expr);
+    }
+    if (expr instanceof AST.LiteralNode) {
+      const temp = this.temp();
+      const block = new IL.BasicBlock(this.label('lit'));
+      block.add(new IL.LoadInstruction(temp, expr.value));
+      return { blocks: [block], result: temp };
+    }
+
+    if (expr instanceof AST.IdentifierNode) {
+      const temp = this.temp();
+      const block = new IL.BasicBlock(this.label('ident'));
+      block.add(new IL.LoadInstruction(temp, expr.name));
+      return { blocks: [block], result: temp };
+    }
+
+    if (expr instanceof AST.BinaryOpNode) {
+      return this.translateBinaryOp(expr);
+    }
+
+    if (expr instanceof AST.UnaryOpNode) {
+      return this.translateUnaryOp(expr);
+    }
+
+    if (expr instanceof AST.CallNode) {
+      return this.translateCall(expr);
+    }
+
+    if (expr instanceof AST.IndexNode) {
+      return this.translateIndex(expr);
+    }
+
+    if (expr instanceof AST.MemberNode) {
+      return this.translateMember(expr);
+    }
+
+    const temp = this.temp();
+    const block = new IL.BasicBlock(this.label('expr'));
+    block.add(new IL.LoadInstruction(temp, 'unknown'));
+    return { blocks: [block], result: temp };
+  }
+
+  /**
+   * Translate a binary operation expression
+   * @param {AST.BinaryOpNode} binOp - Binary operation
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translateBinaryOp(binOp) {
+    if (binOp.op === '=') {
+      return this.translateAssignment(binOp);
+    }
+
+    const leftResult = this.translateExpression(binOp.left);
+    const rightResult = this.translateExpression(binOp.right);
+    const dest = this.temp();
+    const block = new IL.BasicBlock(this.label('binop'));
+    block.add(new IL.BinaryOpInstruction(dest, binOp.op, leftResult.result, rightResult.result));
+    return {
+      blocks: [...leftResult.blocks, ...rightResult.blocks, block],
+      result: dest
+    };
+  }
+
+  /**
+   * Translate an assignment expression
+   * @param {AST.BinaryOpNode} assign - Assignment expression (op is '=')
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translateAssignment(assign) {
+    const rightResult = this.translateExpression(assign.right);
+    const block = new IL.BasicBlock(this.label('assign'));
+
+    let target;
+    if (assign.left instanceof AST.IdentifierNode) {
+      target = assign.left.name;
+    } else {
+      const leftResult = this.translateExpression(assign.left);
+      block.add(new IL.BinaryOpInstruction('addr', 'addr', leftResult.result, 'sp'));
+      block.add(new IL.StoreInstruction('mem', rightResult.result));
+      return {
+        blocks: [...leftResult.blocks, ...rightResult.blocks, block],
+        result: rightResult.result
+      };
+    }
+
+    block.add(new IL.StoreInstruction(target, rightResult.result));
+    return {
+      blocks: [...rightResult.blocks, block],
+      result: rightResult.result
+    };
+  }
+
+  /**
+   * Translate a unary operation expression
+   * @param {AST.UnaryOpNode} unaryOp - Unary operation
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translateUnaryOp(unaryOp) {
+    const operandResult = this.translateExpression(unaryOp.operand);
+    const dest = this.temp();
+    const block = new IL.BasicBlock(this.label('unop'));
+    block.add(new IL.UnaryOpInstruction(dest, unaryOp.op, operandResult.result));
+    return {
+      blocks: [...operandResult.blocks, block],
+      result: dest
+    };
+  }
+
+  /**
+   * Translate a function call expression
+   * @param {AST.CallNode} call - Function call
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translateCall(call) {
+    const blocks = [];
+    const callTarget = call.callee.name || call.callee;
+    const args = Array.isArray(call.args) ? call.args : [];
+
+    for (const arg of args) {
+      const argResult = this.translateExpression(arg);
+      blocks.push(...argResult.blocks);
+      blocks.push(new IL.BasicBlock(this.label('arg'), [
+        new IL.PushInstruction(argResult.result)
+      ]));
+    }
+
+    const dest = this.temp();
+    const block = new IL.BasicBlock(this.label('call'));
+    const pushedRegs = [];
+    for (let i = 0; i < args.length; i++) {
+      pushedRegs.push(`arg${i}`);
+    }
+    block.add(new IL.CallInstruction(callTarget, pushedRegs));
+    block.add(new IL.LoadInstruction(dest, 'ret_val'));
+    return { blocks: [...blocks, block], result: dest };
+  }
+
+  /**
+   * Translate an array index expression
+   * @param {AST.IndexNode} index - Index expression
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translateIndex(index) {
+    const baseResult = this.translateExpression(index.base);
+    const idxResult = this.translateExpression(index.index);
+    const dest = this.temp();
+    const block = new IL.BasicBlock(this.label('index'));
+    block.add(new IL.BinaryOpInstruction(dest, 'index', baseResult.result, idxResult.result));
+    return {
+      blocks: [...baseResult.blocks, ...idxResult.blocks, block],
+      result: dest
+    };
+  }
+
+  /**
+   * Translate a member access expression
+   * @param {AST.MemberNode} member - Member access
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translateMember(member) {
+    const objResult = this.translateExpression(member.object);
+    const dest = this.temp();
+    const block = new IL.BasicBlock(this.label('member'));
+    block.add(new IL.BinaryOpInstruction(dest, 'member', objResult.result, member.field.name));
+    return {
+      blocks: [...objResult.blocks, block],
+      result: dest
+    };
+  }
+
+  /**
+   * Translate a conditional (ternary) expression
+   * @param {Object} cond - Conditional expression from parser
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translateConditional(cond) {
+    const dest = this.temp();
+    const trueLabel = this.label('true');
+    const falseLabel = this.label('false');
+    const endLabel = this.label('endcond');
+
+    const condResult = this.translateExpression(cond.condition);
+    const blocks = [...condResult.blocks];
+
+    const testBlock = condResult.blocks[condResult.blocks.length - 1];
+    testBlock.add(new IL.JumpIfInstruction('eq', condResult.result, falseLabel));
+
+    const trueResult = this.translateExpression(cond.trueBranch);
+    blocks.push(...trueResult.blocks);
+    blocks[blocks.length - 1].add(new IL.StoreInstruction(dest, trueResult.result));
+    blocks.push(new IL.BasicBlock(this.label('jmp'), [
+      new IL.JumpInstruction(endLabel)
+    ]));
+
+    blocks.push(new IL.BasicBlock(falseLabel, []));
+    const falseResult = this.translateExpression(cond.falseBranch);
+    blocks.push(...falseResult.blocks);
+    blocks[blocks.length - 1].add(new IL.StoreInstruction(dest, falseResult.result));
+
+    blocks.push(new IL.BasicBlock(endLabel, []));
+    blocks[blocks.length - 1].add(new IL.LoadInstruction(dest, dest));
+
+    return { blocks, result: dest };
   }
 
   /**

@@ -98,17 +98,19 @@ function example(name) { ... }
 - C grammar PEG parser with proper forward reference handling via `lazy()`
 - AST construction via `map()` combinator - all parsed results converted to proper AST nodes
 - AST → IR translation pass (`src/nanopass/ast_to_ir.js`) - functions, declarations, expressions, control flow
+- AST → IR translation extended - binary ops with temp register tracking, function calls with argument pushing, while/do-while/for loops, switch/case, break/continue, goto/labels, assignment expressions, conditional (ternary) expressions
+- C grammar parser binary expression rules fixed - proper right operand parsing with correct precedence levels
+- C grammar parser operator mapping - relational (< > <= >=) to (lt gt le ge), equality (== !=) to (eq ne), bitwise (& | ^) to (and or xor), logical (&& ||) to (land lor), unary (- ~ !) to (neg not lognot)
 - C grammar parser extended with while/do-while/for loops, switch/case, goto/break/continue, struct/union/enum/typedef
-- 95 passing tests
+- 118 passing tests
 
 ### 🔄 In Progress
 - None
 
 ### 🔜 Next Steps
-1. Extend AST → IR translation - complete binary operations with proper operand handling, function calls with arguments, loop/control flow IR
-2. Implement Z80 optimizations - register allocation, peephole optimization for the target architecture
-3. Wire up compiler.js - integrate lexer → parser → AST → IR → codegen pipeline end-to-end
-4. Build object file assembler/linker - support WLA DX-compatible assembly output
+1. Implement Z80 optimizations - register allocation, peephole optimization for the target architecture
+2. Wire up compiler.js - integrate lexer → parser → AST → IR → codegen pipeline end-to-end
+3. Build object file assembler/linker - support WLA DX-compatible assembly output
 
 ## Pre-commit Checklist
 - Verify tests pass: `npm test`

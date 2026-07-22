@@ -12,6 +12,14 @@
     "test": "node --test src/**/*.test.js",
     "lint": "eslint src/"
   },
-  "keywords": ["z80", "compiler", "c", "embedded"],
-  "license": "MIT"
+  "keywords": [
+    "z80",
+    "compiler",
+    "c",
+    "embedded"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "argparse": "^3.0.0"
+  }
 }

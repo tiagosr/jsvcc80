@@ -8,133 +8,84 @@
 
 import { readFileSync, writeFileSync } from 'fs';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { dirname } from 'path';
+import { ArgumentParser } from 'argparse';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 /**
- * Parses command-line arguments
+ * Parses command-line arguments using argparse
  */
 function parseArgs() {
-  const args = process.argv.slice(2);
-  const options = {
-    files: [],
-    output: null,
-    debug: false,
-    emitIr: false,
-    opt: 'O0',
+  const parser = new ArgumentParser({
+    prog: 'vcc80',
+    description: 'vcc80 - Z80 C Compiler'
+  });
+
+  parser.add_argument('-o', '--output', {
+    help: 'Output file (default: stdout)'
+  });
+
+  parser.add_argument('-c', {
+    action: 'store_true',
+    dest: 'compileOnly',
+    help: 'Compile only (produce object file, no linking)'
+  });
+
+  parser.add_argument('--format', {
+    default: 'assembly',
+    help: 'Output format: assembly, wladx, binary (default: assembly)'
+  });
+
+  parser.add_argument('--map', {
+    action: 'store_true',
+    help: 'Generate link map'
+  });
+
+  parser.add_argument('-O', {
+    default: 'O0',
+    dest: 'opt',
+    help: 'Optimization level (O0, O1, O2, O3, Os, Oz)'
+  });
+
+  parser.add_argument('--debug', {
+    action: 'store_true',
+    help: 'Emit debug information'
+  });
+
+  parser.add_argument('--emit-ir', {
+    action: 'store_true',
+    dest: 'emitIr',
+    help: 'Output intermediate representation'
+  });
+
+  parser.add_argument('-v', '--version', {
+    action: 'version',
+    version: 'vcc80 Z80 C Compiler v0.1.0',
+    help: 'Show version information'
+  });
+
+  parser.add_argument('files', {
+    nargs: '*',
+    help: 'Source file(s) to compile'
+  });
+
+  const parsed = parser.parse_args();
+
+  return {
+    files: parsed.files,
+    output: parsed.output,
+    debug: parsed.debug,
+    emitIr: parsed.emitIr,
+    opt: parsed.opt,
     help: false,
     version: false,
-    compileOnly: false,
-    map: false,
-    format: 'assembly'
+    compileOnly: parsed.compileOnly,
+    map: parsed.map,
+    format: parsed.format
   };
-
-  let i = 0;
-  while (i < args.length) {
-    const arg = args[i];
-
-    switch (arg) {
-      case '-o':
-        options.output = args[++i];
-        i++;
-        break;
-      
-      case '-c':
-        options.compileOnly = true;
-        i++;
-        break;
-
-      case '--debug':
-        options.debug = true;
-        i++;
-        break;
-
-      case '--emit-ir':
-        options.emitIr = true;
-        i++;
-        break;
-
-      case '--map':
-        options.map = true;
-        i++;
-        break;
-
-      case '--format':
-        options.format = args[++i];
-        i++;
-        break;
-
-      case '-O0':
-      case '-O1':
-      case '-O2':
-      case '-O3':
-      case '-Os':
-      case '-Oz':
-        options.opt = arg.slice(1);
-        i++;
-        break;
-
-      case '-h':
-      case '--help':
-        options.help = true;
-        i++;
-        break;
-
-      case '-v':
-      case '--version':
-        options.version = true;
-        i++;
-        break;
-
-      default:
-        if (!arg.startsWith('-')) {
-          options.files.push(arg);
-        }
-        i++;
-    }
-  }
-
-  return options;
-}
-
-/**
- * Prints help message
- */
-function printHelp() {
-  console.log(`vcc80 - Z80 C Compiler
-
-Usage: vcc80 [options] <source_file> [source_file...]
-
-Options:
-  -o, --output <file>    Output file (default: stdout)
-  -c                     Compile only (produce object file, no linking)
-  --format <format>      Output format: assembly, wladx, binary (default: assembly)
-  --map                  Generate link map
-  -O0, -O1, -O2, -O3     Optimization level (default: O0)
-  -Os                    Optimize for size
-  -Oz                    Optimize for size and power
-  --debug                Emit debug information
-  --emit-ir              Output intermediate representation
-  -h, --help             Show this help message
-  -v, --version          Show version information
-
-Examples:
-  vcc80 program.c                    # Compile to stdout
-  vcc80 -O2 program.c                # Optimize level 2
-  vcc80 -o output.z80 program.c      # Output to file
-  vcc80 -c -o prog.o program.c       # Compile to object file
-  vcc80 -o output.z80 a.c b.c        # Compile and link multiple files
-`);
-}
-
-/**
- * Prints version information
- */
-function printVersion() {
-  console.log('vcc80 Z80 C Compiler v0.1.0');
 }
 
 /**
@@ -142,16 +93,6 @@ function printVersion() {
  */
 async function main() {
   const options = parseArgs();
-
-  if (options.version) {
-    printVersion();
-    return;
-  }
-
-  if (options.help) {
-    printHelp();
-    return;
-  }
 
   if (options.files.length === 0) {
     console.error('Error: No source files specified');

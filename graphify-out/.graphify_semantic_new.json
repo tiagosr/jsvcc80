@@ -1,0 +1,795 @@
+{
+  "nodes": [
+    {
+      "id": "agents_vcc80",
+      "label": "vcc80",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 1,
+        "column": 3
+      },
+      "attributes": {
+        "description": "C compiler for Z80 CPU implemented in ES2025 Node.js",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_nanopass_ir",
+      "label": "Nanopass IR",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 4,
+        "column": 73
+      },
+      "attributes": {
+        "description": "Intermediate representation used to compile C source to Z80 assembly",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_compiler_entry",
+      "label": "src/compiler.js",
+      "file_type": "code",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 19,
+        "column": 3
+      }
+    },
+    {
+      "id": "agents_preprocessor_lexer",
+      "label": "src/preprocessor/lexer.js",
+      "file_type": "code",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 20,
+        "column": 3
+      }
+    },
+    {
+      "id": "agents_parser_combinators",
+      "label": "src/parser/combinators.js",
+      "file_type": "code",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 21,
+        "column": 3
+      }
+    },
+    {
+      "id": "agents_parser_cparser",
+      "label": "src/parser/cparser.js",
+      "file_type": "code",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 22,
+        "column": 3
+      }
+    },
+    {
+      "id": "agents_nanopass_il",
+      "label": "src/nanopass/il.js",
+      "file_type": "code",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 23,
+        "column": 3
+      }
+    },
+    {
+      "id": "agents_nanopass_ast_to_ir",
+      "label": "src/nanopass/ast_to_ir.js",
+      "file_type": "code",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 24,
+        "column": 3
+      }
+    },
+    {
+      "id": "agents_nanopass_optimizations",
+      "label": "src/nanopass/optimizations.js",
+      "file_type": "code",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 25,
+        "column": 3
+      }
+    },
+    {
+      "id": "agents_nanopass_register_passes",
+      "label": "src/nanopass/register_passes.js",
+      "file_type": "code",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 26,
+        "column": 3
+      }
+    },
+    {
+      "id": "agents_backend_z80codegen",
+      "label": "src/backend/z80codegen.js",
+      "file_type": "code",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 27,
+        "column": 3
+      }
+    },
+    {
+      "id": "agents_plugin_system",
+      "label": "Plugin System",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 31,
+        "column": 3
+      },
+      "attributes": {
+        "description": "Extensible architecture via interfaces in src/plugins/interfaces.js with globalRegistry.register",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_nanopass_style",
+      "label": "Nanopass Style",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 33,
+        "column": 3
+      },
+      "attributes": {
+        "description": "Each compilation phase is a pass that transforms IR with .run(ir) method",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_ast_to_json",
+      "label": "AST to JSON",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 35,
+        "column": 3
+      },
+      "attributes": {
+        "description": "All AST nodes have .toJSON() for inspectable output used for debugging and analysis",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_peg_parser_framework",
+      "label": "PEG Parser Framework",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 21,
+        "column": 54
+      },
+      "attributes": {
+        "description": "Parser combinator framework with seq, alt, many, some, opt, lit, any, pred, lazy, map combinators",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_z80_codegen",
+      "label": "Z80 Code Generation",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 50,
+        "column": 3
+      },
+      "attributes": {
+        "description": "Z80 has no 16-bit arithmetic, stack grows downward, accumulator A, HL for 16-bit addresses",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_z80_architecture",
+      "label": "Z80 Architecture",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 72,
+        "column": 3
+      },
+      "attributes": {
+        "description": "8-bit accumulator A, registers B C D E H L, HL pair for 16-bit, IX/IY index registers, SP for stack",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_end_to_end_pipeline",
+      "label": "End-to-End Pipeline",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 113,
+        "column": 3
+      },
+      "attributes": {
+        "description": "compiler.js integrates lexer → parser → AST → IR → optimization → codegen",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_object_file_format",
+      "label": "Binary Object File Format",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 95,
+        "column": 3
+      },
+      "attributes": {
+        "description": "VCC80O magic header with serialization of sections, symbols, relocations in src/linker/objectfile_loader.js",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_linker",
+      "label": "Linker",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 120,
+        "column": 3
+      },
+      "attributes": {
+        "description": "src/linker/linker.js combines object files, resolves symbols/relocations, generates binary/WLA DX output",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_wla_dx_codegen",
+      "label": "WLA DX Code Generator",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 119,
+        "column": 3
+      },
+      "attributes": {
+        "description": "src/linker/wladxcodegen.js generates WLA DX-compatible Z80 assembly with section directives and relocation support",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_static_library",
+      "label": "Static Library Support",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 124,
+        "column": 3
+      },
+      "attributes": {
+        "description": "src/linker/archive.js with Archive/ArchiveMember classes and VCC80A binary format",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_peephole_optimizer",
+      "label": "Peephole Optimizer",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 111,
+        "column": 31
+      },
+      "attributes": {
+        "description": "Dead code elimination, constant folding, redundant move/jump elimination, stack op merging",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_register_allocator",
+      "label": "Register Allocator",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 111,
+        "column": 97
+      },
+      "attributes": {
+        "description": "Physical Z80 register assignment with spilling and cross-block virtual register tracking",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_typedef_types",
+      "label": "Typedef and Default Types",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 94,
+        "column": 3
+      },
+      "attributes": {
+        "description": "Supports void, char, short, long, unsigned, signed, _Bool with two-pass parsing and TypeSpecNode",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_processor_intrinsics",
+      "label": "Processor Intrinsics",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 96,
+        "column": 3
+      },
+      "attributes": {
+        "description": "IntrinsicInstruction IR class with intrinsic detection in translateCall and Z80 codegen for special opcodes",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_file_structure_rules",
+      "label": "File Structure Rules",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 13,
+        "column": 3
+      },
+      "attributes": {
+        "description": "1-7 functions per file, JSDoc required, ES modules only",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_testing_conventions",
+      "label": "Testing Conventions",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 66,
+        "column": 3
+      },
+      "attributes": {
+        "description": "node:test runner, src/tests/*.test.js, describe/it organization, strict assertions only",
+        "file_type": "rationale"
+      }
+    },
+    {
+      "id": "agents_extensibility_points",
+      "label": "Extensibility Points",
+      "file_type": "concept",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 85,
+        "column": 3
+      },
+      "attributes": {
+        "description": "Parser extensions, optimization passes, attributes handling, backend copying for new architectures",
+        "file_type": "rationale"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "agents_compiler_entry",
+      "target": "agents_end_to_end_pipeline",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 113,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_end_to_end_pipeline",
+      "target": "agents_preprocessor_lexer",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 113,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_end_to_end_pipeline",
+      "target": "agents_parser_cparser",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 113,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_end_to_end_pipeline",
+      "target": "agents_nanopass_ast_to_ir",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 113,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_end_to_end_pipeline",
+      "target": "agents_nanopass_optimizations",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 113,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_end_to_end_pipeline",
+      "target": "agents_backend_z80codegen",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 113,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_parser_cparser",
+      "target": "agents_parser_combinators",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 22,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_parser_combinators",
+      "target": "agents_peg_parser_framework",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 21,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_nanopass_ast_to_ir",
+      "target": "agents_nanopass_il",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 24,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_nanopass_il",
+      "target": "agents_nanopass_ir",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 23,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_nanopass_optimizations",
+      "target": "agents_peephole_optimizer",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 111,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_nanopass_optimizations",
+      "target": "agents_register_allocator",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 111,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_nanopass_register_passes",
+      "target": "agents_nanopass_optimizations",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 26,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_backend_z80codegen",
+      "target": "agents_z80_codegen",
+      "relation": "implements",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 27,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_backend_z80codegen",
+      "target": "agents_z80_architecture",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 27,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_plugin_system",
+      "target": "agents_nanopass_style",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 29,
+        "column": 3
+      },
+      "weight": 0.85
+    },
+    {
+      "source": "agents_vcc80",
+      "target": "agents_nanopass_ir",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 4,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_vcc80",
+      "target": "agents_compiler_entry",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 19,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_vcc80",
+      "target": "agents_file_structure_rules",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 13,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_vcc80",
+      "target": "agents_testing_conventions",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 66,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_vcc80",
+      "target": "agents_extensibility_points",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 85,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_linker",
+      "target": "agents_object_file_format",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 120,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_linker",
+      "target": "agents_wla_dx_codegen",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 120,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_linker",
+      "target": "agents_static_library",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 120,
+        "column": 3
+      },
+      "weight": 0.85
+    },
+    {
+      "source": "agents_register_allocator",
+      "target": "agents_z80_architecture",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 111,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_ast_to_json",
+      "target": "agents_parser_cparser",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 35,
+        "column": 3
+      },
+      "weight": 0.75
+    },
+    {
+      "source": "agents_typedef_types",
+      "target": "agents_nanopass_ast_to_ir",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 94,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_processor_intrinsics",
+      "target": "agents_nanopass_il",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 96,
+        "column": 3
+      },
+      "weight": 1.0
+    },
+    {
+      "source": "agents_peephole_optimizer",
+      "target": "agents_nanopass_style",
+      "relation": "implements",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 111,
+        "column": 3
+      },
+      "weight": 0.95
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "agents_compilation_pipeline",
+      "label": "Compilation Pipeline Stages",
+      "members": [
+        "agents_preprocessor_lexer",
+        "agents_parser_cparser",
+        "agents_nanopass_ast_to_ir",
+        "agents_nanopass_optimizations",
+        "agents_backend_z80codegen"
+      ],
+      "description": "Ordered pipeline: lexer → parser → AST→IR → optimization → codegen",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 113,
+        "column": 3
+      }
+    },
+    {
+      "id": "agents_core_modules_read_order",
+      "label": "Core Modules Read Order",
+      "members": [
+        "agents_compiler_entry",
+        "agents_preprocessor_lexer",
+        "agents_parser_combinators",
+        "agents_parser_cparser",
+        "agents_nanopass_il",
+        "agents_nanopass_ast_to_ir",
+        "agents_nanopass_optimizations",
+        "agents_nanopass_register_passes",
+        "agents_backend_z80codegen"
+      ],
+      "description": "Core modules documented in prescribed read order for understanding the codebase",
+      "source_file": "/Users/tiago/Projects/jsvcc80/AGENTS.md",
+      "source_location": {
+        "line": 18,
+        "column": 3
+      }
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

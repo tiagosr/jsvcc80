@@ -1,2 +1,3 @@
 node_modules/
-graphify-out/
+graphify-out/cost.json
+graphify-out/cache/

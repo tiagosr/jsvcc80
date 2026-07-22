@@ -1,0 +1,172 @@
+{
+  "bin/vcc80.js": {
+    "mtime": 1784728365.8136985,
+    "ast_hash": "ff0f8b3c21ac4099b88364fec8576c9d",
+    "semantic_hash": "ff0f8b3c21ac4099b88364fec8576c9d"
+  },
+  "package.json": {
+    "mtime": 1784718392.244723,
+    "ast_hash": "76ba87dac3991d8ada5c4e150cf96b99",
+    "semantic_hash": "76ba87dac3991d8ada5c4e150cf96b99"
+  },
+  "src/ast/nodes.js": {
+    "mtime": 1784741746.428314,
+    "ast_hash": "744d7f0d07a5146c06b68abb08ad5d13",
+    "semantic_hash": "744d7f0d07a5146c06b68abb08ad5d13"
+  },
+  "src/backend/z80codegen.js": {
+    "mtime": 1784733435.1905699,
+    "ast_hash": "911db4c2e50d08fa43fe4e47e93a2ec4",
+    "semantic_hash": "911db4c2e50d08fa43fe4e47e93a2ec4"
+  },
+  "src/compiler.js": {
+    "mtime": 1784728186.7496421,
+    "ast_hash": "a8e1e3c26e3f5553fa9c3c3422d80dc7",
+    "semantic_hash": "a8e1e3c26e3f5553fa9c3c3422d80dc7"
+  },
+  "src/core/errors.js": {
+    "mtime": 1784629261.2775352,
+    "ast_hash": "9523da46c004eb15043f8f0ee86b4b3a",
+    "semantic_hash": "9523da46c004eb15043f8f0ee86b4b3a"
+  },
+  "src/core/location.js": {
+    "mtime": 1784629290.3850815,
+    "ast_hash": "8e7372e2b29282fe2e54a7e85ffc1b08",
+    "semantic_hash": "8e7372e2b29282fe2e54a7e85ffc1b08"
+  },
+  "src/core/plugins.js": {
+    "mtime": 1784629314.698903,
+    "ast_hash": "83c71336c68ac1066013f51c855a5e4b",
+    "semantic_hash": "83c71336c68ac1066013f51c855a5e4b"
+  },
+  "src/index.js": {
+    "mtime": 1784630367.261023,
+    "ast_hash": "803dd51d7b3a6cb1e927c1b3de5be240",
+    "semantic_hash": "803dd51d7b3a6cb1e927c1b3de5be240"
+  },
+  "src/linker/archive.js": {
+    "mtime": 1784728144.6746058,
+    "ast_hash": "86b96bf36701abceaceb6a524f588f06",
+    "semantic_hash": "86b96bf36701abceaceb6a524f588f06"
+  },
+  "src/linker/linker.js": {
+    "mtime": 1784711132.063647,
+    "ast_hash": "b54b119c4be0ce67f0834e4bf73cb752",
+    "semantic_hash": "b54b119c4be0ce67f0834e4bf73cb752"
+  },
+  "src/linker/objectfile.js": {
+    "mtime": 1784708987.478229,
+    "ast_hash": "633d3dc3cb08ca84261f870af020e242",
+    "semantic_hash": "633d3dc3cb08ca84261f870af020e242"
+  },
+  "src/linker/objectfile_loader.js": {
+    "mtime": 1784723017.7127845,
+    "ast_hash": "ea57d18e040dfc92cfdf81a6545a18aa",
+    "semantic_hash": "ea57d18e040dfc92cfdf81a6545a18aa"
+  },
+  "src/linker/wladxcodegen.js": {
+    "mtime": 1784711239.6753654,
+    "ast_hash": "f94c974f60479ab3790cf66a3aee9b0d",
+    "semantic_hash": "f94c974f60479ab3790cf66a3aee9b0d"
+  },
+  "src/nanopass/ast_to_ir.js": {
+    "mtime": 1784742427.2446773,
+    "ast_hash": "40bc6dfcfa7bb3d3d53f5e8cf4d2488d",
+    "semantic_hash": "40bc6dfcfa7bb3d3d53f5e8cf4d2488d"
+  },
+  "src/nanopass/il.js": {
+    "mtime": 1784733018.9583042,
+    "ast_hash": "fa22f21823107861689ea211c074dac0",
+    "semantic_hash": "fa22f21823107861689ea211c074dac0"
+  },
+  "src/nanopass/optimizations.js": {
+    "mtime": 1784712745.588597,
+    "ast_hash": "8e75a20a716b0195846305166dd0942e",
+    "semantic_hash": "8e75a20a716b0195846305166dd0942e"
+  },
+  "src/nanopass/register_passes.js": {
+    "mtime": 1784693408.017482,
+    "ast_hash": "cfec1c881e8a670aaf2edf1786467a6f",
+    "semantic_hash": "cfec1c881e8a670aaf2edf1786467a6f"
+  },
+  "src/parser/combinators.js": {
+    "mtime": 1784666364.7962654,
+    "ast_hash": "188f8fe7696459440737535bac1b70c6",
+    "semantic_hash": "188f8fe7696459440737535bac1b70c6"
+  },
+  "src/parser/cparser.js": {
+    "mtime": 1784752759.7743037,
+    "ast_hash": "2af8e964a90aef89833e304ac297ee81",
+    "semantic_hash": "2af8e964a90aef89833e304ac297ee81"
+  },
+  "src/plugins/interfaces.js": {
+    "mtime": 1784629889.606984,
+    "ast_hash": "ca938d193286ef0e8f7aa0994334f5bb",
+    "semantic_hash": "ca938d193286ef0e8f7aa0994334f5bb"
+  },
+  "src/preprocessor/lexer.js": {
+    "mtime": 1784633447.3745193,
+    "ast_hash": "316350be6fd504b3f561da3db8482daf",
+    "semantic_hash": "316350be6fd504b3f561da3db8482daf"
+  },
+  "src/preprocessor/tokenTypes.js": {
+    "mtime": 1784629351.5173712,
+    "ast_hash": "6d1b7dadd23b4106900bc4f9a147020f",
+    "semantic_hash": "6d1b7dadd23b4106900bc4f9a147020f"
+  },
+  "src/tests/archive.test.js": {
+    "mtime": 1784728835.4548917,
+    "ast_hash": "3cb8aba34feeecb4bb782da18709f4ec",
+    "semantic_hash": "3cb8aba34feeecb4bb782da18709f4ec"
+  },
+  "src/tests/ast_to_ir.test.js": {
+    "mtime": 1784747927.8901625,
+    "ast_hash": "e9b4236335100e2be7c266717238c58c",
+    "semantic_hash": "e9b4236335100e2be7c266717238c58c"
+  },
+  "src/tests/compiler.test.js": {
+    "mtime": 1784715813.0062163,
+    "ast_hash": "13894dd8f2183011d4f394e4d32fdba6",
+    "semantic_hash": "13894dd8f2183011d4f394e4d32fdba6"
+  },
+  "src/tests/cparser.test.js": {
+    "mtime": 1784742909.997584,
+    "ast_hash": "70302a399a685213c328a273f342fce9",
+    "semantic_hash": "70302a399a685213c328a273f342fce9"
+  },
+  "src/tests/il.test.js": {
+    "mtime": 1784631131.1214488,
+    "ast_hash": "defada14f1d2ccce8125a3de78e0648a",
+    "semantic_hash": "defada14f1d2ccce8125a3de78e0648a"
+  },
+  "src/tests/intrinsics.test.js": {
+    "mtime": 1784734914.111907,
+    "ast_hash": "40041109d5c94e0a4c8744904e4f75bb",
+    "semantic_hash": "40041109d5c94e0a4c8744904e4f75bb"
+  },
+  "src/tests/linker.test.js": {
+    "mtime": 1784723818.224457,
+    "ast_hash": "f17bb0e066e92125700fed4fb453b2e6",
+    "semantic_hash": "f17bb0e066e92125700fed4fb453b2e6"
+  },
+  "src/tests/optimizations.test.js": {
+    "mtime": 1784713531.75042,
+    "ast_hash": "eb00a7f013d21822f3bc644fc401e62d",
+    "semantic_hash": "eb00a7f013d21822f3bc644fc401e62d"
+  },
+  "src/tests/parser.test.js": {
+    "mtime": 1784652869.4941585,
+    "ast_hash": "ad3d41abf6d48f3d0d2bb822b931a0ff",
+    "semantic_hash": "ad3d41abf6d48f3d0d2bb822b931a0ff"
+  },
+  "src/tests/preprocessor.test.js": {
+    "mtime": 1784633954.257316,
+    "ast_hash": "cd8f3bb2f24732f924f48b0a13bfeea6",
+    "semantic_hash": "cd8f3bb2f24732f924f48b0a13bfeea6"
+  },
+  "AGENTS.md": {
+    "mtime": 1784754074.7373095,
+    "ast_hash": "8d40bd0dfa7952597deda2c610c12d58",
+    "semantic_hash": "8d40bd0dfa7952597deda2c610c12d58"
+  }
+}

@@ -62,7 +62,7 @@ describe('PeepholeOptimizer', () => {
 
   it('should fold constant binary operations', () => {
     const block = new BasicBlock('entry', [
-      new BinaryOpInstruction('t0', '+', '10', '20'),
+      new BinaryOpInstruction('t0', 'add', '10', '20'),
     ]);
     const func = new FunctionIR('test', [block]);
 
@@ -75,7 +75,7 @@ describe('PeepholeOptimizer', () => {
 
   it('should fold constant subtraction', () => {
     const block = new BasicBlock('entry', [
-      new BinaryOpInstruction('t0', '-', '100', '30'),
+      new BinaryOpInstruction('t0', 'sub', '100', '30'),
     ]);
     const func = new FunctionIR('test', [block]);
 
@@ -105,7 +105,7 @@ describe('PeepholeOptimizer', () => {
 
   it('should fold bitwise operations on constants', () => {
     const block = new BasicBlock('entry', [
-      new BinaryOpInstruction('t0', '&', '255', '15'),
+      new BinaryOpInstruction('t0', 'and', '255', '15'),
     ]);
     const func = new FunctionIR('test', [block]);
 

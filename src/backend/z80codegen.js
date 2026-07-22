@@ -152,30 +152,35 @@ export class Z80Codegen {
    * @param {FunctionIR} func - Function IR
    */
   generatePrologue(func) {
-    // Z80 doesn't have a dedicated stack frame pointer by default,
-    // but we can use IX or IY if needed
-    
-    // Check if any local variables need allocation
-    const needsStack = func.blocks.some(block => 
-      block.instructions.some(instr => instr instanceof AllocStackInstruction)
-    );
+    // Use IX as frame pointer for proper stack frame management
+    // Save old IX, set IX = SP, then allocate local space
+    this.codeLines.push(`  push ix`);
+    this.codeLines.push(`  ld ix, sp`);
 
-    if (needsStack && this.options.optimizeStack) {
-      // Calculate total stack space needed
-      let totalSpace = 0;
-      for (const block of func.blocks) {
-        for (const instr of block.instructions) {
-          if (instr instanceof AllocStackInstruction) {
-            totalSpace += instr.operands[0];
-          }
+    // Calculate total stack space needed from AllocStackInstruction
+    let totalSpace = 0;
+    for (const block of func.blocks) {
+      for (const instr of block.instructions) {
+        if (instr instanceof AllocStackInstruction) {
+          totalSpace += instr.operands[0];
         }
       }
+    }
 
-      if (totalSpace > 0) {
-        this.codeLines.push(`  ld ${Registers.SP}, hl`);
-        this.codeLines.push(`  ld hl, stack_top_${this.currentFunction.name}`);
-        this.codeLines.push(`  sub a`); // Clear A before subtraction
-        this.codeLines.push(`  ld l, a`);
+    if (totalSpace > 0) {
+      if (totalSpace <= 255) {
+        this.codeLines.push(`  ld b, ${totalSpace}`);
+        this.codeLines.push('  dec_sp_loop:');
+        this.codeLines.push('  dec sp');
+        this.codeLines.push('  dec b');
+        this.codeLines.push(`  ld a, b`);
+        this.codeLines.push('  or a');
+        this.codeLines.push('  jp nz, dec_sp_loop');
+      } else {
+        this.codeLines.push(`  ld hl, ${totalSpace}`);
+        this.codeLines.push('  add hl, sp');
+        this.codeLines.push('  ld sp, l');
+        this.codeLines.push('  ld sp, h');
       }
     }
   }
@@ -185,12 +190,8 @@ export class Z80Codegen {
    * @param {FunctionIR} func - Function IR
    */
   generateEpilogue(func) {
-    // Restore stack pointer before return
-    if (this.options.optimizeStack) {
-      this.codeLines.push(`  ld ${Registers.SP}, hl`);
-      this.codeLines.push(`  ld hl, stack_top_${func.name}`);
-    }
-
+    // Restore frame pointer and return
+    this.codeLines.push('  pop ix');
     this.codeLines.push('  ret');
   }
 
@@ -199,19 +200,20 @@ export class Z80Codegen {
    * @param {BasicBlock} block - Basic block to generate
    */
   generateBasicBlock(block) {
-    // Generate label if not already generated (entry point)
-    const isEntry = block === this.currentFunction.blocks[0];
-    
+    // Generate label for the block
+    this.codeLines.push(`${block.name}:`);
+
     for (const instr of block.instructions) {
       this.generateInstruction(instr);
     }
 
     // Handle implicit fall-through to successor
+    const isEntry = block === this.currentFunction.blocks[0];
     if (!isEntry && block.successor) {
-      // Check if last instruction was already a jump
       const lastInstr = block.instructions[block.instructions.length - 1];
-      if (!(lastInstr instanceof JumpInstruction || 
-            lastInstr instanceof JumpIfInstruction)) {
+      if (!(lastInstr instanceof JumpInstruction ||
+            lastInstr instanceof JumpIfInstruction ||
+            lastInstr instanceof ReturnInstruction)) {
         this.codeLines.push(`  jp ${block.successor.name}`);
       }
     }
@@ -359,8 +361,19 @@ export class Z80Codegen {
 
       case 'div':
         this.codeLines.push(`  ld b, ${src2}`);
+        this.codeLines.push(`  ld c, ${src1}`);
         this.codeLines.push(`  ld a, 0`);
-        this.codeLines.push('div_loop:');
+        const divLabel = this.label('div');
+        this.codeLines.push(`${divLabel}:`);
+        this.codeLines.push('  sub b');
+        this.codeLines.push('  inc l');
+        this.codeLines.push('  ld a, c');
+        this.codeLines.push('  cp b');
+        this.codeLines.push(`  jp nc, ${divLabel}`);
+        this.codeLines.push('  add a, b');
+        this.codeLines.push('  ld c, a');
+        this.codeLines.push('  dec l');
+        this.codeLines.push('  ld a, l');
         break;
 
       case 'and':
@@ -373,6 +386,40 @@ export class Z80Codegen {
 
       case 'xor':
         this.codeLines.push(`  xor ${src2}`);
+        break;
+
+      case 'shl':
+        this.codeLines.push(`  ld b, ${src2}`);
+        const shlLabel = this.label('shl');
+        this.codeLines.push(`${shlLabel}:`);
+        this.codeLines.push('  rl a');
+        this.codeLines.push('  dec b');
+        this.codeLines.push('  ld a, b');
+        this.codeLines.push('  or a');
+        this.codeLines.push(`  jp nz, ${shlLabel}`);
+        break;
+
+      case 'shr':
+        this.codeLines.push(`  ld b, ${src2}`);
+        const shrLabel = this.label('shr');
+        this.codeLines.push(`${shrLabel}:`);
+        this.codeLines.push('  rr a');
+        this.codeLines.push('  dec b');
+        this.codeLines.push('  ld a, b');
+        this.codeLines.push('  or a');
+        this.codeLines.push(`  jp nz, ${shrLabel}`);
+        break;
+
+      case 'mod':
+        this.codeLines.push(`  ld b, ${src2}`);
+        this.codeLines.push(`  ld c, ${src1}`);
+        this.codeLines.push(`  ld a, 0`);
+        const modLabel = this.label('mod');
+        this.codeLines.push(`${modLabel}:`);
+        this.codeLines.push('  sub b');
+        this.codeLines.push('  ld a, c');
+        this.codeLines.push('  cp b');
+        this.codeLines.push(`  jp nc, ${modLabel}`);
         break;
 
       default:
@@ -401,7 +448,7 @@ export class Z80Codegen {
     const jumpMap = {
       'eq': 'z', 'ne': 'nz',
       'lt': 'c', 'gt': 'nc',
-      'le': 'nz', 'ge': 'z'
+      'le': 'nc', 'ge': 'z'
     };
 
     const flag = jumpMap[op];
@@ -414,9 +461,7 @@ export class Z80Codegen {
     this.codeLines.push(`  jp ${endLabel}`);
 
     this.codeLines.push(`${endLabel}:`);
-    if (op === 'le' || op === 'ge') {
-      this.codeLines.push(`  ld a, 1`);
-    }
+    this.codeLines.push(`  ld a, 1`);
 
     const reg = this.formatRegister(dest, true);
     if (reg !== 'a') {
@@ -454,6 +499,13 @@ export class Z80Codegen {
         this.codeLines.push('  cpl');
         break;
 
+      case 'lognot':
+        // Logical not: 0 -> 1, non-zero -> 0
+        this.codeLines.push('  cpl');
+        this.codeLines.push('  rrca');
+        this.codeLines.push('  and #1');
+        break;
+
       default:
         console.warn(`Unknown unary operation: ${op}`);
     }
@@ -480,12 +532,14 @@ export class Z80Codegen {
     // Perform the call
     this.codeLines.push(`  call ${func}`);
 
-    // Clean up stack arguments (assuming 1-byte arguments)
+    // Clean up stack arguments (each argument pushed as AF = 2 bytes)
     if (args.length > 0) {
-      const bytes = args.length * 2; // Each argument was pushed as AF (2 bytes)
+      const bytes = args.length * 2;
       this.codeLines.push(`  ld hl, sp`);
-      this.codeLines.push(`  add hl, bc`); // Assuming BC has byte count
-      this.codeLines.push('  ld sp, hl');
+      this.codeLines.push(`  ld de, ${bytes}`);
+      this.codeLines.push('  add hl, de');
+      this.codeLines.push('  ld sp, l');
+      this.codeLines.push('  ld sp, h');
     }
   }
 
@@ -497,10 +551,11 @@ export class Z80Codegen {
     const [value] = instr.operands;
 
     if (value && value !== 'null') {
-      // Load return value into A register
       this.codeLines.push(`  ld a, ${value}`);
     }
 
+    // Restore frame pointer and return
+    this.codeLines.push('  pop ix');
     this.codeLines.push('  ret');
   }
 
@@ -577,11 +632,32 @@ export class Z80Codegen {
    */
   generateAllocStack(instr) {
     const [bytes] = instr.operands;
-    
-    // Allocate space by adjusting SP (Z80 stack grows downward)
-    this.codeLines.push(`  ld bc, ${bytes}`);
-    this.codeLines.push('  add hl, sp');
-    this.codeLines.push('  ld sp, hl');
+
+    // Allocate space by decrementing SP (Z80 stack grows downward)
+    // Use BC as counter since we can't do add hl,sp directly
+    if (bytes <= 255) {
+      this.codeLines.push(`  ld b, ${bytes}`);
+      const loopLabel = this.label('alloc');
+      this.codeLines.push(`${loopLabel}:`);
+      this.codeLines.push('  dec sp');
+      this.codeLines.push('  dec b');
+      this.codeLines.push('  ld a, b');
+      this.codeLines.push('  or a');
+      this.codeLines.push(`  jp nz, ${loopLabel}`);
+    } else {
+      this.codeLines.push(`  ld hl, ${bytes}`);
+      const loopLabel = this.label('alloc');
+      this.codeLines.push(`${loopLabel}:`);
+      this.codeLines.push('  dec sp');
+      this.codeLines.push('  dec l');
+      this.codeLines.push('  ld a, l');
+      this.codeLines.push('  or a');
+      this.codeLines.push('  jr nz, $-10');
+      this.codeLines.push('  dec h');
+      this.codeLines.push('  ld a, h');
+      this.codeLines.push(`  or a`);
+      this.codeLines.push(`  jp nz, ${loopLabel}`);
+    }
   }
 
   /**
@@ -590,13 +666,31 @@ export class Z80Codegen {
    */
   generateFreeStack(instr) {
     const [bytes] = instr.operands;
-    
-    // Deallocate space by adjusting SP
-    this.codeLines.push(`  ld bc, ${bytes}`);
-    this.codeLines.push('  sub a');
-    this.codeLines.push('  ld l, a');
-    this.codeLines.push('  add hl, sp');
-    this.codeLines.push('  ld sp, hl');
+
+    // Deallocate space by incrementing SP
+    if (bytes <= 255) {
+      this.codeLines.push(`  ld b, ${bytes}`);
+      const loopLabel = this.label('free');
+      this.codeLines.push(`${loopLabel}:`);
+      this.codeLines.push('  inc sp');
+      this.codeLines.push('  dec b');
+      this.codeLines.push('  ld a, b');
+      this.codeLines.push('  or a');
+      this.codeLines.push(`  jp nz, ${loopLabel}`);
+    } else {
+      this.codeLines.push(`  ld hl, ${bytes}`);
+      const loopLabel = this.label('free');
+      this.codeLines.push(`${loopLabel}:`);
+      this.codeLines.push('  inc sp');
+      this.codeLines.push('  dec l');
+      this.codeLines.push('  ld a, l');
+      this.codeLines.push('  or a');
+      this.codeLines.push('  jr nz, $-10');
+      this.codeLines.push('  dec h');
+      this.codeLines.push('  ld a, h');
+      this.codeLines.push(`  or a`);
+      this.codeLines.push(`  jp nz, ${loopLabel}`);
+    }
   }
 
   /**
@@ -639,10 +733,11 @@ export class Z80Codegen {
     if (lowerReg === 'c' || lowerReg === Registers.C) return 'c';
     if (lowerReg === 'd' || lowerReg === Registers.D) return 'd';
     if (lowerReg === 'e' || lowerReg === Registers.E) return 'e';
-    if (lowerReg === 'h' || lowerReg === Registers.H) return 'hl';
-    if (lowerReg === Registers.L) return 'l';
+    if (lowerReg === 'h' || lowerReg === Registers.H) return 'h';
+    if (lowerReg === 'l' || lowerReg === Registers.L) return 'l';
 
     // 16-bit registers
+    if (lowerReg === 'hl') return 'hl';
     if (lowerReg === Registers.IX) return 'ix';
     if (lowerReg === Registers.IY) return 'iy';
     if (lowerReg === Registers.SP) return 'sp';
@@ -657,15 +752,12 @@ export class Z80Codegen {
    */
   formatValue(value) {
     if (typeof value === 'number') {
-      return value.toString(16).toUpperCase(); // Hex format
+      return String(value);
     }
 
     if (typeof value === 'string') {
-      if (value.startsWith('#')) {
-        return parseInt(value.slice(1), 16);
-      }
-      if (/^#/.test(value)) {
-        return parseInt(value, 16);
+      if (/^\d+$/.test(value)) {
+        return value;
       }
       // Symbol reference or label
       return value;

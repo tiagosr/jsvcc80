@@ -113,6 +113,7 @@ export class PeepholeOptimizer extends OptimizationPass {
   optimizeBlock(block) {
     this.eliminateRedundantMoves(block);
     this.foldConstants(block);
+    this.propagateCopies(block);
     this.eliminateDeadStores(block);
     this.eliminateRedundantJumps(block);
     this.mergeStackOps(block);
@@ -196,6 +197,75 @@ export class PeepholeOptimizer extends OptimizationPass {
       }
 
       newInstructions.push(instr);
+    }
+
+    block.instructions = newInstructions;
+  }
+
+  /**
+   * Propagates copy values through subsequent instructions
+   * Replaces uses of a register with its known value when possible
+   * @param {BasicBlock} block - Block to optimize
+   */
+  propagateCopies(block) {
+    const env = new Map();
+
+    const newInstructions = [];
+    for (const instr of block.instructions) {
+      if (instr instanceof LoadInstruction) {
+        const [dest, src] = instr.operands;
+        const resolvedSrc = env.has(src) ? env.get(src) : src;
+        if (resolvedSrc !== src) {
+          newInstructions.push(new LoadInstruction(dest, resolvedSrc));
+          env.set(dest, resolvedSrc);
+          this.stats.constantsFolded++;
+        } else {
+          newInstructions.push(instr);
+          env.set(dest, src);
+        }
+      } else if (instr instanceof StoreInstruction) {
+        const [dest, src] = instr.operands;
+        const resolvedSrc = env.has(src) ? env.get(src) : src;
+        if (resolvedSrc !== src) {
+          newInstructions.push(new StoreInstruction(dest, resolvedSrc));
+          this.stats.constantsFolded++;
+        } else {
+          newInstructions.push(instr);
+        }
+        for (const [k] of env) {
+          if (k === dest) env.delete(k);
+        }
+      } else if (instr instanceof BinaryOpInstruction) {
+        const [dest, op, src1, src2] = instr.operands;
+        const r1 = env.has(src1) ? env.get(src1) : src1;
+        const r2 = env.has(src2) ? env.get(src2) : src2;
+        if (r1 !== src1 || r2 !== src2) {
+          newInstructions.push(new BinaryOpInstruction(dest, op, r1, r2));
+          this.stats.constantsFolded++;
+        } else {
+          newInstructions.push(instr);
+        }
+        env.set(dest, dest);
+        for (const [k, v] of env) {
+          if (v === src1 || v === src2) env.delete(k);
+        }
+        env.set(dest, dest);
+      } else if (instr instanceof UnaryOpInstruction) {
+        const [dest, op, src] = instr.operands;
+        const resolvedSrc = env.has(src) ? env.get(src) : src;
+        if (resolvedSrc !== src) {
+          newInstructions.push(new UnaryOpInstruction(dest, op, resolvedSrc));
+          this.stats.constantsFolded++;
+        } else {
+          newInstructions.push(instr);
+        }
+        env.set(dest, dest);
+      } else if (instr instanceof JumpInstruction || instr instanceof JumpIfInstruction) {
+        env.clear();
+        newInstructions.push(instr);
+      } else {
+        newInstructions.push(instr);
+      }
     }
 
     block.instructions = newInstructions;
@@ -394,16 +464,16 @@ export class PeepholeOptimizer extends OptimizationPass {
    */
   foldBinaryOp(op, a, b) {
     switch (op) {
-      case '+': return a + b;
-      case '-': return a - b;
-      case '*': return a * b;
-      case '/': return b !== 0 ? Math.floor(a / b) : null;
-      case '%': return b !== 0 ? a % b : null;
-      case '&': return a & b;
-      case '|': return a | b;
-      case '^': return a ^ b;
-      case '<<': return a << b;
-      case '>>': return a >> b;
+      case 'add': return a + b;
+      case 'sub': return a - b;
+      case 'mul': return a * b;
+      case 'div': return b !== 0 ? Math.floor(a / b) : null;
+      case 'mod': return b !== 0 ? a % b : null;
+      case 'and': return a & b;
+      case 'or': return a | b;
+      case 'xor': return a ^ b;
+      case 'shl': return a << b;
+      case 'shr': return a >> b;
       case 'lt': return a < b ? 1 : 0;
       case 'gt': return a > b ? 1 : 0;
       case 'le': return a <= b ? 1 : 0;

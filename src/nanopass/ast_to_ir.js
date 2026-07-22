@@ -43,6 +43,7 @@ export class AstToIr {
     this.currentFunction = null;
     this.loopBreakLabel = null;
     this.loopContinueLabel = null;
+    this.typedefs = new Map();
   }
 
   /**
@@ -72,16 +73,54 @@ export class AstToIr {
     const globals = [];
 
     for (const node of ast.statements) {
+      if (node instanceof AST.DeclNode && node.kind === 'typedef') {
+        this.registerTypedef(node);
+      }
+    }
+
+    for (const node of ast.statements) {
       if (node instanceof AST.FunctionNode) {
         const funcIr = this.translateFunction(node);
         program.addFunction(funcIr);
-      } else if (node instanceof AST.DeclNode) {
+      } else if (node instanceof AST.DeclNode && node.kind !== 'typedef') {
         globals.push(this.translateDecl(node));
       }
     }
 
     program.globals = globals;
     return program;
+  }
+
+  /**
+   * Register a typedef name as an alias for a type
+   * @param {AST.DeclNode} decl - Typedef declaration node
+   */
+  registerTypedef(decl) {
+    const typeName = decl.name.name;
+    const aliasedType = decl.type;
+    this.typedefs.set(typeName, aliasedType);
+    this.symbolTable.define(typeName, {
+      name: typeName,
+      kind: 'type',
+      type: aliasedType.baseType,
+      typeSpec: aliasedType
+    });
+  }
+
+  /**
+   * Resolve a type spec to its actual type (follows typedef aliases)
+   * @param {AST.TypeSpecNode} typeSpec - Type specification to resolve
+   * @returns {AST.TypeSpecNode} Resolved type specification
+   */
+  resolveType(typeSpec) {
+    let current = typeSpec;
+    let depth = 0;
+    const maxDepth = 10;
+    while (this.typedefs.has(current.baseType) && depth < maxDepth) {
+      current = this.typedefs.get(current.baseType);
+      depth++;
+    }
+    return current;
   }
 
   /**
@@ -95,12 +134,15 @@ export class AstToIr {
     this.loopBreakLabel = null;
     this.loopContinueLabel = null;
 
+    const resolvedReturn = this.resolveType(func.returnType);
+
     for (const param of func.parameters) {
       if (param.name) {
+        const resolvedParam = this.resolveType(param.type);
         this.symbolTable.define(param.name, {
           name: param.name,
           kind: 'variable',
-          type: param.type.baseType,
+          type: resolvedParam.baseType,
           offset: 0
         });
       }
@@ -111,7 +153,7 @@ export class AstToIr {
       func.name.name,
       blocks,
       {
-        returnType: func.returnType.baseType,
+        returnType: resolvedReturn.baseType,
         parameters: func.parameters.map(p => p.name)
       }
     );
@@ -476,10 +518,11 @@ export class AstToIr {
    */
   translateDeclStmt(decl) {
     const blocks = [];
+    const resolved = this.resolveType(decl.type);
     this.symbolTable.define(decl.name.name, {
       name: decl.name.name,
       kind: 'variable',
-      type: decl.type.baseType,
+      type: resolved.baseType,
       offset: 0
     });
 
@@ -500,9 +543,10 @@ export class AstToIr {
    * @returns {Object} Global variable IR
    */
   translateDecl(decl) {
+    const resolved = this.resolveType(decl.type);
     return {
       name: decl.name.name,
-      type: decl.type.baseType,
+      type: resolved.baseType,
       initial: decl.init ? this.translateExpressionValue(decl.init) : null
     };
   }

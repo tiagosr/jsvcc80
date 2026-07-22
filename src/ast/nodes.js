@@ -353,6 +353,19 @@ export class ExprStmtNode extends ASTNode {
  */
 export class TypeSpecNode extends ASTNode {
   /**
+   * Type size in bytes for Z80 target
+   */
+  static TypeSizes = {
+    'void': 0,
+    'char': 1,
+    '_Bool': 1,
+    'short': 2,
+    'int': 2,
+    'long': 4,
+    'unsigned': 2,
+  };
+
+  /**
    * Creates a type specification node
    * @param {string} baseType - Base type (e.g., 'int', 'char')
    * @param {boolean} isSigned - Whether signed type
@@ -366,6 +379,14 @@ export class TypeSpecNode extends ASTNode {
     this.isSigned = isSigned;
     this.isConst = isConst;
     this.bitWidth = bitWidth;
+  }
+
+  /**
+   * Returns the size in bytes for this type on the Z80 target
+   * @returns {number} Size in bytes
+   */
+  getSize() {
+    return TypeSpecNode.TypeSizes[this.baseType] ?? 2;
   }
 }
 

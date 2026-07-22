@@ -388,4 +388,105 @@ describe('AST to IR Translation', () => {
     assert.ok(foundJumpIf, 'should have conditional jump');
     assert.ok(foundJump, 'should have unconditional jump past else');
   });
+
+  // Typedef tests
+  it('should not create global for typedef declaration', () => {
+    const ir = compile('typedef int myint;');
+    assert.strictEqual(ir.globals.length, 0);
+  });
+
+  it('should register typedef and resolve in variable declaration', () => {
+    const ir = compile('typedef int myint; myint x = 5;');
+    assert.strictEqual(ir.globals.length, 1);
+    assert.strictEqual(ir.globals[0].name, 'x');
+    assert.strictEqual(ir.globals[0].type, 'int');
+  });
+
+  it('should resolve typedef in function return type', () => {
+    const ir = compile('typedef int result; result foo() { return 42; }');
+    assert.strictEqual(ir.functions.length, 1);
+    assert.strictEqual(ir.functions[0].metadata.returnType, 'int');
+  });
+
+  it('should resolve typedef in function parameter type', () => {
+    const ir = compile('typedef int num; void foo(num a) {}');
+    assert.strictEqual(ir.functions.length, 1);
+    assert.strictEqual(ir.functions[0].metadata.parameters[0], 'a');
+  });
+
+  it('should resolve typedef in local variable declaration', () => {
+    const ir = compile('typedef char byte; int main() { byte b = 10; }');
+    assert.strictEqual(ir.functions.length, 1);
+    assert.ok(ir.functions[0].getEntry());
+  });
+
+  it('should handle typedef chain resolution', () => {
+    const ir = compile('typedef int base; typedef base derived; derived x = 5;');
+    assert.strictEqual(ir.globals.length, 1);
+    assert.strictEqual(ir.globals[0].type, 'int');
+  });
+
+  it('should handle typedef for char type', () => {
+    const ir = compile('typedef char byte; byte b = 10;');
+    assert.strictEqual(ir.globals.length, 1);
+    assert.strictEqual(ir.globals[0].type, 'char');
+  });
+
+  it('should handle typedef for long type', () => {
+    const ir = compile('typedef long int64; int64 val = 100;');
+    assert.strictEqual(ir.globals.length, 1);
+    assert.strictEqual(ir.globals[0].type, 'long');
+  });
+
+  it('should handle typedef for unsigned type', () => {
+    const ir = compile('typedef unsigned int uint; uint u = 5;');
+    assert.strictEqual(ir.globals.length, 1);
+    assert.strictEqual(ir.globals[0].type, 'int');
+  });
+
+  // Type-specific tests
+  it('should handle char type in variable declaration', () => {
+    const ir = compile('char c = 65;');
+    assert.strictEqual(ir.globals.length, 1);
+    assert.strictEqual(ir.globals[0].type, 'char');
+  });
+
+  it('should handle long type in variable declaration', () => {
+    const ir = compile('long l = 1000;');
+    assert.strictEqual(ir.globals.length, 1);
+    assert.strictEqual(ir.globals[0].type, 'long');
+  });
+
+  it('should handle _Bool type in variable declaration', () => {
+    const ir = compile('_Bool flag = 1;');
+    assert.strictEqual(ir.globals.length, 1);
+    assert.strictEqual(ir.globals[0].type, '_Bool');
+  });
+
+  it('should handle short type in variable declaration', () => {
+    const ir = compile('short s = 100;');
+    assert.strictEqual(ir.globals.length, 1);
+    assert.strictEqual(ir.globals[0].type, 'short');
+  });
+
+  it('should handle unsigned type in variable declaration', () => {
+    const ir = compile('unsigned u = 5;');
+    assert.strictEqual(ir.globals.length, 1);
+    assert.strictEqual(ir.globals[0].type, 'unsigned');
+  });
+
+  it('should handle void return type function', () => {
+    const ir = compile('void foo() {}');
+    assert.strictEqual(ir.functions.length, 1);
+    assert.strictEqual(ir.functions[0].metadata.returnType, 'void');
+  });
+
+  it('should handle mixed type declarations', () => {
+    const ir = compile('int a; char b; long c; unsigned d;');
+    assert.strictEqual(ir.globals.length, 4);
+    assert.strictEqual(ir.globals[0].type, 'int');
+    assert.strictEqual(ir.globals[1].type, 'char');
+    assert.strictEqual(ir.globals[2].type, 'long');
+    assert.strictEqual(ir.globals[3].type, 'unsigned');
+  });
 });

@@ -493,4 +493,330 @@ describe('C PEG Parser', () => {
     assert.strictEqual(param.type.type, 'TypeSpec');
     assert.strictEqual(param.type.baseType, 'int');
   });
+
+  // Type specifier tests - basic types
+  it('should parse void return type', () => {
+    const source = `void foo() {}`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const funcNode = ast.statements[0];
+    assert.strictEqual(funcNode.returnType.baseType, 'void');
+  });
+
+  it('should parse char type', () => {
+    const source = `char c;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const decl = ast.statements[0];
+    assert.strictEqual(decl.type.baseType, 'char');
+    assert.strictEqual(decl.name.name, 'c');
+  });
+
+  it('should parse _Bool type', () => {
+    const source = `_Bool flag;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const decl = ast.statements[0];
+    assert.strictEqual(decl.type.baseType, '_Bool');
+    assert.strictEqual(decl.name.name, 'flag');
+  });
+
+  it('should parse short type', () => {
+    const source = `short s;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const decl = ast.statements[0];
+    assert.strictEqual(decl.type.baseType, 'short');
+  });
+
+  it('should parse long type', () => {
+    const source = `long l;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const decl = ast.statements[0];
+    assert.strictEqual(decl.type.baseType, 'long');
+  });
+
+  it('should parse unsigned type', () => {
+    const source = `unsigned u;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const decl = ast.statements[0];
+    assert.strictEqual(decl.type.baseType, 'unsigned');
+    assert.strictEqual(decl.type.isSigned, false);
+  });
+
+  it('should parse signed type', () => {
+    const source = `signed s;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const decl = ast.statements[0];
+    assert.strictEqual(decl.type.baseType, 'int');
+    assert.strictEqual(decl.type.isSigned, true);
+  });
+
+  // Signedness modifier tests
+  it('should parse unsigned char', () => {
+    const source = `unsigned char uc;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const decl = ast.statements[0];
+    assert.strictEqual(decl.type.baseType, 'char');
+    assert.strictEqual(decl.type.isSigned, false);
+  });
+
+  it('should parse signed char', () => {
+    const source = `signed char sc;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const decl = ast.statements[0];
+    assert.strictEqual(decl.type.baseType, 'char');
+    assert.strictEqual(decl.type.isSigned, true);
+  });
+
+  it('should parse unsigned short', () => {
+    const source = `unsigned short us;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const decl = ast.statements[0];
+    assert.strictEqual(decl.type.baseType, 'short');
+    assert.strictEqual(decl.type.isSigned, false);
+  });
+
+  it('should parse unsigned int', () => {
+    const source = `unsigned int ui;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const decl = ast.statements[0];
+    assert.strictEqual(decl.type.baseType, 'int');
+    assert.strictEqual(decl.type.isSigned, false);
+  });
+
+  it('should parse unsigned long', () => {
+    const source = `unsigned long ul;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const decl = ast.statements[0];
+    assert.strictEqual(decl.type.baseType, 'long');
+    assert.strictEqual(decl.type.isSigned, false);
+  });
+
+  it('should parse signed long', () => {
+    const source = `signed long sl;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const decl = ast.statements[0];
+    assert.strictEqual(decl.type.baseType, 'long');
+    assert.strictEqual(decl.type.isSigned, true);
+  });
+
+  // Typedef tests
+  it('should parse typedef for char', () => {
+    const source = `typedef char byte;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const decl = ast.statements[0];
+    assert.strictEqual(decl.kind, 'typedef');
+    assert.strictEqual(decl.type.baseType, 'char');
+    assert.strictEqual(decl.name.name, 'byte');
+  });
+
+  it('should parse typedef for unsigned int', () => {
+    const source = `typedef unsigned int uint;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const decl = ast.statements[0];
+    assert.strictEqual(decl.kind, 'typedef');
+    assert.strictEqual(decl.type.baseType, 'int');
+    assert.strictEqual(decl.type.isSigned, false);
+    assert.strictEqual(decl.name.name, 'uint');
+  });
+
+  it('should parse typedef for long', () => {
+    const source = `typedef long int64;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const decl = ast.statements[0];
+    assert.strictEqual(decl.kind, 'typedef');
+    assert.strictEqual(decl.type.baseType, 'long');
+    assert.strictEqual(decl.name.name, 'int64');
+  });
+
+  it('should use typedef name as type in variable declaration', () => {
+    const source = `typedef int myint; myint x = 5;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    assert.strictEqual(ast.statements.length, 2);
+    const decl = ast.statements[1];
+    assert.strictEqual(decl.kind, 'var');
+    assert.strictEqual(decl.name.name, 'x');
+  });
+
+  it('should use typedef name as function return type', () => {
+    const source = `typedef int result; result compute() { return 42; }`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const funcNode = ast.statements[1];
+    assert.strictEqual(funcNode.type, 'Function');
+    assert.strictEqual(funcNode.name.name, 'compute');
+  });
+
+  it('should use typedef name as parameter type', () => {
+    const source = `typedef int num; void foo(num a) {}`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const funcNode = ast.statements[1];
+    assert.strictEqual(funcNode.parameters.length, 1);
+    assert.strictEqual(funcNode.parameters[0].name, 'a');
+  });
+
+  it('should use typedef name in for loop declaration', () => {
+    const source = `typedef int idx; int main() { for (idx i = 0; i < 10; i = i + 1) { i = 0; } }`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    assert.ok(ast !== null);
+  });
+
+  it('should use typedef name in local declaration', () => {
+    const source = `typedef char byte; int main() { byte b = 10; }`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    assert.ok(ast !== null);
+  });
+
+  it('should handle multiple typedefs', () => {
+    const source = `typedef int myint; typedef char mychar; myint x; mychar c;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    assert.strictEqual(ast.statements.length, 4);
+  });
+
+  // TypeSpecNode size tests
+  it('should report correct size for char type', () => {
+    const typeSpec = new AST.TypeSpecNode('char', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    assert.strictEqual(typeSpec.getSize(), 1);
+  });
+
+  it('should report correct size for int type', () => {
+    const typeSpec = new AST.TypeSpecNode('int', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    assert.strictEqual(typeSpec.getSize(), 2);
+  });
+
+  it('should report correct size for short type', () => {
+    const typeSpec = new AST.TypeSpecNode('short', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    assert.strictEqual(typeSpec.getSize(), 2);
+  });
+
+  it('should report correct size for long type', () => {
+    const typeSpec = new AST.TypeSpecNode('long', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    assert.strictEqual(typeSpec.getSize(), 4);
+  });
+
+  it('should report correct size for void type', () => {
+    const typeSpec = new AST.TypeSpecNode('void', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    assert.strictEqual(typeSpec.getSize(), 0);
+  });
+
+  it('should report correct size for _Bool type', () => {
+    const typeSpec = new AST.TypeSpecNode('_Bool', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    assert.strictEqual(typeSpec.getSize(), 1);
+  });
+
+  it('should report correct size for unsigned type', () => {
+    const typeSpec = new AST.TypeSpecNode('unsigned', false, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    assert.strictEqual(typeSpec.getSize(), 2);
+  });
+
+  it('should default to size 2 for unknown type', () => {
+    const typeSpec = new AST.TypeSpecNode('unknown', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    assert.strictEqual(typeSpec.getSize(), 2);
+  });
+
+  // Function with non-int return type
+  it('should parse function with char return type', () => {
+    const source = `char getChar() { return 'a'; }`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const funcNode = ast.statements[0];
+    assert.strictEqual(funcNode.returnType.baseType, 'char');
+  });
+
+  it('should parse function with long return type', () => {
+    const source = `long getValue() { return 100; }`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const funcNode = ast.statements[0];
+    assert.strictEqual(funcNode.returnType.baseType, 'long');
+  });
+
+  // Struct field with different types
+  it('should parse struct with char field', () => {
+    const source = `struct S { char c; int x; };`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const structNode = ast.statements[0];
+    assert.strictEqual(structNode.fields[0].type.baseType, 'char');
+    assert.strictEqual(structNode.fields[1].type.baseType, 'int');
+  });
+
+  it('should parse struct with unsigned field', () => {
+    const source = `struct S { unsigned u; long l; };`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const structNode = ast.statements[0];
+    assert.strictEqual(structNode.fields[0].type.baseType, 'unsigned');
+    assert.strictEqual(structNode.fields[1].type.baseType, 'long');
+  });
 });

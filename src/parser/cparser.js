@@ -22,6 +22,77 @@ const kw = (keyword) => pred(t => t.type === 'KEYWORD' && t.value === keyword);
 const locFromToken = (token) => token?.location || { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } };
 
 /**
+ * Type information for C basic types
+ * Maps type keyword to { baseType, isSigned, sizeInBytes }
+ */
+const TypeInfos = {
+  'void':    { baseType: 'void',    isSigned: true,  size: 0  },
+  'char':    { baseType: 'char',    isSigned: true,  size: 1  },
+  '_Bool':   { baseType: '_Bool',   isSigned: true,  size: 1  },
+  'short':   { baseType: 'short',   isSigned: true,  size: 2  },
+  'int':     { baseType: 'int',     isSigned: true,  size: 2  },
+  'long':    { baseType: 'long',    isSigned: true,  size: 4  },
+  'signed':  { baseType: 'int',     isSigned: true,  size: 2  },
+  'unsigned':{ baseType: 'unsigned', isSigned: false, size: 2  },
+};
+
+/**
+ * Create a TypeSpecNode from a type keyword token and optional signedness modifier
+ * @param {string} typeKw - Type keyword (e.g., 'int', 'char', 'unsigned')
+ * @param {boolean} isSigned - Override signedness (undefined = use default)
+ * @param {Token} token - Token for location
+ * @returns {AST.TypeSpecNode}
+ */
+function createTypeSpec(typeKw, isSigned, token) {
+  const info = TypeInfos[typeKw];
+  if (!info) {
+    return new AST.TypeSpecNode(typeKw, isSigned !== false, false, null, locFromToken(token));
+  }
+  const effectiveSigned = isSigned !== undefined ? isSigned : info.isSigned;
+  return new AST.TypeSpecNode(info.baseType, effectiveSigned, false, null, locFromToken(token));
+}
+
+/**
+ * Build a type specifier parser rule
+ * Matches: [signed|unsigned] [void|char|_Bool|short|int|long]
+ * Requires at least one token to be consumed.
+ * @returns {Object} Parser rule
+ */
+function buildTypeSpecifier() {
+  const signedness = Parser.alt(kw('signed'), kw('unsigned'));
+  const basicType = Parser.alt(
+    kw('void'), kw('char'), kw('_Bool'),
+    kw('short'), kw('int'), kw('long')
+  );
+
+  // Try signedness + basicType first (e.g., "unsigned int")
+  const withBoth = map(Parser.seq(signedness, basicType), ([s, t]) => [s, t]);
+  // Try signedness only (e.g., "unsigned")
+  const onlySign = map(signedness, (s) => [s, null]);
+  // Try basicType only (e.g., "int")
+  const onlyType = map(basicType, (t) => [null, t]);
+
+  return map(
+    Parser.alt(withBoth, onlySign, onlyType),
+    ([signToken, typeToken]) => {
+      if (typeToken) {
+        const typeKw = typeToken.value;
+        let isSigned = undefined;
+        if (signToken) {
+          isSigned = signToken.value === 'signed';
+        }
+        return createTypeSpec(typeKw, isSigned, typeToken);
+      } else if (signToken) {
+        const isSigned = signToken.value === 'signed';
+        const baseType = isSigned ? 'int' : 'unsigned';
+        return new AST.TypeSpecNode(baseType, isSigned, false, null, locFromToken(signToken));
+      }
+      return new AST.TypeSpecNode('int', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    }
+  );
+}
+
+/**
  * C Grammar parser using PEG combinators with proper AST construction
  */
 export class CPegParser {
@@ -30,7 +101,9 @@ export class CPegParser {
    */
   constructor() {
     this.ruleRefs = {};
+    this.typedefNames = [];
     
+    this.ruleRefs.typeSpecifier = buildTypeSpecifier();
     this.buildPrimaryExpr();
     this.buildUnaryExpr();
     this.buildPostfixExpr();
@@ -571,19 +644,19 @@ export class CPegParser {
   buildForStmt() {
     const forInitDecl = map(
       Parser.seq(
-        kw('int'),
+        lazy(() => this.ruleRefs.typeSpecifier),
         pred(t => t.type === 'IDENTIFIER'),
         Parser.opt(Parser.seq(Parser.lit('='), lazy(() => this.ruleRefs.expression)))
       ),
-      ([keyword, name, init]) => {
+      ([typeSpec, name, init]) => {
         let initValue = null;
         if (init) {
           initValue = Array.isArray(init[1]) ? init[1][0] : init[1];
         }
         return new AST.DeclNode('var',
-          new AST.TypeSpecNode('int', true, false, null, locFromToken(keyword)),
+          typeSpec,
           new AST.IdentifierNode(name.value, locFromToken(name)),
-          initValue, locFromToken(keyword));
+          initValue, locFromToken(typeSpec));
       }
     );
 
@@ -607,10 +680,10 @@ export class CPegParser {
         Parser.lit(')'),
         lazy(() => this.ruleRefs.statement)
       ),
-      ([keyword, , init, , condExpr, , incrExpr, , body]) => {
+      ([forKw, , init, , condExpr, , incrExpr, , body]) => {
         const condition = Array.isArray(condExpr) ? (condExpr[0] || null) : (condExpr || null);
         const increment = Array.isArray(incrExpr) ? (incrExpr[0] || null) : (incrExpr || null);
-        return new AST.ControlFlowNode('for', condition, body, null, locFromToken(keyword), init, increment);
+        return new AST.ControlFlowNode('for', condition, body, null, locFromToken(forKw), init, increment);
       }
     );
   }
@@ -708,20 +781,20 @@ export class CPegParser {
   buildStructDecl() {
     const structField = map(
       Parser.seq(
-        kw('int'),
+        lazy(() => this.ruleRefs.typeSpecifier),
         pred(t => t.type === 'IDENTIFIER'),
         Parser.opt(Parser.seq(Parser.lit('='), lazy(() => this.ruleRefs.expression))),
         Parser.lit(';')
       ),
-      ([keyword, name, init]) => {
+      ([typeSpec, name, init]) => {
         let initValue = null;
         if (init) {
           initValue = Array.isArray(init[1]) ? init[1][0] : init[1];
         }
         return new AST.StructFieldNode(
-          new AST.TypeSpecNode('int', true, false, null, locFromToken(keyword)),
+          typeSpec,
           new AST.IdentifierNode(name.value, locFromToken(name)),
-          null, locFromToken(keyword));
+          null, locFromToken(typeSpec));
       }
     );
 
@@ -790,13 +863,13 @@ export class CPegParser {
     this.ruleRefs.typedefDecl = map(
       Parser.seq(
         kw('typedef'),
-        kw('int'),
+        lazy(() => this.ruleRefs.typeSpecifier),
         pred(t => t.type === 'IDENTIFIER'),
         Parser.lit(';')
       ),
-      ([typedefKw, typeKw, name, semi]) => {
+      ([typedefKw, typeSpec, name, semi]) => {
         return new AST.DeclNode('typedef',
-          new AST.TypeSpecNode('int', true, false, null, locFromToken(typeKw)),
+          typeSpec,
           new AST.IdentifierNode(name.value, locFromToken(name)),
           null, locFromToken(typedefKw));
       }
@@ -857,20 +930,20 @@ export class CPegParser {
 
     const localDecl = map(
       Parser.seq(
-        kw('int'),
+        lazy(() => this.ruleRefs.typeSpecifier),
         pred(t => t.type === 'IDENTIFIER'),
         Parser.opt(Parser.seq(Parser.lit('='), lazy(() => this.ruleRefs.expression))),
         Parser.lit(';')
       ),
-      ([keyword, name, init]) => {
+      ([typeSpec, name, init]) => {
         let initValue = null;
         if (init) {
           initValue = Array.isArray(init[1]) ? init[1][0] : init[1];
         }
-        return new AST.DeclNode('var', 
-          new AST.TypeSpecNode('int', true, false, null, locFromToken(keyword)),
-          new AST.IdentifierNode(name.value, locFromToken(name)), 
-          initValue, locFromToken(keyword));
+        return new AST.DeclNode('var',
+          typeSpec,
+          new AST.IdentifierNode(name.value, locFromToken(name)),
+          initValue, locFromToken(typeSpec));
       }
     );
 
@@ -916,18 +989,110 @@ export class CPegParser {
       throw new Error("Parser not initialized properly");
     }
 
-    const intType = new AST.TypeSpecNode('int', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    const typedefNames = this.collectTypedefNames(tokens);
+    return this.doParse(tokens, typedefNames);
+  }
+
+  /**
+   * First pass: collect typedef names from the token stream
+   * @param {Token[]} tokens - Token array to scan
+   * @returns {string[]} Array of typedef names
+   */
+  collectTypedefNames(tokens) {
+    const names = [];
+    let i = 0;
+    while (i < tokens.length) {
+      if (tokens[i].type === 'KEYWORD' && tokens[i].value === 'typedef') {
+        i++;
+        while (i < tokens.length && (tokens[i].type === 'KEYWORD' || names.includes(tokens[i].value))) {
+          i++;
+        }
+        if (i < tokens.length && tokens[i].type === 'IDENTIFIER') {
+          names.push(tokens[i].value);
+          i++;
+        }
+      } else {
+        i++;
+      }
+    }
+    return names;
+  }
+
+  /**
+   * Build a type specifier rule that includes typedef names
+   * @param {string[]} typedefNames - Typedef names to recognize as types
+   * @returns {Object} Type specifier parser rule
+   */
+  buildExtendedTypeSpecifier(typedefNames) {
+    const typedefNameParser = map(
+      pred(t => t.type === 'IDENTIFIER' && typedefNames.includes(t.value)),
+      (token) => {
+        return { kind: 'typedef', token };
+      }
+    );
+
+    const signedness = Parser.alt(kw('signed'), kw('unsigned'));
+    const basicType = Parser.alt(
+      kw('void'), kw('char'), kw('_Bool'),
+      kw('short'), kw('int'), kw('long')
+    );
+
+    const withBoth = map(Parser.seq(signedness, basicType), ([s, t]) => ({ kind: 'keyword', signToken: s, typeToken: t }));
+    const onlySign = map(signedness, (s) => ({ kind: 'keyword', signToken: s, typeToken: null }));
+    const onlyType = map(basicType, (t) => ({ kind: 'keyword', signToken: null, typeToken: t }));
+
+    return map(
+      Parser.alt(
+        typedefNameParser,
+        withBoth,
+        onlySign,
+        onlyType
+      ),
+      (value) => {
+        if (value.kind === 'typedef') {
+          return new AST.TypeSpecNode(value.token.value, true, false, null, locFromToken(value.token));
+        }
+        if (value.typeToken) {
+          const typeKw = value.typeToken.value;
+          let isSigned = undefined;
+          if (value.signToken) {
+            isSigned = value.signToken.value === 'signed';
+          }
+          return createTypeSpec(typeKw, isSigned, value.typeToken);
+        } else if (value.signToken) {
+          const isSigned = value.signToken.value === 'signed';
+          const baseType = isSigned ? 'int' : 'unsigned';
+          return new AST.TypeSpecNode(baseType, isSigned, false, null, locFromToken(value.signToken));
+        }
+        return new AST.TypeSpecNode('int', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+      }
+    );
+  }
+
+  /**
+   * Build the program-level parser with extended type support
+   * @param {Token[]} tokens - Token array to parse
+   * @param {string[]} typedefNames - Typedef names to recognize
+   * @returns {AST.CompoundNode} Parsed AST
+   */
+  doParse(tokens, typedefNames) {
+    this.typedefNames = typedefNames;
+    if (typedefNames.length > 0) {
+      this.ruleRefs.typeSpecifier = this.buildExtendedTypeSpecifier(typedefNames);
+    }
+
+    const defaultType = new AST.TypeSpecNode('int', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
 
     const typedParam = map(
       Parser.seq(
-        kw('int'),
+        lazy(() => this.ruleRefs.typeSpecifier),
         pred(t => t.type === 'IDENTIFIER')
       ),
-      ([typeKw, name]) => {
+      ([typeSpec, name]) => {
         return new AST.ParameterNode(
-          new AST.TypeSpecNode('int', true, false, null, locFromToken(typeKw)),
+          typeSpec,
           name.value,
-          locFromToken(typeKw)
+          locFromToken(typeSpec)
         );
       }
     );
@@ -937,7 +1102,7 @@ export class CPegParser {
     const bareParam = map(
       pred(t => t.type === 'IDENTIFIER'),
       (name) => {
-        return new AST.ParameterNode(intType, name.value, locFromToken(name));
+        return new AST.ParameterNode(defaultType, name.value, locFromToken(name));
       }
     );
 
@@ -959,40 +1124,40 @@ export class CPegParser {
 
     const functionDef = map(
       Parser.seq(
-        kw('int'),
+        lazy(() => this.ruleRefs.typeSpecifier),
         pred(t => t.type === 'IDENTIFIER'),
         Parser.lit('('),
         Parser.opt(Parser.alt(paramList, voidParam)),
         Parser.lit(')'),
         this.ruleRefs.statement
       ),
-      ([keyword, name, , params, , body]) => {
+      ([returnType, name, , params, , body]) => {
         let paramNodes = [];
         if (params && Array.isArray(params)) {
           paramNodes = params;
         }
         return new AST.FunctionNode(
           new AST.IdentifierNode(name.value, locFromToken(name)),
-          intType,
+          returnType,
           paramNodes,
           body,
-          locFromToken(keyword)
+          locFromToken(returnType)
         );
       }
     );
 
     const variableDecl = map(
       Parser.seq(
-        kw('int'),
+        lazy(() => this.ruleRefs.typeSpecifier),
         pred(t => t.type === 'IDENTIFIER'),
         Parser.opt(Parser.seq(Parser.lit('='), lazy(() => this.ruleRefs.expression))),
         Parser.lit(';')
       ),
-      ([keyword, name, init]) => {
+      ([typeSpec, name, init]) => {
         const initValue = init ? init[1] : null;
-        return new AST.DeclNode('var', intType, 
-          new AST.IdentifierNode(name.value, locFromToken(name)), 
-          initValue, locFromToken(keyword));
+        return new AST.DeclNode('var', typeSpec,
+          new AST.IdentifierNode(name.value, locFromToken(name)),
+          initValue, locFromToken(typeSpec));
       }
     );
 
@@ -1004,9 +1169,9 @@ export class CPegParser {
       variableDecl
     );
     const programParser = Parser.many(globalDecl);
-    
+
     const result = programParser.parse(tokens, 0);
-    
+
     const meaningfulTokens = tokens.filter(t => t.type !== 'EOF');
     if (!result.success || result.nextPos < meaningfulTokens.length) {
       const loc = tokens[result.nextPos]?.location || tokens[0]?.location || { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } };
@@ -1014,11 +1179,11 @@ export class CPegParser {
     }
 
     if (Array.isArray(result.value) && result.value.length > 0) {
-      return new AST.CompoundNode(result.value, 
+      return new AST.CompoundNode(result.value,
         { file: '<input>', start: tokens[0].location.start, end: tokens[tokens.length-1].location.end });
     }
 
-    return new AST.CompoundNode([], 
+    return new AST.CompoundNode([],
       { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
   }
 }

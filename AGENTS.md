@@ -110,15 +110,15 @@ function example(name) { ... }
 - **Binary operator mapping** - C operators (+, -, *, /, %, <<, >>) mapped to IR opcodes (add, sub, mul, div, mod, shl, shr)
 - **Comparison codegen** - Z80 comparison operations (lt, gt, le, ge, eq, ne) generate proper cp/jp sequences
 - **Register allocator cross-block** - Fixed virtual register tracking across basic block boundaries
-- 149 passing tests
+- Parser extended for typed function parameters (int a, int b) with void support
+- 155 passing tests
 
 ### 🔄 In Progress
 - None
 
 ### 🔜 Next Steps
 1. Build object file assembler/linker - support WLA DX-compatible assembly output
-2. Extend parser for typed function parameters (int a, int b)
-3. Improve Z80 codegen quality (eliminate redundant instructions, proper stack frame management)
+2. Improve Z80 codegen quality (eliminate redundant instructions, proper stack frame management)
 
 ## Pre-commit Checklist
 - Verify tests pass: `npm test`

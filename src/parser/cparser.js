@@ -918,19 +918,59 @@ export class CPegParser {
 
     const intType = new AST.TypeSpecNode('int', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
 
+    const typedParam = map(
+      Parser.seq(
+        kw('int'),
+        pred(t => t.type === 'IDENTIFIER')
+      ),
+      ([typeKw, name]) => {
+        return new AST.ParameterNode(
+          new AST.TypeSpecNode('int', true, false, null, locFromToken(typeKw)),
+          name.value,
+          locFromToken(typeKw)
+        );
+      }
+    );
+
+    const voidParam = kw('void');
+
+    const bareParam = map(
+      pred(t => t.type === 'IDENTIFIER'),
+      (name) => {
+        return new AST.ParameterNode(intType, name.value, locFromToken(name));
+      }
+    );
+
+    const singleParam = Parser.alt(typedParam, bareParam);
+
+    const paramList = map(
+      Parser.seq(
+        singleParam,
+        Parser.many(Parser.seq(Parser.lit(','), singleParam))
+      ),
+      ([firstParam, rest]) => {
+        const params = [firstParam];
+        for (const [, param] of rest) {
+          params.push(param);
+        }
+        return params;
+      }
+    );
+
     const functionDef = map(
       Parser.seq(
         kw('int'),
         pred(t => t.type === 'IDENTIFIER'),
         Parser.lit('('),
-        Parser.opt(Parser.many(pred(t => t.type === 'IDENTIFIER'))),
+        Parser.opt(Parser.alt(paramList, voidParam)),
         Parser.lit(')'),
         this.ruleRefs.statement
       ),
       ([keyword, name, , params, , body]) => {
-        const paramNodes = (params || []).map(p => 
-          new AST.ParameterNode(intType, p.value, locFromToken(p))
-        );
+        let paramNodes = [];
+        if (params && Array.isArray(params)) {
+          paramNodes = params;
+        }
         return new AST.FunctionNode(
           new AST.IdentifierNode(name.value, locFromToken(name)),
           intType,

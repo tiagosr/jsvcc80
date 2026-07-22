@@ -394,10 +394,103 @@ describe('C PEG Parser', () => {
     const source = `int main() { switch (x) { case 1: x = 1; y = 2; default: x = 0; } }`;
     const lexer = new Lexer(source);
     const tokens = lexer.tokenize();
-    
+
     const parser = new CPegParser();
     const ast = parser.parse(tokens);
-    
+
     assert.ok(ast !== null);
+  });
+
+  // Typed function parameter tests
+  it('should parse function with single typed parameter', () => {
+    const source = `int foo(int a) { return a; }`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+
+    assert.ok(ast !== null);
+    assert.strictEqual(ast.type, 'Compound');
+    const funcNode = ast.statements[0];
+    assert.strictEqual(funcNode.type, 'Function');
+    assert.strictEqual(funcNode.parameters.length, 1);
+    assert.strictEqual(funcNode.parameters[0].name, 'a');
+  });
+
+  it('should parse function with multiple typed parameters', () => {
+    const source = `int add(int a, int b) { return a + b; }`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+
+    assert.ok(ast !== null);
+    const funcNode = ast.statements[0];
+    assert.strictEqual(funcNode.type, 'Function');
+    assert.strictEqual(funcNode.parameters.length, 2);
+    assert.strictEqual(funcNode.parameters[0].name, 'a');
+    assert.strictEqual(funcNode.parameters[1].name, 'b');
+  });
+
+  it('should parse function with void parameter', () => {
+    const source = `int main(void) { return 0; }`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+
+    assert.ok(ast !== null);
+    const funcNode = ast.statements[0];
+    assert.strictEqual(funcNode.type, 'Function');
+    assert.strictEqual(funcNode.parameters.length, 0);
+  });
+
+  it('should parse function with three typed parameters', () => {
+    const source = `int sum(int a, int b, int c) { return a + b + c; }`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+
+    assert.ok(ast !== null);
+    const funcNode = ast.statements[0];
+    assert.strictEqual(funcNode.parameters.length, 3);
+    assert.strictEqual(funcNode.parameters[0].name, 'a');
+    assert.strictEqual(funcNode.parameters[1].name, 'b');
+    assert.strictEqual(funcNode.parameters[2].name, 'c');
+  });
+
+  it('should parse function with bare identifier parameters (backward compat)', () => {
+    const source = `int foo(a, b) { return a + b; }`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+
+    assert.ok(ast !== null);
+    const funcNode = ast.statements[0];
+    assert.strictEqual(funcNode.type, 'Function');
+    assert.strictEqual(funcNode.parameters.length, 2);
+    assert.strictEqual(funcNode.parameters[0].name, 'a');
+    assert.strictEqual(funcNode.parameters[1].name, 'b');
+  });
+
+  it('should parse parameter types as TypeSpec nodes', () => {
+    const source = `int foo(int x) { return x; }`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+
+    const funcNode = ast.statements[0];
+    const param = funcNode.parameters[0];
+    assert.strictEqual(param.type.type, 'TypeSpec');
+    assert.strictEqual(param.type.baseType, 'int');
   });
 });

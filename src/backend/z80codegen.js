@@ -287,8 +287,8 @@ export class Z80Codegen {
   generateLoad(instr) {
     const [dest, src] = instr.operands;
 
-    // Immediate load to register pair (HL for 16-bit)
-    if (src.startsWith('#') || /^\d+$/.test(src)) {
+    // Immediate/numeric load
+    if (typeof src === 'number' || (typeof src === 'string' && (/^\d+$/.test(src) || src.startsWith('#')))) {
       this.codeLines.push(`  ld hl, ${this.formatValue(src)}`);
       return;
     }
@@ -327,7 +327,14 @@ export class Z80Codegen {
    */
   generateBinaryOp(instr) {
     const [dest, op, src1, src2] = instr.operands;
-    
+
+    // Comparison operations produce 0 or 1 in A
+    const comparisonOps = ['lt', 'gt', 'le', 'ge', 'eq', 'ne', 'land', 'lor'];
+    if (comparisonOps.includes(op)) {
+      this.generateComparison(instr);
+      return;
+    }
+
     // Most Z80 operations work with accumulator (A), so we need to be careful
     this.codeLines.push(`  ld a, ${src1}`);
 
@@ -341,7 +348,6 @@ export class Z80Codegen {
         break;
 
       case 'mul':
-        // Z80 doesn't have mul - use repeated addition or table lookup
         this.codeLines.push(`  ld b, a`);
         this.codeLines.push(`  xor a`);
         this.codeLines.push(`  ld c, ${src2}`);
@@ -352,11 +358,9 @@ export class Z80Codegen {
         break;
 
       case 'div':
-        // Division requires more complex implementation
         this.codeLines.push(`  ld b, ${src2}`);
-        this.codeLines.push(`  ld a, 0`); // Quotient in A
+        this.codeLines.push(`  ld a, 0`);
         this.codeLines.push('div_loop:');
-        // Simplified division - placeholder for full implementation
         break;
 
       case 'and':
@@ -376,10 +380,57 @@ export class Z80Codegen {
     }
 
     // Store result to destination
-    const reg = this.formatRegister(dest, true); // 8-bit register
+    const reg = this.formatRegister(dest, true);
     if (reg !== 'a') {
       this.codeLines.push(`  ld ${reg}, a`);
     }
+  }
+
+  /**
+   * Generates a comparison operation (produces 0 or 1)
+   * @param {BinaryOpInstruction} instr - Comparison instruction
+   */
+  generateComparison(instr) {
+    const [dest, op, src1, src2] = instr.operands;
+    const falseLabel = this.label('cmp_false');
+    const endLabel = this.label('cmp_end');
+
+    this.codeLines.push(`  ld a, ${src1}`);
+    this.codeLines.push(`  cp ${src2}`);
+
+    const jumpMap = {
+      'eq': 'z', 'ne': 'nz',
+      'lt': 'c', 'gt': 'nc',
+      'le': 'nz', 'ge': 'z'
+    };
+
+    const flag = jumpMap[op];
+    if (flag) {
+      this.codeLines.push(`  jp ${flag}, ${endLabel}`);
+    }
+
+    this.codeLines.push(`${falseLabel}:`);
+    this.codeLines.push(`  xor a`);
+    this.codeLines.push(`  jp ${endLabel}`);
+
+    this.codeLines.push(`${endLabel}:`);
+    if (op === 'le' || op === 'ge') {
+      this.codeLines.push(`  ld a, 1`);
+    }
+
+    const reg = this.formatRegister(dest, true);
+    if (reg !== 'a') {
+      this.codeLines.push(`  ld ${reg}, a`);
+    }
+  }
+
+  /**
+   * Generates a unique label
+   * @param {string} prefix - Label prefix
+   * @returns {string} Unique label name
+   */
+  label(prefix) {
+    return `${prefix}_${this.nextTempId++}`;
   }
 
   /**

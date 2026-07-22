@@ -554,11 +554,17 @@ export class AstToIr {
       return this.translateAssignment(binOp);
     }
 
+    const opMapping = {
+      '+': 'add', '-': 'sub', '*': 'mul', '/': 'div', '%': 'mod',
+      '<<': 'shl', '>>': 'shr'
+    };
+    const mappedOp = opMapping[binOp.op] || binOp.op;
+
     const leftResult = this.translateExpression(binOp.left);
     const rightResult = this.translateExpression(binOp.right);
     const dest = this.temp();
     const block = new IL.BasicBlock(this.label('binop'));
-    block.add(new IL.BinaryOpInstruction(dest, binOp.op, leftResult.result, rightResult.result));
+    block.add(new IL.BinaryOpInstruction(dest, mappedOp, leftResult.result, rightResult.result));
     return {
       blocks: [...leftResult.blocks, ...rightResult.blocks, block],
       result: dest

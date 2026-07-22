@@ -1,8 +1,9 @@
 /**
  * Main Compiler class - orchestrates all compilation stages
  */
+import { readFileSync } from 'fs';
 import { Lexer, PreprocessedSource } from './preprocessor/lexer.js';
-import { Parser } from './parser/combinators.js';
+import { CPegParser } from './parser/cparser.js';
 import { globalRegistry } from './core/plugins.js';
 import { ProgramIR } from './nanopass/il.js';
 import { ParserError } from './core/errors.js';
@@ -20,7 +21,7 @@ export class CompilerOptions {
    */
   constructor(options = {}) {
     this.sourceFile = options.source || '<stdin>';
-    this.optimizationLevel = options.opt || 'O0'; // O0-O3, Os, Oz
+    this.optimizationLevel = options.opt || 'O0';
     this.targetArchitecture = options.arch || 'z80';
     this.debugInfo = !!options.debug;
     this.emitIR = !!options.emitIr;
@@ -64,216 +65,6 @@ export class CompilerOptions {
 }
 
 /**
- * Main Compiler class that orchestrates all stages
- */
-export class Compiler {
-  /**
-   * Creates a new compiler instance
-   * @param {CompilerOptions} [options] - Compilation options
-   */
-  constructor(options = null) {
-    this.options = options || new CompilerOptions();
-    this.preprocessor = new PreprocessedSource(this.options.sourceFile);
-    this.lexer = null;
-    this.parser = null;
-    
-    // Load registered plugins
-    this.loadPlugins();
-  }
-
-  /**
-   * Loads compiler plugins from registry and options
-   */
-  loadPlugins() {
-    const passManager = PassManager.getInstance(this.options.getOptimizationFlags());
-    
-    // Load parser extensions
-    for (const plugin of globalRegistry.getPlugins('parser')) {
-      if (plugin.init) {
-        plugin.init({ compiler: this, options: this.options });
-      }
-    }
-
-    // Register optimization passes from plugins
-    for (const pass of globalRegistry.getPlugins('optimization_pass')) {
-      passManager.registerPass(pass);
-    }
-  }
-
-  /**
-   * Compiles source code string to Z80 assembly
-   * @param {string} source - C source code
-   * @returns {Object} Compilation result with code and diagnostics
-   */
-  compileSource(source) {
-    const result = {
-      success: false,
-      code: '',
-      warnings: [],
-      errors: []
-    };
-
-    try {
-      // Stage 1: Preprocessing
-      const preprocessed = this.preprocess(source);
-      
-      // Stage 2: Lexing
-      const tokens = this.tokenize(preprocessed);
-      
-      // Stage 3: Parsing
-      const ast = this.parse(tokens);
-      
-      // Stage 4: Semantic analysis (placeholder)
-      const analyzedAst = this.analyze(ast);
-      
-      // Stage 5: IR generation
-      const ir = this.generateIR(analyzedAst);
-      
-      // Stage 6: Optimization passes
-      const optimizedIr = this.optimize(ir);
-      
-      // Stage 7: Code generation
-      result.code = this.generateCode(optimizedIr);
-
-      if (this.options.emitIR) {
-        result.ir = optimizedIr.toString();
-      }
-
-      result.success = true;
-    } catch (error) {
-      if (error.name && error.name.includes('Error')) {
-        result.errors.push(error.message);
-        if (error.location) {
-          result.errors[result.errors.length - 1] += 
-            ` at ${error.location.file || '<unknown>'}:${error.location.line}:${error.location.column}`;
-        }
-      } else {
-        throw error;
-      }
-    }
-
-    return result;
-  }
-
-  /**
-   * Compiles from a file path
-   * @param {string} filePath - Path to C source file
-   * @returns {Object} Compilation result
-   */
-  async compileFile(filePath) {
-    // In Node.js, we'd use fs module here
-    const fs = await import('fs');
-    const source = fs.readFileSync(filePath, 'utf-8');
-    
-    this.options.sourceFile = filePath;
-    return this.compileSource(source);
-  }
-
-  /**
-   * Preprocessing stage - handles #pragma and other directives
-   * @param {string} source - Raw source code
-   * @returns {string} Processed source
-   */
-  preprocess(source) {
-    // For now, just return the source as-is
-    // Full preprocessor would handle:
-    // - #include
-    // - #define / #undef
-    // - #if / #ifdef / #ifndef / #else / #endif
-    // - Macro expansion
-    
-    this.preprocessor = new PreprocessedSource(this.options.sourceFile);
-    return source;
-  }
-
-  /**
-   * Lexing stage - tokenizes the preprocessed source
-   * @param {string} source - Preprocessed source code
-   * @returns {Token[]} Array of tokens
-   */
-  tokenize(source) {
-    this.lexer = new Lexer(source, this.preprocessor);
-    return this.lexer.tokenize();
-  }
-
-  /**
-   * Parsing stage - builds AST from tokens using PEG parser
-   * @param {Token[]} tokens - Token array to parse
-   * @returns {ASTNode} Parsed AST root node
-   */
-  async parse(tokens) {
-    // Use the C grammar PEG parser
-    const { CPegParser } = await import('./parser/cparser.js');
-    this.parser = new CPegParser();
-    
-    try {
-      return this.parser.parse(tokens);
-    } catch (error) {
-      if (error.name === 'ParserError') {
-        throw error;
-      }
-      // Wrap other errors as parser errors
-      throw new ParserError(error.message, tokens[0]?.location || null);
-    }
-  }
-
-  /**
-   * Semantic analysis stage - type checking and symbol resolution
-   * @param {ASTNode} ast - AST to analyze
-   * @returns {ASTNode} Analyzed AST
-   */
-  analyze(ast) {
-    // Placeholder for semantic analysis pass
-    return ast;
-  }
-
-  /**
-   * IR generation stage - translates AST to intermediate representation
-   * @param {ASTNode} ast - Analyzed AST
-   * @returns {ProgramIR} Program intermediate representation
-   */
-  generateIR(ast) {
-    const translator = new AstToIr();
-    return translator.translate(ast);
-  }
-
-  /**
-   * Optimization stage - applies optimization passes to IR
-   * @param {ProgramIR} ir - IR to optimize
-   * @returns {ProgramIR} Optimized IR
-   */
-  optimize(ir) {
-    const passManager = PassManager.getInstance(this.options.getOptimizationFlags());
-    
-    // Run all registered optimization passes
-    for (const pass of passManager.getPasses()) {
-      ir = pass.run(ir);
-      
-      if (!ir) {
-        console.warn(`Optimization pass ${pass.getName()} returned null`);
-        continue;
-      }
-    }
-
-    return ir;
-  }
-
-  /**
-   * Code generation stage - produces target assembly from IR
-   * @param {ProgramIR} ir - Optimized IR
-   * @returns {string} Generated Z80 assembly code
-   */
-  generateCode(ir) {
-    const codegen = new Z80Codegen({
-      debugInfo: this.options.debugInfo,
-      optimizeStack: true
-    });
-
-    return codegen.generate(ir);
-  }
-}
-
-/**
  * Pass manager for organizing compilation passes (nanopass style)
  */
 export class PassManager {
@@ -283,10 +74,10 @@ export class PassManager {
    * @returns {PassManager} Singleton instance
    */
   static getInstance(flags = {}) {
-    if (!this._instance) {
-      this._instance = new PassManager(flags);
+    if (!PassManager._instance) {
+      PassManager._instance = new PassManager(flags);
     }
-    return this._instance;
+    return PassManager._instance;
   }
 
   constructor(flags = {}) {
@@ -324,9 +115,8 @@ export class PassManager {
    * @returns {object[]} Array of pass objects
    */
   getPasses() {
-    // Filter passes based on optimization flags
-    return this.passes.filter(pass => 
-      !this.flags.noOpt || true // All passes run when no optimization
+    return this.passes.filter(pass =>
+      !this.flags.noOpt || true
     );
   }
 
@@ -350,7 +140,7 @@ export class PassManager {
     for (const pass of this.getPasses()) {
       try {
         const result = pass.run(current, { flags: this.flags });
-        
+
         if (result !== undefined && result !== null) {
           current = result;
         }
@@ -361,5 +151,203 @@ export class PassManager {
     }
 
     return current;
+  }
+}
+
+/**
+ * Main Compiler class that orchestrates all stages
+ */
+export class Compiler {
+  /**
+   * Creates a new compiler instance
+   * @param {CompilerOptions} [options] - Compilation options
+   */
+  constructor(options = null) {
+    this.options = options || new CompilerOptions();
+    this.preprocessor = new PreprocessedSource(this.options.sourceFile);
+    this.lexer = null;
+    this.parser = null;
+    this.passManager = null;
+
+    // Load registered plugins
+    this.loadPlugins();
+  }
+
+  /**
+   * Loads compiler plugins from registry and options
+   */
+  loadPlugins() {
+    this.passManager = PassManager.getInstance(this.options.getOptimizationFlags());
+
+    // Load parser extensions
+    for (const plugin of globalRegistry.getPlugins('parser')) {
+      if (plugin.init) {
+        plugin.init({ compiler: this, options: this.options });
+      }
+    }
+
+    // Register optimization passes from plugins
+    for (const pass of globalRegistry.getPlugins('optimization_pass')) {
+      this.passManager.registerPass(pass);
+    }
+  }
+
+  /**
+   * Compiles source code string to Z80 assembly
+   * @param {string} source - C source code
+   * @returns {Object} Compilation result with code and diagnostics
+   */
+  compileSource(source) {
+    const result = {
+      success: false,
+      code: '',
+      warnings: [],
+      errors: []
+    };
+
+    try {
+      // Stage 1: Preprocessing
+      const preprocessed = this.preprocess(source);
+
+      // Stage 2: Lexing
+      const tokens = this.tokenize(preprocessed);
+
+      // Stage 3: Parsing
+      const ast = this.parse(tokens);
+
+      // Stage 4: Semantic analysis (placeholder)
+      const analyzedAst = this.analyze(ast);
+
+      // Stage 5: IR generation
+      const ir = this.generateIR(analyzedAst);
+
+      // Stage 6: Optimization passes
+      const optimizedIr = this.optimize(ir);
+
+      // Stage 7: Code generation
+      result.code = this.generateCode(optimizedIr);
+
+      if (this.options.emitIR) {
+        result.ir = optimizedIr.toString();
+      }
+
+      result.success = true;
+    } catch (error) {
+      if (error.name && error.name.includes('Error')) {
+        result.errors.push(error.message);
+        if (error.location) {
+          result.errors[result.errors.length - 1] +=
+            ` at ${error.location.file || '<unknown>'}:${error.location.line}:${error.location.column}`;
+        }
+      } else {
+        throw error;
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Compiles from a file path
+   * @param {string} filePath - Path to C source file
+   * @returns {Object} Compilation result
+   */
+  compileFile(filePath) {
+    const source = readFileSync(filePath, 'utf-8');
+
+    this.options.sourceFile = filePath;
+    return this.compileSource(source);
+  }
+
+  /**
+   * Preprocessing stage - handles #pragma and other directives
+   * @param {string} source - Raw source code
+   * @returns {string} Processed source
+   */
+  preprocess(source) {
+    this.preprocessor = new PreprocessedSource(this.options.sourceFile);
+    return source;
+  }
+
+  /**
+   * Lexing stage - tokenizes the preprocessed source
+   * @param {string} source - Preprocessed source code
+   * @returns {Token[]} Array of tokens
+   */
+  tokenize(source) {
+    this.lexer = new Lexer(source, this.preprocessor);
+    return this.lexer.tokenize();
+  }
+
+  /**
+   * Parsing stage - builds AST from tokens using PEG parser
+   * @param {Token[]} tokens - Token array to parse
+   * @returns {ASTNode} Parsed AST root node
+   */
+  parse(tokens) {
+    this.parser = new CPegParser();
+
+    try {
+      return this.parser.parse(tokens);
+    } catch (error) {
+      if (error.name === 'ParserError') {
+        throw error;
+      }
+      throw new ParserError(error.message, tokens[0]?.location || null);
+    }
+  }
+
+  /**
+   * Semantic analysis stage - type checking and symbol resolution
+   * @param {ASTNode} ast - AST to analyze
+   * @returns {ASTNode} Analyzed AST
+   */
+  analyze(ast) {
+    return ast;
+  }
+
+  /**
+   * IR generation stage - translates AST to intermediate representation
+   * @param {ASTNode} ast - Analyzed AST
+   * @returns {ProgramIR} Program intermediate representation
+   */
+  generateIR(ast) {
+    const translator = new AstToIr();
+    return translator.translate(ast);
+  }
+
+  /**
+   * Optimization stage - applies optimization passes to IR
+   * @param {ProgramIR} ir - IR to optimize
+   * @returns {ProgramIR} Optimized IR
+   */
+  optimize(ir) {
+    let current = ir;
+    for (const pass of this.passManager.getPasses()) {
+      const result = pass.run(current);
+
+      if (result == null) {
+        console.warn(`Optimization pass ${pass.getName()} returned null`);
+        continue;
+      }
+
+      current = result;
+    }
+
+    return current;
+  }
+
+  /**
+   * Code generation stage - produces target assembly from IR
+   * @param {ProgramIR} ir - Optimized IR
+   * @returns {string} Generated Z80 assembly code
+   */
+  generateCode(ir) {
+    const codegen = new Z80Codegen({
+      debugInfo: this.options.debugInfo,
+      optimizeStack: true
+    });
+
+    return codegen.generate(ir);
   }
 }

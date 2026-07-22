@@ -80,7 +80,7 @@ describe('AST to IR Translation', () => {
       for (const instr of block.instructions) {
         if (instr.opcode === 'BINOP') {
           foundBinop = true;
-          assert.strictEqual(instr.operands[1], '+');
+          assert.strictEqual(instr.operands[1], 'add');
           assert.ok(instr.operands[2].startsWith('t'), 'left operand should be temp');
           assert.ok(instr.operands[3].startsWith('t'), 'right operand should be temp');
         }
@@ -109,7 +109,7 @@ describe('AST to IR Translation', () => {
     let foundSub = false;
     for (const block of func.blocks) {
       for (const instr of block.instructions) {
-        if (instr.opcode === 'BINOP' && instr.operands[1] === '-') {
+        if (instr.opcode === 'BINOP' && instr.operands[1] === 'sub') {
           foundSub = true;
         }
       }

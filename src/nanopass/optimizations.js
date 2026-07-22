@@ -561,10 +561,6 @@ class BlockRegisterAllocator {
    * @param {BasicBlock} block - Block to allocate
    */
   allocateBlock(block) {
-    this.vregToPreg.clear();
-    this.pregToVreg.clear();
-    this.usedRegs = [];
-
     for (const instr of block.instructions) {
       this.allocateInstruction(instr);
     }

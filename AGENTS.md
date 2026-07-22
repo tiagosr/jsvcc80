@@ -106,14 +106,19 @@ function example(name) { ... }
 - C grammar parser extended with while/do-while/for loops, switch/case, goto/break/continue, struct/union/enum/typedef
 - Z80 optimization passes - peephole optimizer (dead code elimination, constant folding, redundant move/jump elimination, stack op merging) and register allocator (physical Z80 register assignment with spilling)
 - Optimization pass registration via global registry
+- **End-to-end pipeline wired** - `compiler.js` integrates lexer → parser → AST → IR → optimization → codegen
+- **Binary operator mapping** - C operators (+, -, *, /, %, <<, >>) mapped to IR opcodes (add, sub, mul, div, mod, shl, shr)
+- **Comparison codegen** - Z80 comparison operations (lt, gt, le, ge, eq, ne) generate proper cp/jp sequences
+- **Register allocator cross-block** - Fixed virtual register tracking across basic block boundaries
 - 149 passing tests
 
 ### 🔄 In Progress
 - None
 
 ### 🔜 Next Steps
-1. Wire up compiler.js - integrate lexer → parser → AST → IR → codegen pipeline end-to-end
-2. Build object file assembler/linker - support WLA DX-compatible assembly output
+1. Build object file assembler/linker - support WLA DX-compatible assembly output
+2. Extend parser for typed function parameters (int a, int b)
+3. Improve Z80 codegen quality (eliminate redundant instructions, proper stack frame management)
 
 ## Pre-commit Checklist
 - Verify tests pass: `npm test`

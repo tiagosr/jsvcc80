@@ -1,0 +1,307 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert';
+import { Lexer } from '../preprocessor/lexer.js';
+import { CPegParser } from '../parser/cparser.js';
+import { AstToIr } from '../nanopass/ast_to_ir.js';
+import * as IL from '../nanopass/il.js';
+import { Z80Codegen } from '../backend/z80codegen.js';
+
+describe('Processor Intrinsics - AST to IR', () => {
+  function compile(source) {
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const translator = new AstToIr();
+    return translator.translate(ast);
+  }
+
+  function findIntrinsic(ir, expectedOpcode) {
+    for (const func of ir.functions) {
+      for (const block of func.blocks) {
+        for (const instr of block.instructions) {
+          if (instr.opcode === 'INTRINSIC' && instr.operands[0] === expectedOpcode) {
+            return instr;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  it('should translate __nop() to NOP intrinsic', () => {
+    const ir = compile('int main() { __nop(); return 0; }');
+    const instr = findIntrinsic(ir, 'NOP');
+    assert.ok(instr !== null, 'NOP intrinsic should be present');
+  });
+
+  it('should translate __halt() to HALT intrinsic', () => {
+    const ir = compile('int main() { __halt(); return 0; }');
+    const instr = findIntrinsic(ir, 'HALT');
+    assert.ok(instr !== null, 'HALT intrinsic should be present');
+  });
+
+  it('should translate __di() to DI intrinsic', () => {
+    const ir = compile('int main() { __di(); return 0; }');
+    const instr = findIntrinsic(ir, 'DI');
+    assert.ok(instr !== null, 'DI intrinsic should be present');
+  });
+
+  it('should translate __ei() to EI intrinsic', () => {
+    const ir = compile('int main() { __ei(); return 0; }');
+    const instr = findIntrinsic(ir, 'EI');
+    assert.ok(instr !== null, 'EI intrinsic should be present');
+  });
+
+  it('should translate __exx() to EXX intrinsic', () => {
+    const ir = compile('int main() { __exx(); return 0; }');
+    const instr = findIntrinsic(ir, 'EXX');
+    assert.ok(instr !== null, 'EXX intrinsic should be present');
+  });
+
+  it('should translate __ex_af_af() to EX_AF_AF intrinsic', () => {
+    const ir = compile('int main() { __ex_af_af(); return 0; }');
+    const instr = findIntrinsic(ir, 'EX_AF_AF');
+    assert.ok(instr !== null, 'EX_AF_AF intrinsic should be present');
+  });
+
+  it('should translate __ex_de_hl() to EX_DE_HL intrinsic', () => {
+    const ir = compile('int main() { __ex_de_hl(); return 0; }');
+    const instr = findIntrinsic(ir, 'EX_DE_HL');
+    assert.ok(instr !== null, 'EX_DE_HL intrinsic should be present');
+  });
+
+  it('should translate __im0() to IM intrinsic with value 0', () => {
+    const ir = compile('int main() { __im0(); return 0; }');
+    const instr = findIntrinsic(ir, 'IM');
+    assert.ok(instr !== null, 'IM intrinsic should be present');
+    assert.strictEqual(instr.operands[1], 0);
+  });
+
+  it('should translate __im1() to IM intrinsic with value 1', () => {
+    const ir = compile('int main() { __im1(); return 0; }');
+    const instr = findIntrinsic(ir, 'IM');
+    assert.ok(instr !== null, 'IM intrinsic should be present');
+    assert.strictEqual(instr.operands[1], 1);
+  });
+
+  it('should translate __im2() to IM intrinsic with value 2', () => {
+    const ir = compile('int main() { __im2(); return 0; }');
+    const instr = findIntrinsic(ir, 'IM');
+    assert.ok(instr !== null, 'IM intrinsic should be present');
+    assert.strictEqual(instr.operands[1], 2);
+  });
+
+  it('should translate __reti() to RETI intrinsic', () => {
+    const ir = compile('int main() { __reti(); return 0; }');
+    const instr = findIntrinsic(ir, 'RETI');
+    assert.ok(instr !== null, 'RETI intrinsic should be present');
+  });
+
+  it('should translate __retn() to RETN intrinsic', () => {
+    const ir = compile('int main() { __retn(); return 0; }');
+    const instr = findIntrinsic(ir, 'RETN');
+    assert.ok(instr !== null, 'RETN intrinsic should be present');
+  });
+
+  it('should translate __rld() to RLD intrinsic', () => {
+    const ir = compile('int main() { __rld(); return 0; }');
+    const instr = findIntrinsic(ir, 'RLD');
+    assert.ok(instr !== null, 'RLD intrinsic should be present');
+  });
+
+  it('should translate __rrd() to RRD intrinsic', () => {
+    const ir = compile('int main() { __rrd(); return 0; }');
+    const instr = findIntrinsic(ir, 'RRD');
+    assert.ok(instr !== null, 'RRD intrinsic should be present');
+  });
+
+  it('should translate __ld_a_r() to LD_A_R intrinsic', () => {
+    const ir = compile('int main() { __ld_a_r(); return 0; }');
+    const instr = findIntrinsic(ir, 'LD_A_R');
+    assert.ok(instr !== null, 'LD_A_R intrinsic should be present');
+  });
+
+  it('should translate __ld_r_a() to LD_R_A intrinsic', () => {
+    const ir = compile('int main() { __ld_r_a(); return 0; }');
+    const instr = findIntrinsic(ir, 'LD_R_A');
+    assert.ok(instr !== null, 'LD_R_A intrinsic should be present');
+  });
+
+  it('should translate __in(port) to IN intrinsic with port argument', () => {
+    const ir = compile('int main() { __in(0x60); return 0; }');
+    const instr = findIntrinsic(ir, 'IN');
+    assert.ok(instr !== null, 'IN intrinsic should be present');
+    assert.ok(instr.operands.length >= 2, 'IN should have port operand');
+  });
+
+  it('should translate __in16(port) to IN16 intrinsic with port argument', () => {
+    const ir = compile('int main() { __in16(0x1000); return 0; }');
+    const instr = findIntrinsic(ir, 'IN16');
+    assert.ok(instr !== null, 'IN16 intrinsic should be present');
+    assert.ok(instr.operands.length >= 2, 'IN16 should have port operand');
+  });
+
+  it('should translate __out(port, val) to OUT intrinsic', () => {
+    const ir = compile('int main() { __out(0x60, 42); return 0; }');
+    const instr = findIntrinsic(ir, 'OUT');
+    assert.ok(instr !== null, 'OUT intrinsic should be present');
+    assert.ok(instr.operands.length >= 3, 'OUT should have port and value operands');
+  });
+
+  it('should translate __out16(port, val) to OUT16 intrinsic', () => {
+    const ir = compile('int main() { __out16(0x1000, 42); return 0; }');
+    const instr = findIntrinsic(ir, 'OUT16');
+    assert.ok(instr !== null, 'OUT16 intrinsic should be present');
+    assert.ok(instr.operands.length >= 3, 'OUT16 should have port and value operands');
+  });
+
+  it('should not translate regular function calls as intrinsics', () => {
+    const ir = compile('int foo() { return 1; } int main() { foo(); return 0; }');
+    for (const func of ir.functions) {
+      for (const block of func.blocks) {
+        for (const instr of block.instructions) {
+          assert.notStrictEqual(instr.opcode, 'INTRINSIC', 'Regular calls should not be intrinsics');
+        }
+      }
+    }
+  });
+});
+
+describe('Processor Intrinsics - Z80 Codegen', () => {
+  function compileToAssembly(source) {
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const translator = new AstToIr();
+    const ir = translator.translate(ast);
+    const codegen = new Z80Codegen();
+    return codegen.generate(ir);
+  }
+
+  it('should generate nop instruction for __nop()', () => {
+    const asm = compileToAssembly('int main() { __nop(); return 0; }');
+    assert.ok(asm.includes('nop'), 'Assembly should contain nop');
+  });
+
+  it('should generate halt instruction for __halt()', () => {
+    const asm = compileToAssembly('int main() { __halt(); return 0; }');
+    assert.ok(asm.includes('halt'), 'Assembly should contain halt');
+  });
+
+  it('should generate di instruction for __di()', () => {
+    const asm = compileToAssembly('int main() { __di(); return 0; }');
+    assert.ok(asm.includes('di'), 'Assembly should contain di');
+  });
+
+  it('should generate ei instruction for __ei()', () => {
+    const asm = compileToAssembly('int main() { __ei(); return 0; }');
+    assert.ok(asm.includes('ei'), 'Assembly should contain ei');
+  });
+
+  it('should generate exx instruction for __exx()', () => {
+    const asm = compileToAssembly('int main() { __exx(); return 0; }');
+    assert.ok(asm.includes('exx'), 'Assembly should contain exx');
+  });
+
+  it('should generate ex af, af prime for __ex_af_af()', () => {
+    const asm = compileToAssembly('int main() { __ex_af_af(); return 0; }');
+    assert.ok(asm.includes("ex af, af'"), 'Assembly should contain ex af, af prime');
+  });
+
+  it('should generate ex de, hl for __ex_de_hl()', () => {
+    const asm = compileToAssembly('int main() { __ex_de_hl(); return 0; }');
+    assert.ok(asm.includes('ex de, hl'), 'Assembly should contain ex de, hl');
+  });
+
+  it('should generate im 0 for __im0()', () => {
+    const asm = compileToAssembly('int main() { __im0(); return 0; }');
+    assert.ok(asm.includes('im 0'), 'Assembly should contain im 0');
+  });
+
+  it('should generate im 1 for __im1()', () => {
+    const asm = compileToAssembly('int main() { __im1(); return 0; }');
+    assert.ok(asm.includes('im 1'), 'Assembly should contain im 1');
+  });
+
+  it('should generate im 2 for __im2()', () => {
+    const asm = compileToAssembly('int main() { __im2(); return 0; }');
+    assert.ok(asm.includes('im 2'), 'Assembly should contain im 2');
+  });
+
+  it('should generate reti instruction for __reti()', () => {
+    const asm = compileToAssembly('int main() { __reti(); return 0; }');
+    assert.ok(asm.includes('reti'), 'Assembly should contain reti');
+  });
+
+  it('should generate retn instruction for __retn()', () => {
+    const asm = compileToAssembly('int main() { __retn(); return 0; }');
+    assert.ok(asm.includes('retn'), 'Assembly should contain retn');
+  });
+
+  it('should generate rld instruction for __rld()', () => {
+    const asm = compileToAssembly('int main() { __rld(); return 0; }');
+    assert.ok(asm.includes('rld'), 'Assembly should contain rld');
+  });
+
+  it('should generate rrd instruction for __rrd()', () => {
+    const asm = compileToAssembly('int main() { __rrd(); return 0; }');
+    assert.ok(asm.includes('rrd'), 'Assembly should contain rrd');
+  });
+
+  it('should generate ld a, r for __ld_a_r()', () => {
+    const asm = compileToAssembly('int main() { __ld_a_r(); return 0; }');
+    assert.ok(asm.includes('ld a, r'), 'Assembly should contain ld a, r');
+  });
+
+  it('should generate ld r, a for __ld_r_a()', () => {
+    const asm = compileToAssembly('int main() { __ld_r_a(); return 0; }');
+    assert.ok(asm.includes('ld r, a'), 'Assembly should contain ld r, a');
+  });
+
+  it('should generate in a, (c) for __in(port)', () => {
+    const asm = compileToAssembly('int main() { __in(0x60); return 0; }');
+    assert.ok(asm.includes('ld c,'), 'Assembly should load port into C');
+    assert.ok(asm.includes('in a, (c)'), 'Assembly should contain in a, (c)');
+  });
+
+  it('should generate in a, (c) with 16-bit port for __in16(port)', () => {
+    const asm = compileToAssembly('int main() { __in16(0x1000); return 0; }');
+    assert.ok(asm.includes('ld bc,'), 'Assembly should load 16-bit port into BC');
+    assert.ok(asm.includes('in a, (c)'), 'Assembly should contain in a, (c)');
+  });
+
+  it('should generate out (c), b for __out(port, val)', () => {
+    const asm = compileToAssembly('int main() { __out(0x60, 42); return 0; }');
+    assert.ok(asm.includes('ld c,'), 'Assembly should load port into C');
+    assert.ok(asm.includes('out (c),'), 'Assembly should contain out (c)');
+  });
+
+  it('should generate out (c), a for __out16(port, val)', () => {
+    const asm = compileToAssembly('int main() { __out16(0x1000, 42); return 0; }');
+    assert.ok(asm.includes('ld bc,'), 'Assembly should load 16-bit port into BC');
+    assert.ok(asm.includes('out (c),'), 'Assembly should contain out (c)');
+  });
+});
+
+describe('Processor Intrinsics - IR Serialization', () => {
+  it('should serialize IntrinsicInstruction to JSON', () => {
+    const instr = new IL.IntrinsicInstruction('NOP');
+    const json = instr.toJSON();
+    assert.strictEqual(json.opcode, 'INTRINSIC');
+    assert.deepStrictEqual(json.operands, ['NOP']);
+  });
+
+  it('should serialize IntrinsicInstruction with operands', () => {
+    const instr = new IL.IntrinsicInstruction('OUT', ['t0', 't1']);
+    const json = instr.toJSON();
+    assert.strictEqual(json.opcode, 'INTRINSIC');
+    assert.deepStrictEqual(json.operands, ['OUT', 't0', 't1']);
+  });
+
+  it('should have correct string representation', () => {
+    const instr = new IL.IntrinsicInstruction('NOP');
+    assert.strictEqual(instr.toString(), 'INTRINSIC NOP');
+  });
+});

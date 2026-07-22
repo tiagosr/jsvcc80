@@ -231,6 +231,20 @@ export class PopInstruction extends Instruction {
 }
 
 /**
+ * Instruction for Z80 processor intrinsics (special opcodes, port access, etc.)
+ */
+export class IntrinsicInstruction extends Instruction {
+  /**
+   * Creates an intrinsic instruction
+   * @param {string} name - Intrinsic name (e.g. 'NOP', 'HALT', 'IN', 'OUT')
+   * @param {string[]} [operands] - Operands for the intrinsic (e.g. port address, data register)
+   */
+  constructor(name, operands = []) {
+    super('INTRINSIC', [name, ...operands]);
+  }
+}
+
+/**
  * Intermediate representation for basic blocks and functions
  */
 export class BasicBlock {

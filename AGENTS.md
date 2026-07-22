@@ -92,7 +92,8 @@ function example(name) { ... }
 
 ### ✅ Completed
 - **Binary object file format** - `src/linker/objectfile_loader.js` with VCC80O magic header, serialization/deserialization of sections, symbols, relocations, and CLI support for loading .o files
-- 268 passing tests
+- **Processor intrinsics** - `IntrinsicInstruction` IR class, intrinsic detection in `translateCall`, Z80 codegen for special opcodes and port access, 43 intrinsic tests
+- 312 passing tests
 - Preprocessor/lexer with pragma support (#pragma once, #pragma pack)
 - PEG parser combinator framework (seq, alt, many, some, opt, lit, any, pred, lazy, map)
 - AST node definitions for full C syntax
@@ -125,7 +126,8 @@ function example(name) { ... }
 - None
 
 ### 🔜 Next Steps
-1. Implement standard library functions (printf, memset, memcpy, etc.)
+1. Implement block transfer intrinsics (`INI`, `OUTI`, `INIR`, `OTIR`, `IND`, `OUTD`, `INDR`, `OTDR`)
+2. Implement standard library functions (printf, memset, memcpy, etc.)
 
 ## Pre-commit Checklist
 - Verify tests pass: `npm test`

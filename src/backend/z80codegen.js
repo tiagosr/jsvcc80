@@ -5,7 +5,8 @@ import {
   Instruction, BasicBlock, FunctionIR, ProgramIR,
   LoadInstruction, StoreInstruction, BinaryOpInstruction, UnaryOpInstruction,
   CallInstruction, ReturnInstruction, JumpIfInstruction, JumpInstruction,
-  LabelInstruction, AllocStackInstruction, FreeStackInstruction, PushInstruction, PopInstruction
+  LabelInstruction, AllocStackInstruction, FreeStackInstruction, PushInstruction, PopInstruction,
+  IntrinsicInstruction
 } from '../nanopass/il.js';
 
 /**
@@ -275,6 +276,10 @@ export class Z80Codegen {
 
       case 'POP':
         this.generatePop(instr);
+        break;
+
+      case 'INTRINSIC':
+        this.generateIntrinsic(instr);
         break;
 
       default:
@@ -711,11 +716,102 @@ export class Z80Codegen {
    */
   generatePop(instr) {
     const [dest] = instr.operands;
-    
+
     this.codeLines.push('  pop af');
     if (dest !== 'a') {
       const reg = this.formatRegister(dest, true);
       this.codeLines.push(`  ld ${reg}, a`);
+    }
+  }
+
+  /**
+   * Generates a Z80 intrinsic instruction (special opcodes, port access, etc.)
+   * @param {IntrinsicInstruction} instr - Intrinsic instruction
+   */
+  generateIntrinsic(instr) {
+    const [name, ...args] = instr.operands;
+
+    switch (name) {
+      case 'NOP':
+        this.codeLines.push('  nop');
+        break;
+
+      case 'HALT':
+        this.codeLines.push('  halt');
+        break;
+
+      case 'DI':
+        this.codeLines.push('  di');
+        break;
+
+      case 'EI':
+        this.codeLines.push('  ei');
+        break;
+
+      case 'EXX':
+        this.codeLines.push('  exx');
+        break;
+
+      case 'EX_AF_AF':
+        this.codeLines.push("  ex af, af'");
+        break;
+
+      case 'EX_DE_HL':
+        this.codeLines.push('  ex de, hl');
+        break;
+
+      case 'IM':
+        this.codeLines.push(`  im ${args[0]}`);
+        break;
+
+      case 'RETI':
+        this.codeLines.push('  reti');
+        break;
+
+      case 'RETN':
+        this.codeLines.push('  retn');
+        break;
+
+      case 'RLD':
+        this.codeLines.push('  rld');
+        break;
+
+      case 'RRD':
+        this.codeLines.push('  rrd');
+        break;
+
+      case 'LD_A_R':
+        this.codeLines.push('  ld a, r');
+        break;
+
+      case 'LD_R_A':
+        this.codeLines.push('  ld r, a');
+        break;
+
+      case 'IN':
+        this.codeLines.push(`  ld c, ${args[0]}`);
+        this.codeLines.push('  in a, (c)');
+        break;
+
+      case 'IN16':
+        this.codeLines.push(`  ld bc, ${args[0]}`);
+        this.codeLines.push('  in a, (c)');
+        break;
+
+      case 'OUT':
+        this.codeLines.push(`  ld c, ${args[0]}`);
+        this.codeLines.push(`  ld b, ${args[1]}`);
+        this.codeLines.push('  out (c), b');
+        break;
+
+      case 'OUT16':
+        this.codeLines.push(`  ld bc, ${args[0]}`);
+        this.codeLines.push(`  ld a, ${args[1]}`);
+        this.codeLines.push('  out (c), a');
+        break;
+
+      default:
+        console.warn(`Unknown intrinsic: ${name}`);
     }
   }
 

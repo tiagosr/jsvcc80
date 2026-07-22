@@ -2,6 +2,34 @@ import * as AST from '../ast/nodes.js';
 import * as IL from './il.js';
 
 /**
+ * Map of intrinsic function names to their IR opcode and argument count.
+ * Zero-argument intrinsics have argCount 0.
+ * Intrinsics with arguments evaluate their argument expressions first.
+ */
+const IntrinsicMap = {
+  '__nop': { opcode: 'NOP', argCount: 0 },
+  '__halt': { opcode: 'HALT', argCount: 0 },
+  '__di': { opcode: 'DI', argCount: 0 },
+  '__ei': { opcode: 'EI', argCount: 0 },
+  '__exx': { opcode: 'EXX', argCount: 0 },
+  '__ex_af_af': { opcode: 'EX_AF_AF', argCount: 0 },
+  '__ex_de_hl': { opcode: 'EX_DE_HL', argCount: 0 },
+  '__im0': { opcode: 'IM', argCount: 0, argValue: 0 },
+  '__im1': { opcode: 'IM', argCount: 0, argValue: 1 },
+  '__im2': { opcode: 'IM', argCount: 0, argValue: 2 },
+  '__reti': { opcode: 'RETI', argCount: 0 },
+  '__retn': { opcode: 'RETN', argCount: 0 },
+  '__rld': { opcode: 'RLD', argCount: 0 },
+  '__rrd': { opcode: 'RRD', argCount: 0 },
+  '__ld_a_r': { opcode: 'LD_A_R', argCount: 0 },
+  '__ld_r_a': { opcode: 'LD_R_A', argCount: 0 },
+  '__in': { opcode: 'IN', argCount: 1 },
+  '__in16': { opcode: 'IN16', argCount: 1 },
+  '__out': { opcode: 'OUT', argCount: 2 },
+  '__out16': { opcode: 'OUT16', argCount: 2 },
+};
+
+/**
  * Translates AST nodes to nanopass IR instructions
  */
 export class AstToIr {
@@ -626,6 +654,10 @@ export class AstToIr {
     const callTarget = call.callee.name || call.callee;
     const args = Array.isArray(call.args) ? call.args : [];
 
+    if (IntrinsicMap[callTarget]) {
+      return this.translateIntrinsic(callTarget, args, blocks);
+    }
+
     for (const arg of args) {
       const argResult = this.translateExpression(arg);
       blocks.push(...argResult.blocks);
@@ -642,6 +674,36 @@ export class AstToIr {
     }
     block.add(new IL.CallInstruction(callTarget, pushedRegs));
     block.add(new IL.LoadInstruction(dest, 'ret_val'));
+    return { blocks: [...blocks, block], result: dest };
+  }
+
+  /**
+   * Translate an intrinsic function call to IR
+   * @param {string} name - Intrinsic function name
+   * @param {AST.ASTNode[]} args - Argument AST nodes
+   * @param {IL.BasicBlock[]} blocks - Blocks array to push to
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translateIntrinsic(name, args, blocks) {
+    const intrinsic = IntrinsicMap[name];
+    const translatedArgs = [];
+
+    for (let i = 0; i < intrinsic.argCount; i++) {
+      const argResult = this.translateExpression(args[i]);
+      blocks.push(...argResult.blocks);
+      translatedArgs.push(argResult.result);
+    }
+
+    const dest = this.temp();
+    const block = new IL.BasicBlock(this.label('intrinsic'));
+
+    const opcodeArgs = [];
+    if (intrinsic.argValue !== undefined) {
+      opcodeArgs.push(intrinsic.argValue);
+    }
+    opcodeArgs.push(...translatedArgs);
+
+    block.add(new IL.IntrinsicInstruction(intrinsic.opcode, opcodeArgs));
     return { blocks: [...blocks, block], result: dest };
   }
 

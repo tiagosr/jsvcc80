@@ -462,7 +462,7 @@ describe('Struct - End-to-End Compilation', () => {
 describe('TypeSpecNode - Struct types', () => {
   it('should create TypeSpecNode for struct type', () => {
     const typeSpec = new AST.TypeSpecNode(
-      'struct', true, false, null,
+      'struct', true, false, false, null,
       { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } },
       0, false, null,
       'Point', 'struct'
@@ -473,7 +473,7 @@ describe('TypeSpecNode - Struct types', () => {
 
   it('should create TypeSpecNode for union type', () => {
     const typeSpec = new AST.TypeSpecNode(
-      'union', true, false, null,
+      'union', true, false, false, null,
       { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } },
       0, false, null,
       'Data', 'union'
@@ -484,7 +484,7 @@ describe('TypeSpecNode - Struct types', () => {
 
   it('should return correct type string for struct', () => {
     const typeSpec = new AST.TypeSpecNode(
-      'struct', true, false, null,
+      'struct', true, false, false, null,
       { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } },
       0, false, null,
       'Point', 'struct'
@@ -494,7 +494,7 @@ describe('TypeSpecNode - Struct types', () => {
 
   it('should return correct type string for union', () => {
     const typeSpec = new AST.TypeSpecNode(
-      'union', true, false, null,
+      'union', true, false, false, null,
       { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } },
       0, false, null,
       'Data', 'union'

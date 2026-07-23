@@ -737,42 +737,42 @@ describe('C PEG Parser', () => {
 
   // TypeSpecNode size tests
   it('should report correct size for char type', () => {
-    const typeSpec = new AST.TypeSpecNode('char', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    const typeSpec = new AST.TypeSpecNode('char', true, false, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
     assert.strictEqual(typeSpec.getSize(), 1);
   });
 
   it('should report correct size for int type', () => {
-    const typeSpec = new AST.TypeSpecNode('int', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    const typeSpec = new AST.TypeSpecNode('int', true, false, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
     assert.strictEqual(typeSpec.getSize(), 2);
   });
 
   it('should report correct size for short type', () => {
-    const typeSpec = new AST.TypeSpecNode('short', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    const typeSpec = new AST.TypeSpecNode('short', true, false, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
     assert.strictEqual(typeSpec.getSize(), 2);
   });
 
   it('should report correct size for long type', () => {
-    const typeSpec = new AST.TypeSpecNode('long', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    const typeSpec = new AST.TypeSpecNode('long', true, false, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
     assert.strictEqual(typeSpec.getSize(), 4);
   });
 
   it('should report correct size for void type', () => {
-    const typeSpec = new AST.TypeSpecNode('void', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    const typeSpec = new AST.TypeSpecNode('void', true, false, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
     assert.strictEqual(typeSpec.getSize(), 0);
   });
 
   it('should report correct size for _Bool type', () => {
-    const typeSpec = new AST.TypeSpecNode('_Bool', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    const typeSpec = new AST.TypeSpecNode('_Bool', true, false, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
     assert.strictEqual(typeSpec.getSize(), 1);
   });
 
   it('should report correct size for unsigned type', () => {
-    const typeSpec = new AST.TypeSpecNode('unsigned', false, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    const typeSpec = new AST.TypeSpecNode('unsigned', false, false, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
     assert.strictEqual(typeSpec.getSize(), 2);
   });
 
   it('should default to size 2 for unknown type', () => {
-    const typeSpec = new AST.TypeSpecNode('unknown', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    const typeSpec = new AST.TypeSpecNode('unknown', true, false, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
     assert.strictEqual(typeSpec.getSize(), 2);
   });
 

@@ -215,13 +215,15 @@ export class DeclNode extends ASTNode {
    * @param {IdentifierNode} name - Variable name
    * @param {ExpressionNode} [init] - Optional initializer
    * @param {SourceLocation} location - Source location
+   * @param {string} [storageClass] - Storage class specifier ('register', 'static', 'extern', 'auto')
    */
-  constructor(kind, type, name, init = null, location) {
+  constructor(kind, type, name, init = null, location, storageClass = null) {
     super('Decl', location);
     this.kind = kind;
     this.type = type;
     this.name = name;
     this.init = init;
+    this.storageClass = storageClass;
   }
 }
 
@@ -400,6 +402,7 @@ export class TypeSpecNode extends ASTNode {
    * @param {string} baseType - Base type (e.g., 'int', 'char')
    * @param {boolean} isSigned - Whether signed type
    * @param {boolean} isConst - Whether const qualified
+   * @param {boolean} isVolatile - Whether volatile qualified
    * @param {number} [bitWidth] - Optional bit width for enums/fields
    * @param {SourceLocation} location - Source location
    * @param {number} [pointerDepth] - Pointer indirection level (0 = non-pointer)
@@ -408,11 +411,12 @@ export class TypeSpecNode extends ASTNode {
    * @param {string} [structType] - Struct/union type name (e.g., 'Point')
    * @param {string} [structKind] - 'struct' or 'union' (null for non-struct types)
    */
-  constructor(baseType, isSigned = true, isConst = false, bitWidth = null, location, pointerDepth = 0, isArray = false, arrayLength = null, structType = null, structKind = null) {
+  constructor(baseType, isSigned = true, isConst = false, isVolatile = false, bitWidth = null, location, pointerDepth = 0, isArray = false, arrayLength = null, structType = null, structKind = null) {
     super('TypeSpec', location);
     this.baseType = baseType;
     this.isSigned = isSigned;
     this.isConst = isConst;
+    this.isVolatile = isVolatile;
     this.bitWidth = bitWidth;
     this.pointerDepth = pointerDepth;
     this.isArray = isArray;
@@ -463,11 +467,14 @@ export class TypeSpecNode extends ASTNode {
   }
 
   /**
-   * Returns the type string representation (e.g., 'int*', 'char[10]', 'struct Point')
+   * Returns the type string representation (e.g., 'const int*', 'volatile char[10]', 'struct Point')
    * @returns {string} Type string
    */
   typeString() {
-    let s = this.structKind ? `${this.structKind} ${this.structType}` : this.baseType;
+    let s = '';
+    if (this.isConst) s += 'const ';
+    if (this.isVolatile) s += 'volatile ';
+    s += this.structKind ? `${this.structKind} ${this.structType}` : this.baseType;
     for (let i = 0; i < this.pointerDepth; i++) {
       s += '*';
     }
@@ -508,11 +515,13 @@ export class ParameterNode extends ASTNode {
    * @param {TypeSpecNode} type - Parameter type
    * @param {IdentifierNode} name - Parameter name (null for unnamed)
    * @param {SourceLocation} location - Source location
+   * @param {string} [storageClass] - Storage class specifier ('register')
    */
-  constructor(type, name = null, location) {
+  constructor(type, name = null, location, storageClass = null) {
     super('Parameter', location);
     this.type = type;
     this.name = name;
+    this.storageClass = storageClass;
   }
 }
 

@@ -41,15 +41,17 @@ const TypeInfos = {
  * @param {string} typeKw - Type keyword (e.g., 'int', 'char', 'unsigned')
  * @param {boolean} isSigned - Override signedness (undefined = use default)
  * @param {Token} token - Token for location
+ * @param {boolean} [isConst] - Whether const qualified
+ * @param {boolean} [isVolatile] - Whether volatile qualified
  * @returns {AST.TypeSpecNode}
  */
-function createTypeSpec(typeKw, isSigned, token) {
+function createTypeSpec(typeKw, isSigned, token, isConst = false, isVolatile = false) {
   const info = TypeInfos[typeKw];
   if (!info) {
-    return new AST.TypeSpecNode(typeKw, isSigned !== false, false, null, locFromToken(token));
+    return new AST.TypeSpecNode(typeKw, isSigned !== false, isConst, isVolatile, null, locFromToken(token));
   }
   const effectiveSigned = isSigned !== undefined ? isSigned : info.isSigned;
-  return new AST.TypeSpecNode(info.baseType, effectiveSigned, false, null, locFromToken(token));
+  return new AST.TypeSpecNode(info.baseType, effectiveSigned, isConst, isVolatile, null, locFromToken(token));
 }
 
 /**
@@ -66,47 +68,55 @@ function mergeDeclaratorType(baseType, pointerDepth, arrayDims) {
   }
   if (arrayDims.length > 0) {
     const dim = arrayDims[0];
-    return new AST.TypeSpecNode(baseType.baseType, baseType.isSigned, baseType.isConst, baseType.bitWidth, loc, 0, true, dim);
+    return new AST.TypeSpecNode(baseType.baseType, baseType.isSigned, baseType.isConst, baseType.isVolatile, baseType.bitWidth, loc, 0, true, dim);
   }
-  return new AST.TypeSpecNode(baseType.baseType, baseType.isSigned, baseType.isConst, baseType.bitWidth, loc, pointerDepth, false, null);
+  return new AST.TypeSpecNode(baseType.baseType, baseType.isSigned, baseType.isConst, baseType.isVolatile, baseType.bitWidth, loc, pointerDepth, false, null);
 }
 
 /**
  * Build a type specifier parser rule
- * Matches: [signed|unsigned] [void|char|_Bool|short|int|long] or struct/union tag
+ * Matches: [const|volatile]* [signed|unsigned] [void|char|_Bool|short|int|long] or struct/union tag
  * Requires at least one token to be consumed.
  * @returns {Object} Parser rule
  */
 function buildTypeSpecifier() {
+  const typeQualifier = Parser.alt(kw('const'), kw('volatile'));
   const signedness = Parser.alt(kw('signed'), kw('unsigned'));
   const basicType = Parser.alt(
     kw('void'), kw('char'), kw('_Bool'),
     kw('short'), kw('int'), kw('long')
   );
 
+  // Collect zero or more qualifiers
+  const qualifiers = Parser.many(typeQualifier);
+
   // Try signedness + basicType first (e.g., "unsigned int")
-  const withBoth = map(Parser.seq(signedness, basicType), ([s, t]) => [s, t]);
+  const withBoth = map(Parser.seq(qualifiers, signedness, basicType), ([qs, s, t]) => [qs, s, t]);
   // Try signedness only (e.g., "unsigned")
-  const onlySign = map(signedness, (s) => [s, null]);
+  const onlySign = map(Parser.seq(qualifiers, signedness), ([qs, s]) => [qs, s, null]);
   // Try basicType only (e.g., "int")
-  const onlyType = map(basicType, (t) => [null, t]);
+  const onlyType = map(Parser.seq(qualifiers, basicType), ([qs, t]) => [qs, null, t]);
 
   return map(
     Parser.alt(withBoth, onlySign, onlyType),
-    ([signToken, typeToken]) => {
+    ([qualTokens, signToken, typeToken]) => {
+      const isConst = qualTokens.some(t => t.value === 'const');
+      const isVolatile = qualTokens.some(t => t.value === 'volatile');
+      const locToken = qualTokens.length > 0 ? qualTokens[0] : (signToken || typeToken);
+
       if (typeToken) {
         const typeKw = typeToken.value;
         let isSigned = undefined;
         if (signToken) {
           isSigned = signToken.value === 'signed';
         }
-        return createTypeSpec(typeKw, isSigned, typeToken);
+        return createTypeSpec(typeKw, isSigned, typeToken, isConst, isVolatile);
       } else if (signToken) {
         const isSigned = signToken.value === 'signed';
         const baseType = isSigned ? 'int' : 'unsigned';
-        return new AST.TypeSpecNode(baseType, isSigned, false, null, locFromToken(signToken));
+        return new AST.TypeSpecNode(baseType, isSigned, isConst, isVolatile, null, locFromToken(locToken));
       }
-      return new AST.TypeSpecNode('int', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+      return new AST.TypeSpecNode('int', true, isConst, isVolatile, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
     }
   );
 }
@@ -124,7 +134,7 @@ function buildStructTypeRef() {
     ),
     ([kindToken, tagToken]) => {
       return new AST.TypeSpecNode(
-        kindToken.value, true, false, null,
+        kindToken.value, true, false, false, null,
         locFromToken(kindToken), 0, false, null,
         tagToken.value, kindToken.value
       );
@@ -763,6 +773,7 @@ export class CPegParser {
   buildForStmt() {
     const forInitDecl = map(
       Parser.seq(
+        Parser.opt(kw('register')),
         lazy(() => this.ruleRefs.typeSpecifier),
         Parser.many(Parser.lit('*')),
         pred(t => t.type === 'IDENTIFIER'),
@@ -773,7 +784,7 @@ export class CPegParser {
         )),
         Parser.opt(Parser.seq(Parser.lit('='), lazy(() => this.ruleRefs.expression)))
       ),
-      ([typeSpec, stars, name, arrayDims, init]) => {
+      ([regKw, typeSpec, stars, name, arrayDims, init]) => {
         const pointerDepth = stars.length;
         const dims = arrayDims.map(dim => {
           const expr = dim[1];
@@ -789,7 +800,8 @@ export class CPegParser {
         return new AST.DeclNode('var',
           mergedType,
           new AST.IdentifierNode(name.value, locFromToken(name)),
-          initValue, locFromToken(typeSpec));
+          initValue, locFromToken(typeSpec),
+          regKw ? 'register' : null);
       }
     );
 
@@ -927,7 +939,7 @@ export class CPegParser {
         }
         const pointerDepth = stars.length;
         const fieldType = pointerDepth > 0
-          ? new AST.TypeSpecNode(typeSpec.baseType, typeSpec.isSigned, typeSpec.isConst, typeSpec.bitWidth, typeSpec.location, pointerDepth)
+          ? new AST.TypeSpecNode(typeSpec.baseType, typeSpec.isSigned, typeSpec.isConst, typeSpec.isVolatile, typeSpec.bitWidth, typeSpec.location, pointerDepth)
           : typeSpec;
         return new AST.StructFieldNode(
           fieldType,
@@ -1068,6 +1080,7 @@ export class CPegParser {
 
     const localDecl = map(
       Parser.seq(
+        Parser.opt(kw('register')),
         lazy(() => this.ruleRefs.typeSpecifier),
         Parser.many(Parser.lit('*')),
         pred(t => t.type === 'IDENTIFIER'),
@@ -1079,7 +1092,7 @@ export class CPegParser {
         Parser.opt(Parser.seq(Parser.lit('='), lazy(() => this.ruleRefs.expression))),
         Parser.lit(';')
       ),
-      ([typeSpec, stars, name, arrayDims, init]) => {
+      ([regKw, typeSpec, stars, name, arrayDims, init]) => {
         const pointerDepth = stars.length;
         const dims = arrayDims.map(dim => {
           const expr = dim[1];
@@ -1095,7 +1108,8 @@ export class CPegParser {
         return new AST.DeclNode('var',
           mergedType,
           new AST.IdentifierNode(name.value, locFromToken(name)),
-          initValue, locFromToken(typeSpec));
+          initValue, locFromToken(typeSpec),
+          regKw ? 'register' : null);
       }
     );
 
@@ -1214,15 +1228,18 @@ export class CPegParser {
 
     const structTypeRef = buildStructTypeRef();
 
+    const typeQualifier = Parser.alt(kw('const'), kw('volatile'));
     const signedness = Parser.alt(kw('signed'), kw('unsigned'));
     const basicType = Parser.alt(
       kw('void'), kw('char'), kw('_Bool'),
       kw('short'), kw('int'), kw('long')
     );
 
-    const withBoth = map(Parser.seq(signedness, basicType), ([s, t]) => ({ kind: 'keyword', signToken: s, typeToken: t }));
-    const onlySign = map(signedness, (s) => ({ kind: 'keyword', signToken: s, typeToken: null }));
-    const onlyType = map(basicType, (t) => ({ kind: 'keyword', signToken: null, typeToken: t }));
+    const qualifiers = Parser.many(typeQualifier);
+
+    const withBoth = map(Parser.seq(qualifiers, signedness, basicType), ([qs, s, t]) => ({ kind: 'keyword', qualifiers: qs, signToken: s, typeToken: t }));
+    const onlySign = map(Parser.seq(qualifiers, signedness), ([qs, s]) => ({ kind: 'keyword', qualifiers: qs, signToken: s, typeToken: null }));
+    const onlyType = map(Parser.seq(qualifiers, basicType), ([qs, t]) => ({ kind: 'keyword', qualifiers: qs, signToken: null, typeToken: t }));
 
     return map(
       Parser.alt(
@@ -1237,21 +1254,25 @@ export class CPegParser {
           return value;
         }
         if (value.kind === 'typedef') {
-          return new AST.TypeSpecNode(value.token.value, true, false, null, locFromToken(value.token));
+          return new AST.TypeSpecNode(value.token.value, true, false, false, null, locFromToken(value.token));
         }
+        const qualTokens = value.qualifiers || [];
+        const isConst = qualTokens.some(t => t.value === 'const');
+        const isVolatile = qualTokens.some(t => t.value === 'volatile');
+        const locToken = qualTokens.length > 0 ? qualTokens[0] : (value.signToken || value.typeToken);
         if (value.typeToken) {
           const typeKw = value.typeToken.value;
           let isSigned = undefined;
           if (value.signToken) {
             isSigned = value.signToken.value === 'signed';
           }
-          return createTypeSpec(typeKw, isSigned, value.typeToken);
+          return createTypeSpec(typeKw, isSigned, value.typeToken, isConst, isVolatile);
         } else if (value.signToken) {
           const isSigned = value.signToken.value === 'signed';
           const baseType = isSigned ? 'int' : 'unsigned';
-          return new AST.TypeSpecNode(baseType, isSigned, false, null, locFromToken(value.signToken));
+          return new AST.TypeSpecNode(baseType, isSigned, isConst, isVolatile, null, locFromToken(locToken));
         }
-        return new AST.TypeSpecNode('int', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+        return new AST.TypeSpecNode('int', true, isConst, isVolatile, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
       }
     );
   }
@@ -1270,10 +1291,11 @@ export class CPegParser {
       this.ruleRefs.typeSpecifier = this.buildExtendedTypeSpecifier(typedefNames, structTags);
     }
 
-    const defaultType = new AST.TypeSpecNode('int', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+    const defaultType = new AST.TypeSpecNode('int', true, false, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
 
     const typedParam = map(
       Parser.seq(
+        Parser.opt(kw('register')),
         lazy(() => this.ruleRefs.typeSpecifier),
         Parser.many(Parser.lit('*')),
         pred(t => t.type === 'IDENTIFIER'),
@@ -1283,7 +1305,7 @@ export class CPegParser {
           Parser.lit(']')
         ))
       ),
-      ([typeSpec, stars, name, arrayDims]) => {
+      ([regKw, typeSpec, stars, name, arrayDims]) => {
         const pointerDepth = stars.length;
         const dims = arrayDims.map(dim => {
           const expr = dim[1];
@@ -1295,7 +1317,8 @@ export class CPegParser {
         return new AST.ParameterNode(
           mergedType,
           name.value,
-          locFromToken(typeSpec)
+          locFromToken(typeSpec),
+          regKw ? 'register' : null
         );
       }
     );
@@ -1351,6 +1374,7 @@ export class CPegParser {
 
     const variableDecl = map(
       Parser.seq(
+        Parser.opt(kw('register')),
         lazy(() => this.ruleRefs.typeSpecifier),
         Parser.many(Parser.lit('*')),
         pred(t => t.type === 'IDENTIFIER'),
@@ -1362,7 +1386,7 @@ export class CPegParser {
         Parser.opt(Parser.seq(Parser.lit('='), lazy(() => this.ruleRefs.expression))),
         Parser.lit(';')
       ),
-      ([typeSpec, stars, name, arrayDims, init]) => {
+      ([regKw, typeSpec, stars, name, arrayDims, init]) => {
         const pointerDepth = stars.length;
         const dims = arrayDims.map(dim => {
           const expr = dim[1];
@@ -1374,7 +1398,8 @@ export class CPegParser {
         const initValue = init ? init[1] : null;
         return new AST.DeclNode('var', mergedType,
           new AST.IdentifierNode(name.value, locFromToken(name)),
-          initValue, locFromToken(typeSpec));
+          initValue, locFromToken(typeSpec),
+          regKw ? 'register' : null);
       }
     );
 

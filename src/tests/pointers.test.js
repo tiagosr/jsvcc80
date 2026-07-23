@@ -9,40 +9,40 @@ import { Z80Codegen } from '../../src/backend/z80codegen.js';
 
 describe('Pointers, Arrays, and Strings - Type System', () => {
   it('TypeSpecNode should track pointer depth', () => {
-    const type = new AST.TypeSpecNode('int', true, false, null, null, 2);
+    const type = new AST.TypeSpecNode('int', true, false, false, null, null, 2);
     assert.strictEqual(type.pointerDepth, 2);
     assert.strictEqual(type.getSize(), 2);
   });
 
   it('TypeSpecNode should track array dimensions', () => {
-    const type = new AST.TypeSpecNode('int', true, false, null, null, 0, true, 10);
+    const type = new AST.TypeSpecNode('int', true, false, false, null, null, 0, true, 10);
     assert.strictEqual(type.isArray, true);
     assert.strictEqual(type.arrayLength, 10);
     assert.strictEqual(type.getSize(), 20);
   });
 
   it('TypeSpecNode should return correct element size for arrays', () => {
-    const type = new AST.TypeSpecNode('int', true, false, null, null, 0, true, 10);
+    const type = new AST.TypeSpecNode('int', true, false, false, null, null, 0, true, 10);
     assert.strictEqual(type.getElementSize(), 2);
   });
 
   it('TypeSpecNode should return correct element size for pointers', () => {
-    const type = new AST.TypeSpecNode('char', true, false, null, null, 1);
+    const type = new AST.TypeSpecNode('char', true, false, false, null, null, 1);
     assert.strictEqual(type.getElementSize(), 2);
   });
 
   it('TypeSpecNode typeString should format pointer types', () => {
-    const type = new AST.TypeSpecNode('int', true, false, null, null, 1);
+    const type = new AST.TypeSpecNode('int', true, false, false, null, null, 1);
     assert.strictEqual(type.typeString(), 'int*');
   });
 
   it('TypeSpecNode typeString should format array types', () => {
-    const type = new AST.TypeSpecNode('char', true, false, null, null, 0, true, 10);
+    const type = new AST.TypeSpecNode('char', true, false, false, null, null, 0, true, 10);
     assert.strictEqual(type.typeString(), 'char[10]');
   });
 
   it('TypeSpecNode should handle double pointers', () => {
-    const type = new AST.TypeSpecNode('int', true, false, null, null, 2);
+    const type = new AST.TypeSpecNode('int', true, false, false, null, null, 2);
     assert.strictEqual(type.typeString(), 'int**');
     assert.strictEqual(type.getSize(), 2);
   });

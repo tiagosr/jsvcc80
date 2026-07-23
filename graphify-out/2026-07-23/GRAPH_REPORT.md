@@ -1,12 +1,18 @@
-# Graph Report - .  (2026-07-23)
+# Graph Report - jsvcc80  (2026-07-23)
 
 ## Corpus Check
-- Corpus is ~44,999 words - fits in a single context window. You may not need a graph.
+- 37 files · ~48,728 words
+- Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 664 nodes · 1531 edges · 32 communities (19 shown, 13 thin omitted)
-- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.84)
+- 697 nodes · 1482 edges · 47 communities (19 shown, 28 thin omitted)
+- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `cb4a270a`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - AST Node Definitions
@@ -41,26 +47,39 @@
 - IR Instruction Base
 - Link Result
 - Resolved Symbol
+- PluginRegistry
+- TypeSpecNode
+- CompoundNode
+- ControlFlowNode
+- DeclNode
+- EnumNode
+- EnumValueNode
+- ExprStmtNode
+- GotoNode
+- IdentifierNode
+- InlineAsmNode
+- LabelNode
+- ParameterNode
+- PragmacNode
+- StructNode
 
 ## God Nodes (most connected - your core abstractions)
-1. `CPegParser` - 37 edges
-2. `AstToIr` - 36 edges
-3. `Z80Codegen` - 32 edges
+1. `AstToIr` - 44 edges
+2. `Z80Codegen` - 38 edges
+3. `CPegParser` - 38 edges
 4. `locFromToken()` - 29 edges
-5. `lazy()` - 28 edges
-6. `pred()` - 25 edges
-7. `Lexer` - 25 edges
-8. `Compiler` - 21 edges
-9. `PeepholeOptimizer` - 20 edges
-10. `IrToObjectFile` - 19 edges
+5. `Lexer` - 25 edges
+6. `pred()` - 24 edges
+7. `Compiler` - 21 edges
+8. `PeepholeOptimizer` - 20 edges
+9. `IrToObjectFile` - 19 edges
+10. `WlaDxCodegen` - 18 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `serializeArchive()` --calls--> `serializeObjectFile()`  [EXTRACTED]
   src/linker/archive.js → src/linker/objectfile_loader.js
 - `deserializeArchive()` --calls--> `deserializeObjectFile()`  [EXTRACTED]
   src/linker/archive.js → src/linker/objectfile_loader.js
-- `buildTypeSpecifier()` --calls--> `map()`  [EXTRACTED]
-  src/parser/cparser.js → src/parser/combinators.js
 
 ## Import Cycles
 - None detected.
@@ -69,43 +88,35 @@
 - **Compilation Pipeline Stages** — agents_preprocessor_lexer, agents_parser_cparser, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_backend_z80codegen [INFERRED]
 - **Core Modules Read Order** — agents_compiler_entry, agents_preprocessor_lexer, agents_parser_combinators, agents_parser_cparser, agents_nanopass_il, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_nanopass_register_passes, agents_backend_z80codegen [INFERRED]
 
-## Communities (32 total, 13 thin omitted)
+## Communities (47 total, 28 thin omitted)
 
 ### Community 0 - "AST Node Definitions"
-Cohesion: 0.05
-Nodes (31): AnnotatedDeclNode, AttributeNode, BinaryOpNode, CallNode, CaseClauseNode, CompoundNode, ControlFlowNode, DeclNode (+23 more)
+Cohesion: 0.08
+Nodes (12): AddressOfNode, AnnotatedDeclNode, BinaryOpNode, CaseClauseNode, DerefNode, FunctionNode, IndexNode, LiteralNode (+4 more)
 
 ### Community 1 - "Parser Combinators"
-Cohesion: 0.23
-Nodes (8): lazy(), Parser, buildTypeSpecifier(), CPegParser, createTypeSpec(), kw(), locFromToken(), pred()
+Cohesion: 0.14
+Nodes (11): buildTypeSpecifier(), CPegParser, createTypeSpec(), kw(), locFromToken(), mergeDeclaratorType(), pred(), TypeInfos (+3 more)
 
 ### Community 2 - "Parser Error Handling"
-Cohesion: 0.07
-Nodes (15): ParserError, AltParser, AnyParser, LazyParser, LitParser, LocationParser, ManyParser, map() (+7 more)
+Cohesion: 0.05
+Nodes (13): AltParser, AnyParser, LazyParser, LitParser, LocationParser, ManyParser, MapParser, OptParser (+5 more)
 
 ### Community 3 - "Z80 Codegen & IR Base"
-Cohesion: 0.14
-Nodes (15): AllocStackInstruction, BasicBlock, BinaryOpInstruction, CallInstruction, FreeStackInstruction, IntrinsicInstruction, JumpIfInstruction, JumpInstruction (+7 more)
+Cohesion: 0.05
+Nodes (27): WlaDxSectionType, Z80Opcodes, IntrinsicMap, AllocStackInstruction, BasicBlock, BinaryOpInstruction, CallInstruction, DerefLoadInstruction (+19 more)
 
 ### Community 4 - "Plugin Interfaces"
 Cohesion: 0.06
 Nodes (8): AttributeHandler, CodegenPass, IREmissionPass, OptimizationPass, ParserExtension, PluginLoader, PreprocessorExtension, SemanticsPass
 
-### Community 5 - "Core Error Types"
-Cohesion: 0.08
-Nodes (9): CodegenError, CompilerError, LexerError, SemanticError, makeLocation(), PositionTracker, PreprocessedSource, Keywords (+1 more)
-
 ### Community 7 - "CLI Entry & Compiler"
 Cohesion: 0.12
 Nodes (7): __dirname, __filename, main(), parseArgs(), processFile(), Compiler, PassManager
 
-### Community 9 - "Lexer & C Parser"
-Cohesion: 0.20
-Nodes (5): IntrinsicMap, Lexer, compile(), compile(), compileToAssembly()
-
-### Community 10 - "Plugin Registry"
-Cohesion: 0.11
-Nodes (3): globalRegistry, PluginRegistry, PeepholeOptimizer
+### Community 8 - "Z80 Code Generator"
+Cohesion: 0.12
+Nodes (4): Z80Codegen, compile(), parse(), translate()
 
 ### Community 11 - "Architecture Documentation"
 Cohesion: 0.09
@@ -119,17 +130,17 @@ Nodes (20): argparse, bin, vcc80, dependencies, argparse, description, keywords,
 Cohesion: 0.15
 Nodes (3): link(), LinkedSection, Linker
 
-### Community 15 - "WLA DX Codegen"
-Cohesion: 0.22
-Nodes (3): WlaDxCodegen, WlaDxSectionType, Z80Opcodes
-
 ### Community 16 - "Archive (Static Lib)"
 Cohesion: 0.15
 Nodes (8): Archive, ArchiveMember, createArchive(), deserializeArchive(), isArchive(), loadArchive(), saveArchive(), serializeArchive()
 
 ### Community 18 - "Object File & Relocations"
-Cohesion: 0.28
-Nodes (6): ObjectRelocation, ObjectSymbol, RelocationType, SectionType, SymbolType, SymbolVisibility
+Cohesion: 0.21
+Nodes (7): ResolvedSymbol, ObjectRelocation, ObjectSymbol, RelocationType, SectionType, SymbolType, SymbolVisibility
+
+### Community 19 - "IR Functions & Program"
+Cohesion: 0.13
+Nodes (8): AttributeNode, CallNode, JumpNode, PointerMemberNode, PreprocNode, UnaryOpNode, Registers, makeLocation()
 
 ### Community 20 - "Object File Format"
 Cohesion: 0.20
@@ -140,32 +151,40 @@ Cohesion: 0.36
 Nodes (3): BinaryWriter, encodeString(), serializeObjectFile()
 
 ### Community 22 - "Compiler Options & Loading"
-Cohesion: 0.22
-Nodes (4): CompilerOptions, LinkerOptions, loadObjectFile(), saveObjectFile()
+Cohesion: 0.19
+Nodes (5): CompilerOptions, globalRegistry, LinkerOptions, loadObjectFile(), saveObjectFile()
+
+### Community 26 - "Symbol Table"
+Cohesion: 0.20
+Nodes (4): CodegenError, CompilerError, ParserError, SemanticError
 
 ### Community 27 - "Linker Features Docs"
 Cohesion: 0.50
 Nodes (4): Linker, Binary Object File Format, Static Library Support, WLA DX Code Generator
 
+### Community 29 - "IR Instruction Base"
+Cohesion: 0.48
+Nodes (3): LexerError, Keywords, TokenType
+
 ## Knowledge Gaps
-- **42 isolated node(s):** `__filename`, `__dirname`, `name`, `version`, `description` (+37 more)
+- **42 isolated node(s):** `IntrinsicMap`, `TypeInfos`, `__filename`, `__dirname`, `name` (+37 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **13 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **28 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `AstToIr` connect `AST to IR Translation` to `Lexer & C Parser`, `Compiler Options & Loading`?**
-  _High betweenness centrality (0.085) - this node is a cross-community bridge._
-- **Why does `Z80Codegen` connect `Z80 Code Generator` to `AST Node Definitions`, `Lexer & C Parser`, `Z80 Codegen & IR Base`, `Compiler Options & Loading`?**
-  _High betweenness centrality (0.076) - this node is a cross-community bridge._
-- **Why does `CPegParser` connect `Parser Combinators` to `AST Node Definitions`, `Lexer & C Parser`, `Parser Error Handling`, `Compiler Options & Loading`?**
-  _High betweenness centrality (0.068) - this node is a cross-community bridge._
-- **What connects `__filename`, `__dirname`, `name` to the rest of the system?**
+- **Why does `AstToIr` connect `AST to IR Translation` to `Z80 Code Generator`, `Parser Combinators`, `Z80 Codegen & IR Base`, `Compiler Options & Loading`?**
+  _High betweenness centrality (0.099) - this node is a cross-community bridge._
+- **Why does `Z80Codegen` connect `Z80 Code Generator` to `IR Functions & Program`, `Z80 Codegen & IR Base`, `Compiler Options & Loading`?**
+  _High betweenness centrality (0.086) - this node is a cross-community bridge._
+- **Why does `CPegParser` connect `Parser Combinators` to `Z80 Code Generator`, `Z80 Codegen & IR Base`, `Compiler Options & Loading`?**
+  _High betweenness centrality (0.079) - this node is a cross-community bridge._
+- **What connects `IntrinsicMap`, `TypeInfos`, `__filename` to the rest of the system?**
   _42 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AST Node Definitions` be split into smaller, more focused modules?**
-  _Cohesion score 0.04519230769230769 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.08 - nodes in this community are weakly interconnected._
+- **Should `Parser Combinators` be split into smaller, more focused modules?**
+  _Cohesion score 0.1396854764107308 - nodes in this community are weakly interconnected._
 - **Should `Parser Error Handling` be split into smaller, more focused modules?**
-  _Cohesion score 0.06968641114982578 - nodes in this community are weakly interconnected._
-- **Should `Z80 Codegen & IR Base` be split into smaller, more focused modules?**
-  _Cohesion score 0.14366998577524892 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.050170068027210885 - nodes in this community are weakly interconnected._

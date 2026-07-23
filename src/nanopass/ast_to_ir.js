@@ -690,7 +690,10 @@ export class AstToIr {
       arrayLength: typeInfo.arrayLength,
       elemSize: typeInfo.getElementSize(this.structRegistry),
       structType: typeInfo.structType || null,
-      structKind: typeInfo.structKind || null
+      structKind: typeInfo.structKind || null,
+      isConst: typeInfo.isConst || false,
+      isVolatile: typeInfo.isVolatile || false,
+      storageClass: decl.storageClass || null
     });
 
     if (decl.init) {
@@ -1192,7 +1195,7 @@ export class AstToIr {
         if (sym) {
           size = sym.size || sym.elemSize || 2;
         } else {
-          const resolved = this.resolveType(new AST.TypeSpecNode(operand.name, true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } }));
+          const resolved = this.resolveType(new AST.TypeSpecNode(operand.name, true, false, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } }));
           size = resolved.getSize(this.structRegistry);
         }
       }
@@ -1200,7 +1203,7 @@ export class AstToIr {
       if (this.structRegistry.has(operand)) {
         size = this.structRegistry.get(operand).size;
       } else {
-        const resolved = this.resolveType(new AST.TypeSpecNode(operand, true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } }));
+        const resolved = this.resolveType(new AST.TypeSpecNode(operand, true, false, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } }));
         size = resolved.getSize(this.structRegistry);
       }
     } else {

@@ -10,14 +10,14 @@
     "semantic_hash": "76ba87dac3991d8ada5c4e150cf96b99"
   },
   "src/ast/nodes.js": {
-    "mtime": 1784741746.428314,
-    "ast_hash": "744d7f0d07a5146c06b68abb08ad5d13",
-    "semantic_hash": "744d7f0d07a5146c06b68abb08ad5d13"
+    "mtime": 1784766472.8527818,
+    "ast_hash": "adf13576ee6360db16219272c480f3a9",
+    "semantic_hash": ""
   },
   "src/backend/z80codegen.js": {
-    "mtime": 1784733435.1905699,
-    "ast_hash": "911db4c2e50d08fa43fe4e47e93a2ec4",
-    "semantic_hash": "911db4c2e50d08fa43fe4e47e93a2ec4"
+    "mtime": 1784793560.6419117,
+    "ast_hash": "0502aa8ee20f3b594f8ef47a4ddb4788",
+    "semantic_hash": ""
   },
   "src/compiler.js": {
     "mtime": 1784728186.7496421,
@@ -70,14 +70,14 @@
     "semantic_hash": "f94c974f60479ab3790cf66a3aee9b0d"
   },
   "src/nanopass/ast_to_ir.js": {
-    "mtime": 1784742427.2446773,
-    "ast_hash": "40bc6dfcfa7bb3d3d53f5e8cf4d2488d",
-    "semantic_hash": "40bc6dfcfa7bb3d3d53f5e8cf4d2488d"
+    "mtime": 1784792902.5012736,
+    "ast_hash": "82035325745f72a9b16310b470199650",
+    "semantic_hash": ""
   },
   "src/nanopass/il.js": {
-    "mtime": 1784733018.9583042,
-    "ast_hash": "fa22f21823107861689ea211c074dac0",
-    "semantic_hash": "fa22f21823107861689ea211c074dac0"
+    "mtime": 1784767306.4186234,
+    "ast_hash": "a9f1f28e9df3a391869ab235b1d07cba",
+    "semantic_hash": ""
   },
   "src/nanopass/optimizations.js": {
     "mtime": 1784712745.588597,
@@ -95,9 +95,9 @@
     "semantic_hash": "188f8fe7696459440737535bac1b70c6"
   },
   "src/parser/cparser.js": {
-    "mtime": 1784752759.7743037,
-    "ast_hash": "2af8e964a90aef89833e304ac297ee81",
-    "semantic_hash": "2af8e964a90aef89833e304ac297ee81"
+    "mtime": 1784793764.3558028,
+    "ast_hash": "f251b00aa4e0f14fb5e1db9ae6cf70df",
+    "semantic_hash": ""
   },
   "src/plugins/interfaces.js": {
     "mtime": 1784629889.606984,
@@ -165,8 +165,23 @@
     "semantic_hash": "cd8f3bb2f24732f924f48b0a13bfeea6"
   },
   "AGENTS.md": {
-    "mtime": 1784754074.7373095,
-    "ast_hash": "8d40bd0dfa7952597deda2c610c12d58",
-    "semantic_hash": "8d40bd0dfa7952597deda2c610c12d58"
+    "mtime": 1784794999.6560163,
+    "ast_hash": "7a85bcee7946618bec04f0aa85508dc7",
+    "semantic_hash": ""
+  },
+  ".opencode/opencode.json": {
+    "mtime": 1784762569.629905,
+    "ast_hash": "e5f74d14a81702b55bdf53b33ec991d7",
+    "semantic_hash": ""
+  },
+  ".opencode/plugins/graphify.js": {
+    "mtime": 1784763930.6102142,
+    "ast_hash": "3ea725724bc8ebe483c9f13d6aa1124f",
+    "semantic_hash": ""
+  },
+  "src/tests/pointers.test.js": {
+    "mtime": 1784793848.6363773,
+    "ast_hash": "365ecdf76eeba8444051919021df122d",
+    "semantic_hash": ""
   }
 }

@@ -126,16 +126,16 @@ function example(name) { ... }
 - **Block transfer intrinsics** - `IntrinsicMap` extended with `__ini`, `__outi`, `__inir`, `__otir`, `__ind`, `__outd`, `__indr`, `__otdr`; Z80 codegen for INI/OUTI/INIR/OTIR/IND/OUTD/INDR/OTDR block transfer instructions using B for count, C for port, HL for buffer; 19 new tests
 - **Preprocessor directives** - `#define`, `#undef`, `#ifdef`, `#ifndef`, `#else`, `#endif` implemented in lexer; `PreprocessedSource` extended with conditional compilation state machine (`conditionalStack`, `skipDepth`); `readDirective()` replaces `readPragma()` with generalized directive dispatcher; nested conditionals with skip depth tracking; 40 new tests
 - **Include directive** - `#include "file"` and `#include <file>` implemented in lexer; `PreprocessedSource` extended with `includePaths` and `includedFiles` tracking for duplicate prevention; file resolution supports local directory, system include paths, and recursive inclusion; macros propagate across include boundaries; `-I` CLI flag for include directories; 15 new tests
+- **#if/#elif/defined() preprocessor** - `#if` and `#elif` directives with full constant expression evaluation; recursive descent parser supports arithmetic (+, -, *, /, %), relational (<, >, <=, >=), equality (==, !=), bitwise (&, |, ^, ~), logical (&&, ||), unary (+, -, !, ~), shift (<<, >>), hex/octal literals, parenthesized expressions; `defined(MACRO)` and `defined MACRO` operators; undefined macros evaluate to 0 in expressions; macro values substituted in expressions; conditional stack frames track `branchTaken` for correct `#elif`/`#else` interaction; 40 new tests
 
 #### 🧪 Test Results
-- 549 passing tests
+- 592 passing tests
 
 ### 🔄 In Progress
 - None
 
 ### 🔜 Next Steps
-1. Implement `#if`, `#elif`, expressions and `defined(...)` in the preprocessor
-2. Implement `#define` with parameters and parameter substitution
+1. Implement `#define` with parameters and parameter substitution
 3. Implement variadic function signatures
 4. Implement function pointers as types, and extend the type system to support these
 5. Implement linker definitions to add entry point `crt0` to default compiled/linked output

@@ -900,3 +900,634 @@ int main_var;`;
     assert.strictEqual(identifiers[1].value, 'main_var');
   });
 });
+
+describe('Preprocessor - #if directive', () => {
+  it('should include code when expression is true (non-zero)', () => {
+    const source = `#if 1
+int included;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'included');
+  });
+
+  it('should exclude code when expression is false (zero)', () => {
+    const source = `#if 0
+int excluded;
+#endif
+int other;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'other');
+  });
+
+  it('should evaluate arithmetic expressions', () => {
+    const source = `#if 2 + 3 * 4
+int result;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'result');
+  });
+
+  it('should evaluate comparison expressions', () => {
+    const source = `#if 10 > 5
+int gt;
+#endif
+#if 3 < 2
+int excluded;
+#endif
+int other;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 2);
+    assert.strictEqual(identifiers[0].value, 'gt');
+    assert.strictEqual(identifiers[1].value, 'other');
+  });
+
+  it('should evaluate logical operators', () => {
+    const source = `#if 1 && 1
+int and_true;
+#endif
+#if 1 && 0
+int and_false;
+#endif
+#if 0 || 1
+int or_true;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 2);
+    assert.strictEqual(identifiers[0].value, 'and_true');
+    assert.strictEqual(identifiers[1].value, 'or_true');
+  });
+
+  it('should handle parenthesized expressions', () => {
+    const source = `#if (2 + 3) * (4 - 1)
+int result;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'result');
+  });
+
+  it('should handle hexadecimal literals', () => {
+    const source = `#if 0x10
+int hex;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'hex');
+  });
+
+  it('should handle octal literals', () => {
+    const source = `#if 077
+int octal;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'octal');
+  });
+
+  it('should substitute macro values in expressions', () => {
+    const source = `#define VERSION 42
+#if VERSION > 10
+int v;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+  });
+
+  it('should treat undefined macros as 0 in expressions', () => {
+    const source = `#if UNDEFINED_MACRO
+int excluded;
+#else
+int included;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'included');
+  });
+
+  it('should handle bitwise operators', () => {
+    const source = `#if 0xFF & 0xF0
+int bitwise_and;
+#endif
+#if 0x0F | 0xF0
+int bitwise_or;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 2);
+    assert.strictEqual(identifiers[0].value, 'bitwise_and');
+    assert.strictEqual(identifiers[1].value, 'bitwise_or');
+  });
+
+  it('should handle unary operators', () => {
+    const source = `#if !0
+int not_zero;
+#endif
+#if -5 + 10
+int negation;
+#endif
+#if ~0
+int bitwise_not;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 3);
+  });
+
+  it('should handle equality operators', () => {
+    const source = `#if 5 == 5
+int eq;
+#endif
+#if 5 != 3
+int ne;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 2);
+    assert.strictEqual(identifiers[0].value, 'eq');
+    assert.strictEqual(identifiers[1].value, 'ne');
+  });
+
+  it('should handle relational operators <= and >=', () => {
+    const source = `#if 5 <= 5
+int le;
+#endif
+#if 10 >= 3
+int ge;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 2);
+  });
+
+  it('should handle shift operators', () => {
+    const source = `#if 1 << 3
+int shl;
+#endif
+#if 16 >> 2
+int shr;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 2);
+  });
+
+  it('should handle empty expression as false', () => {
+    const source = `#if
+int excluded;
+#else
+int included;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'included');
+  });
+
+  it('should handle division and modulo', () => {
+    const source = `#if 10 / 3
+int div;
+#endif
+#if 10 % 3
+int mod;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 2);
+  });
+});
+
+describe('Preprocessor - defined operator', () => {
+  it('should evaluate defined(MACRO) with parentheses form', () => {
+    const source = `#define MYMACRO 1
+#if defined(MYMACRO)
+int defined;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'defined');
+  });
+
+  it('should evaluate defined MACRO with space form', () => {
+    const source = `#define MYMACRO 1
+#if defined MYMACRO
+int defined;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'defined');
+  });
+
+  it('should return 0 for undefined macro with defined()', () => {
+    const source = `#if defined(NONEXISTENT)
+int excluded;
+#else
+int included;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'included');
+  });
+
+  it('should work with negation: !defined(MACRO)', () => {
+    const source = `#if !defined(NONEXISTENT)
+int included;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'included');
+  });
+
+  it('should combine defined() with logical operators', () => {
+    const source = `#define A 1
+#if defined(A) && defined(B)
+int both;
+#else
+int not_both;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'not_both');
+  });
+
+  it('should handle multiple defined() in one expression', () => {
+    const source = `#define A 1
+#define B 2
+#if defined(A) || defined(B)
+int either;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'either');
+  });
+});
+
+describe('Preprocessor - #elif directive', () => {
+  it('should evaluate first matching elif branch', () => {
+    const source = `#if 0
+int excluded1;
+#elif 1
+int included;
+#elif 1
+int excluded2;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'included');
+  });
+
+  it('should skip all elif branches when if is true', () => {
+    const source = `#if 1
+int included;
+#elif 1
+int excluded;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'included');
+  });
+
+  it('should combine #elif with #else', () => {
+    const source = `#if 0
+int excluded1;
+#elif 0
+int excluded2;
+#else
+int included;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'included');
+  });
+
+  it('should skip #else when elif branch matches', () => {
+    const source = `#if 0
+int excluded1;
+#elif 1
+int included;
+#else
+int excluded2;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'included');
+  });
+
+  it('should handle #elif with defined() operator', () => {
+    const source = `#define B 2
+#if defined(A)
+int a_def;
+#elif defined(B)
+int b_def;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'b_def');
+  });
+
+  it('should throw error for #elif without matching #if', () => {
+    const source = `#elif 1
+int x;`;
+    const lexer = new Lexer(source);
+    
+    assert.throws(() => lexer.tokenize(), /#elif without matching/);
+  });
+
+  it('should handle multiple elif branches', () => {
+    const source = `#define MODE 2
+#if MODE == 1
+int mode1;
+#elif MODE == 2
+int mode2;
+#elif MODE == 3
+int mode3;
+#else
+int default_mode;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'mode2');
+  });
+
+  it('should handle elif with complex expressions', () => {
+    const source = `#define X 5
+#if X < 3
+int small;
+#elif X >= 3 && X < 10
+int medium;
+#elif X >= 10
+int large;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'medium');
+  });
+});
+
+describe('Preprocessor - #if nested conditionals', () => {
+  it('should handle nested #if blocks', () => {
+    const source = `#if 1
+#if 1
+int nested;
+#endif
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'nested');
+  });
+
+  it('should exclude nested block when outer is false', () => {
+    const source = `#if 0
+#if 1
+int excluded;
+#endif
+#endif
+int other;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'other');
+  });
+
+  it('should mix #if, #ifdef, #elif in nested blocks', () => {
+    const source = `#define OUTER 1
+#if OUTER
+#ifdef INNER
+int inner;
+#else
+int no_inner;
+#endif
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'no_inner');
+  });
+
+  it('should handle deeply nested conditionals with elif', () => {
+    const source = `#if 1
+#if 0
+int excluded1;
+#elif 0
+int excluded2;
+#elif 1
+int deep_included;
+#else
+int excluded3;
+#endif
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'deep_included');
+  });
+
+  it('should handle #if inside #ifdef', () => {
+    const source = `#define X
+#ifdef X
+#if 1
+int included;
+#endif
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'included');
+  });
+});
+
+describe('Preprocessor - #if edge cases', () => {
+  it('should handle expression with only whitespace', () => {
+    const source = `#if   
+int excluded;
+#else
+int included;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'included');
+  });
+
+  it('should handle large numbers in expressions', () => {
+    const source = `#if 2147483647 > 0
+int large;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'large');
+  });
+
+  it('should handle operator precedence correctly', () => {
+    const source = `#if 1 + 2 * 3 == 7
+int precedence;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'precedence');
+  });
+
+  it('should skip #define inside inactive #if block', () => {
+    const source = `#if 0
+#define SHOULD_NOT_EXIST
+#endif
+#if defined(SHOULD_NOT_EXIST)
+int excluded;
+#else
+int included;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'included');
+  });
+
+  it('should handle #if with only defined() operator', () => {
+    const source = `#define FEATURE
+#if defined(FEATURE)
+int has_feature;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'has_feature');
+  });
+
+  it('should handle #elif after #ifdef', () => {
+    const source = `#define A 1
+#ifdef NONEXISTENT
+int excluded;
+#elif defined(A)
+int included;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'included');
+  });
+
+  it('should handle #elif after #ifndef', () => {
+    const source = `#define B 2
+#ifndef NONEXISTENT
+int first;
+#elif defined(B)
+int excluded;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'first');
+  });
+});

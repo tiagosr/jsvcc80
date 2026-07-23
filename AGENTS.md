@@ -17,7 +17,7 @@ A C compiler for Z80 CPU implemented in ES2025 Node.js. Compiles C source to Z80
 
 ### Core Modules (Read in Order)
 1. `src/compiler.js` - Entry point, orchestrates all stages
-2. `src/preprocessor/lexer.js` - Tokenizer with pragma support
+2. `src/preprocessor/lexer.js` - Tokenizer with define/undef/ifdef/else/endif support
 3. `src/parser/combinators.js` - PEG parser framework (includes `lazy()` and `map()` combinators)
 4. `src/parser/cparser.js` - C grammar PEG parser with AST construction
 5. `src/nanopass/il.js` - Intermediate representation
@@ -136,16 +136,14 @@ function example(name) { ... }
 1. Implement `#include "..."` and `#include <...>` in the preprocessor
 2. Implement `#if`, `#elif`, expressions and `defined(...)` in the preprocessor
 3. Implement `#define` with parameters and parameter substitution
-4. Implement `#define` with parameters and parameter substitution
-5. Implement pointer to pointer, array of arrays and extend the type system to support these
-6. Implement variadic function signatures
-7. Implement function pointers as types, and extend the type system to support these
-8. Implement linker definitions to add entry point `crt0` to default compiled/linked output
-9.  Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
-10. Implement `unsigned:n` bit fields
-11. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
-12. Implement `__FILENAME__` and `__LINE__` in the preprocessor
-13. Implement symbol map exporting for debugging
+4. Implement variadic function signatures
+5. Implement function pointers as types, and extend the type system to support these
+6. Implement linker definitions to add entry point `crt0` to default compiled/linked output
+7.  Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
+8.  Implement `unsigned:n` bit fields
+9.  Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
+10. Implement `__FILENAME__` and `__LINE__` in the preprocessor
+11. Implement symbol map exporting for debugging
 
 ### 📔 Backlog (issues identified during implementation for later priorization)
 - Fix `typedef unsigned int newType` parsing

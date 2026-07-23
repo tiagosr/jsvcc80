@@ -1,16 +1,16 @@
 # Graph Report - jsvcc80  (2026-07-23)
 
 ## Corpus Check
-- 39 files · ~55,346 words
+- 39 files · ~57,576 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 718 nodes · 1492 edges · 47 communities (19 shown, 28 thin omitted)
+- 728 nodes · 1510 edges · 48 communities (19 shown, 29 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.84)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5eb273a5`
+- Built from commit: `242a20ef`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -62,14 +62,15 @@
 - IndexedStoreInstruction
 - IntrinsicInstruction
 - LoadAddrInstruction
+- PreprocessedSource
 
 ## God Nodes (most connected - your core abstractions)
 1. `AstToIr` - 52 edges
 2. `CPegParser` - 40 edges
 3. `Z80Codegen` - 37 edges
-4. `locFromToken()` - 30 edges
-5. `pred()` - 25 edges
-6. `Lexer` - 23 edges
+4. `Lexer` - 31 edges
+5. `locFromToken()` - 30 edges
+6. `pred()` - 25 edges
 7. `Compiler` - 21 edges
 8. `PeepholeOptimizer` - 20 edges
 9. `IrToObjectFile` - 19 edges
@@ -88,11 +89,11 @@
 - **Compilation Pipeline Stages** — agents_preprocessor_lexer, agents_parser_cparser, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_backend_z80codegen [INFERRED]
 - **Core Modules Read Order** — agents_compiler_entry, agents_preprocessor_lexer, agents_parser_combinators, agents_parser_cparser, agents_nanopass_il, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_nanopass_register_passes, agents_backend_z80codegen [INFERRED]
 
-## Communities (47 total, 28 thin omitted)
+## Communities (48 total, 29 thin omitted)
 
 ### Community 0 - "AST Node Definitions"
 Cohesion: 0.04
-Nodes (36): AddressOfNode, AnnotatedDeclNode, AttributeNode, BinaryOpNode, CallNode, CaseClauseNode, CompoundNode, ControlFlowNode (+28 more)
+Nodes (38): AddressOfNode, AnnotatedDeclNode, AttributeNode, BinaryOpNode, CallNode, CaseClauseNode, CompoundNode, ControlFlowNode (+30 more)
 
 ### Community 1 - "Parser Combinators"
 Cohesion: 0.12
@@ -117,10 +118,6 @@ Nodes (7): AstToIr, computeFieldOffsets(), computeStructSize(), IntrinsicMap, co
 ### Community 7 - "CLI Entry & Compiler"
 Cohesion: 0.12
 Nodes (7): __dirname, __filename, main(), parseArgs(), processFile(), Compiler, PassManager
-
-### Community 9 - "Lexer & C Parser"
-Cohesion: 0.16
-Nodes (4): Lexer, PreprocessedSource, Keywords, TokenType
 
 ### Community 11 - "Architecture Documentation"
 Cohesion: 0.09
@@ -155,8 +152,12 @@ Cohesion: 0.36
 Nodes (3): BinaryWriter, encodeString(), serializeObjectFile()
 
 ### Community 22 - "Compiler Options & Loading"
-Cohesion: 0.19
-Nodes (5): CompilerOptions, globalRegistry, LinkerOptions, loadObjectFile(), saveObjectFile()
+Cohesion: 0.21
+Nodes (4): CompilerOptions, globalRegistry, LinkerOptions, saveObjectFile()
+
+### Community 23 - "Binary Reader"
+Cohesion: 0.33
+Nodes (3): BinaryReader, deserializeObjectFile(), loadObjectFile()
 
 ### Community 27 - "Linker Features Docs"
 Cohesion: 0.50
@@ -169,21 +170,21 @@ Nodes (3): AltParser, LazyParser, SeqParser
 ## Knowledge Gaps
 - **42 isolated node(s):** `IntrinsicMap`, `TypeInfos`, `__filename`, `__dirname`, `name` (+37 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **28 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **29 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `AstToIr` connect `AST to IR Translation` to `Parser Combinators`, `Compiler Options & Loading`?**
-  _High betweenness centrality (0.112) - this node is a cross-community bridge._
+  _High betweenness centrality (0.111) - this node is a cross-community bridge._
 - **Why does `Z80Codegen` connect `Z80 Code Generator` to `AST Node Definitions`, `Compiler Options & Loading`, `AST to IR Translation`?**
-  _High betweenness centrality (0.086) - this node is a cross-community bridge._
+  _High betweenness centrality (0.085) - this node is a cross-community bridge._
 - **Why does `CPegParser` connect `Parser Combinators` to `Compiler Options & Loading`, `AST to IR Translation`?**
-  _High betweenness centrality (0.081) - this node is a cross-community bridge._
+  _High betweenness centrality (0.080) - this node is a cross-community bridge._
 - **What connects `IntrinsicMap`, `TypeInfos`, `__filename` to the rest of the system?**
   _42 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AST Node Definitions` be split into smaller, more focused modules?**
-  _Cohesion score 0.03850425768233987 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.03725222146274778 - nodes in this community are weakly interconnected._
 - **Should `Parser Combinators` be split into smaller, more focused modules?**
   _Cohesion score 0.1244343891402715 - nodes in this community are weakly interconnected._
 - **Should `Z80 Codegen & IR Base` be split into smaller, more focused modules?**

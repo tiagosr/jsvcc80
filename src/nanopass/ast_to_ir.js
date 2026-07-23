@@ -7,6 +7,58 @@ import * as IL from './il.js';
 let stringLiteralCounter = 0;
 
 /**
+ * Compute the size of a struct/union given its fields
+ * For struct: sum of all field sizes
+ * For union: max of all field sizes
+ * @param {AST.StructFieldNode[]} fields - Struct/union fields
+ * @param {string} kind - 'struct' or 'union'
+ * @param {Map} structRegistry - Struct type registry for nested type lookups
+ * @returns {number} Total size in bytes
+ */
+function computeStructSize(fields, kind, structRegistry) {
+  if (fields.length === 0) return 0;
+  
+  const fieldSizes = fields.map(field => {
+    const resolvedType = field.type;
+    if (resolvedType.structKind && resolvedType.structType && structRegistry) {
+      const structDef = structRegistry.get(resolvedType.structType);
+      if (structDef) return structDef.size;
+    }
+    return resolvedType.getSize(structRegistry);
+  });
+  
+  if (kind === 'union') {
+    return Math.max(...fieldSizes);
+  }
+  return fieldSizes.reduce((a, b) => a + b, 0);
+}
+
+/**
+ * Compute field offsets for a struct/union
+ * @param {AST.StructFieldNode[]} fields - Struct/union fields
+ * @param {string} kind - 'struct' or 'union'
+ * @param {Map} structRegistry - Struct type registry for nested type lookups
+ * @returns {Map} Map from field name to byte offset
+ */
+function computeFieldOffsets(fields, kind, structRegistry) {
+  const offsets = new Map();
+  let currentOffset = 0;
+  
+  for (const field of fields) {
+    const fieldName = field.name ? field.name.name : null;
+    if (fieldName) {
+      offsets.set(fieldName, currentOffset);
+    }
+    const fieldSize = field.type.getSize(structRegistry);
+    if (kind === 'struct') {
+      currentOffset += fieldSize;
+    }
+  }
+  
+  return offsets;
+}
+
+/**
  * Map of intrinsic function names to their IR opcode and argument count.
  * Zero-argument intrinsics have argCount 0.
  * Intrinsics with arguments evaluate their argument expressions first.
@@ -49,6 +101,7 @@ export class AstToIr {
     this.loopBreakLabel = null;
     this.loopContinueLabel = null;
     this.typedefs = new Map();
+    this.structRegistry = new Map();
     this.stringData = [];
     this.stringCounter = 0;
   }
@@ -79,9 +132,17 @@ export class AstToIr {
     const program = new IL.ProgramIR();
     const globals = [];
 
+    // First pass: collect typedefs
     for (const node of ast.statements) {
       if (node instanceof AST.DeclNode && node.kind === 'typedef') {
         this.registerTypedef(node);
+      }
+    }
+
+    // Second pass: collect struct/union definitions
+    for (const node of ast.statements) {
+      if (node instanceof AST.StructNode) {
+        this.registerStruct(node);
       }
     }
 
@@ -164,6 +225,32 @@ export class AstToIr {
       kind: 'type',
       type: aliasedType.baseType,
       typeSpec: aliasedType
+    });
+  }
+
+  /**
+   * Register a struct/union definition in the type registry
+   * @param {AST.StructNode} structNode - Struct/union definition node
+   */
+  registerStruct(structNode) {
+    if (!structNode.name) return;
+    const structName = structNode.name.name;
+    const size = computeStructSize(structNode.fields, structNode.kind, this.structRegistry);
+    const fieldOffsets = computeFieldOffsets(structNode.fields, structNode.kind, this.structRegistry);
+    
+    this.structRegistry.set(structName, {
+      name: structName,
+      kind: structNode.kind,
+      fields: structNode.fields,
+      size,
+      fieldOffsets
+    });
+    
+    this.symbolTable.define(structName, {
+      name: structName,
+      kind: 'type',
+      type: structNode.kind,
+      size
     });
   }
 
@@ -580,17 +667,30 @@ export class AstToIr {
     const blocks = [];
     const resolved = this.resolveType(decl.type);
     const typeInfo = decl.type;
-    const size = typeInfo.getSize();
+    let size = typeInfo.getSize(this.structRegistry);
+    
+    // Handle struct/union type
+    let isStruct = false;
+    if (typeInfo.structKind && typeInfo.structType) {
+      const structDef = this.structRegistry.get(typeInfo.structType);
+      if (structDef) {
+        size = structDef.size;
+        isStruct = true;
+      }
+    }
+    
     this.symbolTable.define(decl.name.name, {
       name: decl.name.name,
       kind: 'variable',
-      type: resolved.baseType,
+      type: isStruct ? typeInfo.structKind : resolved.baseType,
       offset: 0,
       size: size,
       pointerDepth: typeInfo.pointerDepth,
       isArray: typeInfo.isArray,
       arrayLength: typeInfo.arrayLength,
-      elemSize: typeInfo.getElementSize()
+      elemSize: typeInfo.getElementSize(this.structRegistry),
+      structType: typeInfo.structType || null,
+      structKind: typeInfo.structKind || null
     });
 
     if (decl.init) {
@@ -603,7 +703,7 @@ export class AstToIr {
       blocks.push(new IL.BasicBlock(this.label('alloc'), [
         new IL.AllocStackInstruction(size)
       ]));
-    } else if (size > 2) {
+    } else if (isStruct || size > 2) {
       blocks.push(new IL.BasicBlock(this.label('alloc'), [
         new IL.AllocStackInstruction(size)
       ]));
@@ -705,6 +805,18 @@ export class AstToIr {
 
     if (expr instanceof AST.PointerMemberNode) {
       return this.translatePointerMember(expr);
+    }
+
+    if (expr instanceof AST.SizeOfNode) {
+      return this.translateSizeOf(expr);
+    }
+
+    if (expr instanceof AST.OffsetOfNode) {
+      return this.translateOffsetOf(expr);
+    }
+
+    if (expr instanceof AST.TypeOfNode) {
+      return this.translateTypeOf(expr);
     }
 
     const temp = this.temp();
@@ -875,6 +987,12 @@ export class AstToIr {
     if (expr instanceof AST.IdentifierNode) {
       const sym = this.symbolTable.lookup(expr.name);
       if (sym) {
+        if (sym.structType) {
+          const structDef = this.structRegistry.get(sym.structType);
+          if (structDef) {
+            return structDef.size;
+          }
+        }
         return sym.elemSize || 1;
       }
     }
@@ -890,7 +1008,31 @@ export class AstToIr {
     const objResult = this.translateExpression(member.object);
     const dest = this.temp();
     const block = new IL.BasicBlock(this.label('member'));
-    block.add(new IL.BinaryOpInstruction(dest, 'member', objResult.result, member.field.name));
+    
+    // Look up the object's type to find struct definition
+    let structDef = null;
+    let fieldOffset = 0;
+    const fieldName = member.field.name;
+    
+    if (member.object instanceof AST.IdentifierNode) {
+      const sym = this.symbolTable.lookup(member.object.name);
+      if (sym && sym.structType) {
+        structDef = this.structRegistry.get(sym.structType);
+        if (structDef) {
+          fieldOffset = structDef.fieldOffsets.get(fieldName) || 0;
+        }
+      }
+    }
+    
+    if (fieldOffset === 0) {
+      block.add(new IL.BinaryOpInstruction(dest, 'member', objResult.result, fieldName));
+    } else {
+      // Load base address, add offset, dereference
+      const addrTemp = this.temp();
+      block.add(new IL.BinaryOpInstruction(addrTemp, 'add', objResult.result, fieldOffset));
+      block.add(new IL.DerefLoadInstruction(dest, addrTemp));
+    }
+    
     return {
       blocks: [...objResult.blocks, block],
       result: dest
@@ -954,7 +1096,29 @@ export class AstToIr {
     const ptrResult = this.translateExpression(pmem.object);
     const dest = this.temp();
     const block = new IL.BasicBlock(this.label('pmem'));
-    block.add(new IL.BinaryOpInstruction(dest, 'pmember', ptrResult.result, pmem.field.name));
+    
+    let structDef = null;
+    let fieldOffset = 0;
+    const fieldName = pmem.field.name;
+    
+    if (pmem.object instanceof AST.IdentifierNode) {
+      const sym = this.symbolTable.lookup(pmem.object.name);
+      if (sym && sym.structType) {
+        structDef = this.structRegistry.get(sym.structType);
+        if (structDef) {
+          fieldOffset = structDef.fieldOffsets.get(fieldName) || 0;
+        }
+      }
+    }
+    
+    if (fieldOffset === 0) {
+      block.add(new IL.BinaryOpInstruction(dest, 'pmember', ptrResult.result, fieldName));
+    } else {
+      const addrTemp = this.temp();
+      block.add(new IL.BinaryOpInstruction(addrTemp, 'add', ptrResult.result, fieldOffset));
+      block.add(new IL.DerefLoadInstruction(dest, addrTemp));
+    }
+    
     return {
       blocks: [...ptrResult.blocks, block],
       result: dest
@@ -1006,5 +1170,125 @@ export class AstToIr {
       return expr.value;
     }
     return null;
+  }
+
+  /**
+   * Translate a sizeof expression (compile-time constant)
+   * @param {AST.SizeOfNode} sizeOf - Sizeof expression
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translateSizeOf(sizeOf) {
+    let size;
+    const operand = sizeOf.operand;
+    
+    if (operand instanceof AST.TypeSpecNode) {
+      size = operand.getSize(this.structRegistry);
+    } else if (operand instanceof AST.IdentifierNode) {
+      // Could be a struct type name or a variable name
+      if (this.structRegistry.has(operand.name)) {
+        size = this.structRegistry.get(operand.name).size;
+      } else {
+        const sym = this.symbolTable.lookup(operand.name);
+        if (sym) {
+          size = sym.size || sym.elemSize || 2;
+        } else {
+          const resolved = this.resolveType(new AST.TypeSpecNode(operand.name, true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } }));
+          size = resolved.getSize(this.structRegistry);
+        }
+      }
+    } else if (typeof operand === 'string') {
+      if (this.structRegistry.has(operand)) {
+        size = this.structRegistry.get(operand).size;
+      } else {
+        const resolved = this.resolveType(new AST.TypeSpecNode(operand, true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } }));
+        size = resolved.getSize(this.structRegistry);
+      }
+    } else {
+      const operandResult = this.translateExpression(operand);
+      const sym = this.lookupSymbolFromExpr(operand);
+      if (sym) {
+        size = sym.size || sym.elemSize || 2;
+      } else {
+        size = 2;
+      }
+      return {
+        blocks: operandResult.blocks,
+        result: this.createConstBlock(size, operandResult.result)
+      };
+    }
+    
+    const temp = this.temp();
+    const block = new IL.BasicBlock(this.label('sizeof'));
+    block.add(new IL.LoadInstruction(temp, size));
+    return { blocks: [block], result: temp };
+  }
+
+  /**
+   * Translate an offsetof expression (compile-time constant)
+   * @param {AST.OffsetOfNode} offsetOf - Offsetof expression
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translateOffsetOf(offsetOf) {
+    const structDef = this.structRegistry.get(offsetOf.typeName);
+    let offset = 0;
+    
+    if (structDef) {
+      const fieldOffset = structDef.fieldOffsets.get(offsetOf.fieldName);
+      if (fieldOffset !== undefined) {
+        offset = fieldOffset;
+      }
+    }
+    
+    const temp = this.temp();
+    const block = new IL.BasicBlock(this.label('offsetof'));
+    block.add(new IL.LoadInstruction(temp, offset));
+    return { blocks: [block], result: temp };
+  }
+
+  /**
+   * Translate a typeof expression (returns size of the expression's type)
+   * @param {AST.TypeOfNode} typeof - Typeof expression
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translateTypeOf(typeofExpr) {
+    const operandResult = this.translateExpression(typeofExpr.operand);
+    const sym = this.lookupSymbolFromExpr(typeofExpr.operand);
+    let size = 2;
+    
+    if (sym) {
+      size = sym.size || sym.elemSize || 2;
+    }
+    
+    const temp = this.temp();
+    const block = new IL.BasicBlock(this.label('typeof'));
+    block.add(new IL.LoadInstruction(temp, size));
+    return {
+      blocks: [...operandResult.blocks, block],
+      result: temp
+    };
+  }
+
+  /**
+   * Look up a symbol from an expression (for sizeof/typeof resolution)
+   * @param {AST.ASTNode} expr - Expression to look up
+   * @returns {Object|null} Symbol info or null
+   */
+  lookupSymbolFromExpr(expr) {
+    if (expr instanceof AST.IdentifierNode) {
+      return this.symbolTable.lookup(expr.name) || null;
+    }
+    return null;
+  }
+
+  /**
+   * Create a basic block that loads a constant value
+   * @param {number} value - Constant value to load
+   * @param {string} resultReg - Result register name
+   * @returns {string} Result register name
+   */
+  createConstBlock(value, resultReg) {
+    const block = new IL.BasicBlock(this.label('const'));
+    block.add(new IL.LoadInstruction(resultReg, value));
+    return resultReg;
   }
 }

@@ -405,8 +405,10 @@ export class TypeSpecNode extends ASTNode {
    * @param {number} [pointerDepth] - Pointer indirection level (0 = non-pointer)
    * @param {boolean} [isArray] - Whether this is an array type
    * @param {number} [arrayLength] - Array length (null for incomplete array)
+   * @param {string} [structType] - Struct/union type name (e.g., 'Point')
+   * @param {string} [structKind] - 'struct' or 'union' (null for non-struct types)
    */
-  constructor(baseType, isSigned = true, isConst = false, bitWidth = null, location, pointerDepth = 0, isArray = false, arrayLength = null) {
+  constructor(baseType, isSigned = true, isConst = false, bitWidth = null, location, pointerDepth = 0, isArray = false, arrayLength = null, structType = null, structKind = null) {
     super('TypeSpec', location);
     this.baseType = baseType;
     this.isSigned = isSigned;
@@ -415,18 +417,27 @@ export class TypeSpecNode extends ASTNode {
     this.pointerDepth = pointerDepth;
     this.isArray = isArray;
     this.arrayLength = arrayLength;
+    this.structType = structType;
+    this.structKind = structKind;
   }
 
   /**
    * Returns the size in bytes for this type on the Z80 target
    * Pointers are always 2 bytes (16-bit addresses). Arrays are elementSize * length.
+   * Struct types use structSize if available, otherwise compute from fields.
    * @returns {number} Size in bytes
    */
-  getSize() {
-    const baseSize = TypeSpecNode.TypeSizes[this.baseType] ?? 2;
+  getSize(structRegistry = null) {
     if (this.pointerDepth > 0) {
       return 2;
     }
+    if (this.structKind && this.structType && structRegistry) {
+      const structDef = structRegistry.get(this.structType);
+      if (structDef) {
+        return structDef.size;
+      }
+    }
+    const baseSize = TypeSpecNode.TypeSizes[this.baseType] ?? 2;
     if (this.isArray && this.arrayLength != null) {
       return baseSize * this.arrayLength;
     }
@@ -435,21 +446,28 @@ export class TypeSpecNode extends ASTNode {
 
   /**
    * Returns the element size for this type (ignores array length)
+   * @param {Map} [structRegistry] - Struct type registry for size lookup
    * @returns {number} Element size in bytes
    */
-  getElementSize() {
+  getElementSize(structRegistry = null) {
     if (this.pointerDepth > 0) {
       return 2;
+    }
+    if (this.structKind && this.structType && structRegistry) {
+      const structDef = structRegistry.get(this.structType);
+      if (structDef) {
+        return structDef.size;
+      }
     }
     return TypeSpecNode.TypeSizes[this.baseType] ?? 2;
   }
 
   /**
-   * Returns the type string representation (e.g., 'int*', 'char[10]')
+   * Returns the type string representation (e.g., 'int*', 'char[10]', 'struct Point')
    * @returns {string} Type string
    */
   typeString() {
-    let s = this.baseType;
+    let s = this.structKind ? `${this.structKind} ${this.structType}` : this.baseType;
     for (let i = 0; i < this.pointerDepth; i++) {
       s += '*';
     }
@@ -620,6 +638,53 @@ export class InlineAsmNode extends ASTNode {
     this.asm = asm;
     this.inputs = inputs || {};
     this.outputs = outputs || {};
+  }
+}
+
+/**
+ * AST node for sizeof expression
+ */
+export class SizeOfNode extends ASTNode {
+  /**
+   * Creates a sizeof node
+   * @param {ASTNode|string} operand - Expression or type name to compute size of
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(operand, location) {
+    super('SizeOf', location);
+    this.operand = operand;
+  }
+}
+
+/**
+ * AST node for offsetof expression
+ */
+export class OffsetOfNode extends ASTNode {
+  /**
+   * Creates an offsetof node
+   * @param {string} typeName - Struct/union type name
+   * @param {string} fieldName - Field name within the type
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(typeName, fieldName, location) {
+    super('OffsetOf', location);
+    this.typeName = typeName;
+    this.fieldName = fieldName;
+  }
+}
+
+/**
+ * AST node for typeof expression
+ */
+export class TypeOfNode extends ASTNode {
+  /**
+   * Creates a typeof node
+   * @param {ASTNode} operand - Expression to get type of
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(operand, location) {
+    super('TypeOf', location);
+    this.operand = operand;
   }
 }
 

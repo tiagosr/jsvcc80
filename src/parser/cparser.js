@@ -73,7 +73,7 @@ function mergeDeclaratorType(baseType, pointerDepth, arrayDims) {
 
 /**
  * Build a type specifier parser rule
- * Matches: [signed|unsigned] [void|char|_Bool|short|int|long]
+ * Matches: [signed|unsigned] [void|char|_Bool|short|int|long] or struct/union tag
  * Requires at least one token to be consumed.
  * @returns {Object} Parser rule
  */
@@ -112,6 +112,27 @@ function buildTypeSpecifier() {
 }
 
 /**
+ * Build a struct/union type reference parser
+ * Matches: struct <tag> or union <tag>
+ * @returns {Object} Parser rule
+ */
+function buildStructTypeRef() {
+  return map(
+    Parser.seq(
+      Parser.alt(kw('struct'), kw('union')),
+      pred(t => t.type === 'IDENTIFIER')
+    ),
+    ([kindToken, tagToken]) => {
+      return new AST.TypeSpecNode(
+        kindToken.value, true, false, null,
+        locFromToken(kindToken), 0, false, null,
+        tagToken.value, kindToken.value
+      );
+    }
+  );
+}
+
+/**
  * C Grammar parser using PEG combinators with proper AST construction
  */
 export class CPegParser {
@@ -121,6 +142,7 @@ export class CPegParser {
   constructor() {
     this.ruleRefs = {};
     this.typedefNames = [];
+    this.structTags = [];
     
     this.ruleRefs.typeSpecifier = buildTypeSpecifier();
     this.buildPrimaryExpr();
@@ -195,7 +217,60 @@ export class CPegParser {
       }
     );
 
+    // sizeof(expr) or sizeof(type)
+    // Note: typeSpecifier must be tried first, since expression (via Parser.many) can match zero tokens
+    const sizeofExpr = map(
+      Parser.seq(
+        kw('sizeof'),
+        Parser.lit('('),
+        Parser.alt(
+          lazy(() => this.ruleRefs.typeSpecifier),
+          pred(t => t.type === 'IDENTIFIER'),
+          lazy(() => this.ruleRefs.expression)
+        ),
+        Parser.lit(')')
+      ),
+      ([kwToken, , operand,]) => {
+        let resolvedOperand = operand;
+        if (operand && operand.type === 'IDENTIFIER') {
+          resolvedOperand = new AST.IdentifierNode(operand.value, locFromToken(operand));
+        }
+        return new AST.SizeOfNode(resolvedOperand, locFromToken(kwToken));
+      }
+    );
+
+    // offsetof(type, field)
+    const offsetofExpr = map(
+      Parser.seq(
+        kw('offsetof'),
+        Parser.lit('('),
+        pred(t => t.type === 'IDENTIFIER'),
+        Parser.lit(','),
+        pred(t => t.type === 'IDENTIFIER'),
+        Parser.lit(')')
+      ),
+      ([kwToken, , typeToken, , fieldToken,]) => {
+        return new AST.OffsetOfNode(typeToken.value, fieldToken.value, locFromToken(kwToken));
+      }
+    );
+
+    // typeof(expr)
+    const typeofExpr = map(
+      Parser.seq(
+        kw('typeof'),
+        Parser.lit('('),
+        lazy(() => this.ruleRefs.expression),
+        Parser.lit(')')
+      ),
+      ([kwToken, , operand,]) => {
+        return new AST.TypeOfNode(operand, locFromToken(kwToken));
+      }
+    );
+
     this.ruleRefs.primaryExpr = Parser.alt(
+      sizeofExpr,
+      offsetofExpr,
+      typeofExpr,
       derefExpr,
       basePrimary
     );
@@ -840,17 +915,22 @@ export class CPegParser {
     const structField = map(
       Parser.seq(
         lazy(() => this.ruleRefs.typeSpecifier),
+        Parser.many(Parser.lit('*')),
         pred(t => t.type === 'IDENTIFIER'),
         Parser.opt(Parser.seq(Parser.lit('='), lazy(() => this.ruleRefs.expression))),
         Parser.lit(';')
       ),
-      ([typeSpec, name, init]) => {
+      ([typeSpec, stars, name, init]) => {
         let initValue = null;
         if (init) {
           initValue = Array.isArray(init[1]) ? init[1][0] : init[1];
         }
+        const pointerDepth = stars.length;
+        const fieldType = pointerDepth > 0
+          ? new AST.TypeSpecNode(typeSpec.baseType, typeSpec.isSigned, typeSpec.isConst, typeSpec.bitWidth, typeSpec.location, pointerDepth)
+          : typeSpec;
         return new AST.StructFieldNode(
-          typeSpec,
+          fieldType,
           new AST.IdentifierNode(name.value, locFromToken(name)),
           null, locFromToken(typeSpec));
       }
@@ -1062,7 +1142,8 @@ export class CPegParser {
     }
 
     const typedefNames = this.collectTypedefNames(tokens);
-    return this.doParse(tokens, typedefNames);
+    const structTags = this.collectStructTags(tokens);
+    return this.doParse(tokens, typedefNames, structTags);
   }
 
   /**
@@ -1076,7 +1157,12 @@ export class CPegParser {
     while (i < tokens.length) {
       if (tokens[i].type === 'KEYWORD' && tokens[i].value === 'typedef') {
         i++;
+        // Skip type keywords and already-known typedef names
         while (i < tokens.length && (tokens[i].type === 'KEYWORD' || names.includes(tokens[i].value))) {
+          i++;
+        }
+        // Skip pointer stars and array brackets
+        while (i < tokens.length && (tokens[i].type === '*' || tokens[i].type === '[' || tokens[i].type === ']')) {
           i++;
         }
         if (i < tokens.length && tokens[i].type === 'IDENTIFIER') {
@@ -1091,17 +1177,42 @@ export class CPegParser {
   }
 
   /**
-   * Build a type specifier rule that includes typedef names
+   * First pass: collect struct/union tag names from the token stream
+   * @param {Token[]} tokens - Token array to scan
+   * @returns {string[]} Array of struct/union tag names
+   */
+  collectStructTags(tokens) {
+    const tags = [];
+    let i = 0;
+    while (i < tokens.length) {
+      if (tokens[i].type === 'KEYWORD' && (tokens[i].value === 'struct' || tokens[i].value === 'union')) {
+        i++;
+        if (i < tokens.length && tokens[i].type === 'IDENTIFIER') {
+          tags.push(tokens[i].value);
+          i++;
+        }
+      } else {
+        i++;
+      }
+    }
+    return tags;
+  }
+
+  /**
+   * Build a type specifier rule that includes typedef names and struct/union tags
    * @param {string[]} typedefNames - Typedef names to recognize as types
+   * @param {string[]} structTags - Struct/union tag names to recognize
    * @returns {Object} Type specifier parser rule
    */
-  buildExtendedTypeSpecifier(typedefNames) {
+  buildExtendedTypeSpecifier(typedefNames, structTags) {
     const typedefNameParser = map(
       pred(t => t.type === 'IDENTIFIER' && typedefNames.includes(t.value)),
       (token) => {
         return { kind: 'typedef', token };
       }
     );
+
+    const structTypeRef = buildStructTypeRef();
 
     const signedness = Parser.alt(kw('signed'), kw('unsigned'));
     const basicType = Parser.alt(
@@ -1115,12 +1226,16 @@ export class CPegParser {
 
     return map(
       Parser.alt(
+        structTypeRef,
         typedefNameParser,
         withBoth,
         onlySign,
         onlyType
       ),
       (value) => {
+        if (value.structKind) {
+          return value;
+        }
         if (value.kind === 'typedef') {
           return new AST.TypeSpecNode(value.token.value, true, false, null, locFromToken(value.token));
         }
@@ -1145,12 +1260,14 @@ export class CPegParser {
    * Build the program-level parser with extended type support
    * @param {Token[]} tokens - Token array to parse
    * @param {string[]} typedefNames - Typedef names to recognize
+   * @param {string[]} structTags - Struct/union tag names to recognize
    * @returns {AST.CompoundNode} Parsed AST
    */
-  doParse(tokens, typedefNames) {
+  doParse(tokens, typedefNames, structTags) {
     this.typedefNames = typedefNames;
-    if (typedefNames.length > 0) {
-      this.ruleRefs.typeSpecifier = this.buildExtendedTypeSpecifier(typedefNames);
+    this.structTags = structTags;
+    if (typedefNames.length > 0 || structTags.length > 0) {
+      this.ruleRefs.typeSpecifier = this.buildExtendedTypeSpecifier(typedefNames, structTags);
     }
 
     const defaultType = new AST.TypeSpecNode('int', true, false, null, { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });

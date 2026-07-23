@@ -61,6 +61,13 @@ function parseArgs() {
     help: 'Output intermediate representation'
   });
 
+  parser.add_argument('-I', {
+    action: 'append',
+    dest: 'includePaths',
+    default: [],
+    help: 'Add directory to include search path'
+  });
+
   parser.add_argument('-v', '--version', {
     action: 'version',
     version: 'vcc80 Z80 C Compiler v0.1.0',
@@ -162,7 +169,8 @@ async function main() {
         debug: options.debug,
         emitIr: options.emitIr,
         compileOnly: options.compileOnly,
-        outputFormat: options.format
+        outputFormat: options.format,
+        includePaths: options.includePaths
       });
 
       const compiler = new Compiler(compilerOptions);
@@ -201,7 +209,8 @@ async function main() {
         source: file,
         opt: options.opt,
         debug: options.debug,
-        outputFormat: options.format
+        outputFormat: options.format,
+        includePaths: options.includePaths
       });
 
       const compiler = new Compiler(compilerOptions);
@@ -233,7 +242,8 @@ async function main() {
     const compilerOptions = new CompilerOptions({
       source: options.files[0],
       opt: options.opt,
-      outputFormat: options.format
+      outputFormat: options.format,
+      includePaths: options.includePaths
     });
     const linkerCompiler = new Compiler(compilerOptions);
     const linkResult = linkerCompiler.link(objResults);

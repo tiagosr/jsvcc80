@@ -22,6 +22,7 @@ export class CompilerOptions {
   /**
    * Creates compiler options with defaults
    * @param {Object} [options] - Override options
+   * @param {string[]} [options.includePaths] - Include search directories
    */
   constructor(options = {}) {
     this.sourceFile = options.source || '<stdin>';
@@ -32,6 +33,7 @@ export class CompilerOptions {
     this.plugins = options.plugins || [];
     this.compileOnly = !!options.compileOnly;
     this.outputFormat = options.outputFormat || 'assembly';
+    this.includePaths = options.includePaths || [];
     this.linkerOptions = options.linkerOptions || {};
   }
 
@@ -171,13 +173,24 @@ export class Compiler {
    */
   constructor(options = null) {
     this.options = options || new CompilerOptions();
-    this.preprocessor = new PreprocessedSource(this.options.sourceFile);
+    this.preprocessor = this._createPreprocessor(this.options.sourceFile);
     this.lexer = null;
     this.parser = null;
     this.passManager = null;
 
     // Load registered plugins
     this.loadPlugins();
+  }
+
+  /**
+   * Creates a PreprocessedSource instance with current options
+   * @param {string} filename - Source filename
+   * @returns {PreprocessedSource} Preprocessor instance
+   */
+  _createPreprocessor(filename) {
+    return new PreprocessedSource(filename, {
+      includePaths: this.options.includePaths
+    });
   }
 
   /**
@@ -272,7 +285,7 @@ export class Compiler {
    * @returns {string} Processed source
    */
   preprocess(source) {
-    this.preprocessor = new PreprocessedSource(this.options.sourceFile);
+    this.preprocessor = this._createPreprocessor(this.options.sourceFile);
     return source;
   }
 

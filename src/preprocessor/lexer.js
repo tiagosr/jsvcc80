@@ -1,6 +1,7 @@
 import { TokenType, Keywords } from './tokenTypes.js';
 import { LexerError } from '../core/errors.js';
 import { PositionTracker } from '../core/location.js';
+import { readFileSync, statSync } from 'fs';
 
 /**
  * Preprocessed source with macro definitions and pragma handlers
@@ -9,14 +10,18 @@ export class PreprocessedSource {
   /**
    * Creates a new preprocessor instance
    * @param {string} filename - Source filename
+   * @param {Object} [options] - Preprocessor options
+   * @param {string[]} [options.includePaths] - System include directory paths
    */
-  constructor(filename = '<input>') {
+  constructor(filename = '<input>', options = {}) {
     this.filename = filename;
     this.macros = new Map();
     this.pragmaHandlers = new Map();
     this.locationTracker = new PositionTracker(filename);
     this.conditionalStack = [];
     this.skipDepth = 0;
+    this.includePaths = options.includePaths || [];
+    this.includedFiles = new Set();
     
     // Register default pragma handlers
     this._registerDefaultPragmas();
@@ -128,6 +133,81 @@ export class PreprocessedSource {
    */
   setStartPos(pos) {
     this.startPos = pos;
+  }
+
+  /**
+   * Checks if a file has already been included
+   * @param {string} filePath - Absolute file path
+   * @returns {boolean} True if file was already included
+   */
+  isFileIncluded(filePath) {
+    return this.includedFiles.has(filePath);
+  }
+
+  /**
+   * Marks a file as included
+   * @param {string} filePath - Absolute file path
+   */
+  markFileIncluded(filePath) {
+    this.includedFiles.add(filePath);
+  }
+
+  /**
+   * Resolves an include filename to an absolute path
+   * @param {string} filename - Include filename
+   * @param {boolean} isSystem - True for #include <file>, false for #include "file"
+   * @param {string} [currentDir] - Directory of the including file
+   * @returns {string|null} Absolute path or null if not found
+   */
+  resolveInclude(filename, isSystem, currentDir = null) {
+    const paths = [];
+
+    if (!isSystem && currentDir) {
+      paths.push(currentDir);
+    }
+
+    for (const p of this.includePaths) {
+      paths.push(p);
+    }
+
+    if (!isSystem) {
+      paths.push('.');
+    }
+
+    for (const dir of paths) {
+      const fullPath = this._joinPath(dir, filename);
+      if (this._fileExists(fullPath)) {
+        return fullPath;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Joins two path components in a platform-independent way
+   * @param {string} dir - Directory path
+   * @param {string} file - Filename
+   * @returns {string} Joined path
+   */
+  _joinPath(dir, file) {
+    if (dir === '.') return file;
+    const sep = dir.endsWith('/') ? '' : '/';
+    return `${dir}${sep}${file}`;
+  }
+
+  /**
+   * Checks if a file exists at the given path
+   * @param {string} path - File path to check
+   * @returns {boolean} True if file exists
+   */
+  _fileExists(path) {
+    try {
+      const stats = statSync(path);
+      return stats.isFile();
+    } catch {
+      return false;
+    }
   }
 }
 
@@ -415,6 +495,7 @@ export class Lexer {
     if (kw === 'else') return this._handleElse(location);
     if (kw === 'endif') return this._handleEndif(location);
     if (kw === 'pragma') return this._handlePragma(location);
+    if (kw === 'include') return this._handleInclude(location);
 
     // Unknown directive - backtrack and emit POUND token
     this.pos = this.tokenStartPos;
@@ -598,6 +679,57 @@ export class Lexer {
   }
 
   /**
+   * Handles #include directive
+   * @param {Object} location - Source location
+   * @returns {Object|null} Include token marker or null
+   */
+  _handleInclude(location) {
+    if (this.preprocessor.skipDepth > 0 || !this.preprocessor.isEffectivelyActive()) {
+      this._readLineContent();
+      return null;
+    }
+
+    const lineContent = this._readLineContent();
+    
+    let filename;
+    let isSystem = false;
+    
+    const quoteMatch = lineContent.match(/^\s*"([^"]+)"\s*$/);
+    const angleMatch = lineContent.match(/^\s*<([^>]+)>\s*$/);
+    
+    if (quoteMatch) {
+      filename = quoteMatch[1];
+      isSystem = false;
+    } else if (angleMatch) {
+      filename = angleMatch[1];
+      isSystem = true;
+    } else {
+      throw new LexerError(`Invalid #include directive: ${lineContent}`, location);
+    }
+
+    const currentDir = this._getParentDir(this.preprocessor.filename);
+    const resolvedPath = this.preprocessor.resolveInclude(filename, isSystem, currentDir);
+    
+    if (!resolvedPath) {
+      throw new LexerError(`Cannot open include file: ${filename}`, location);
+    }
+
+    return { type: 'include', filePath: resolvedPath, location };
+  }
+
+  /**
+   * Gets the parent directory of a file path
+   * @param {string} filePath - File path
+   * @returns {string|null} Parent directory or null
+   */
+  _getParentDir(filePath) {
+    if (!filePath || filePath === '<input>') return null;
+    const lastSlash = Math.max(filePath.lastIndexOf('/'), filePath.lastIndexOf('\\'));
+    if (lastSlash === -1) return '.';
+    return filePath.substring(0, lastSlash);
+  }
+
+  /**
    * Main tokenization loop - gets next token
    * @returns {Token} Next token in the source
    */
@@ -728,9 +860,40 @@ export class Lexer {
         continue;
       }
 
+      // Handle include directive
+      if (token.type === 'include') {
+        const includedTokens = this._tokenizeIncludedFile(token.filePath);
+        tokens.push(...includedTokens);
+        continue;
+      }
+
       tokens.push(token);
     }
 
     return tokens;
+  }
+
+  /**
+   * Tokenizes an included file
+   * @param {string} filePath - Absolute path to included file
+   * @returns {Token[]} Tokens from the included file
+   */
+  _tokenizeIncludedFile(filePath) {
+    if (this.preprocessor.isFileIncluded(filePath)) {
+      return [];
+    }
+
+    this.preprocessor.markFileIncluded(filePath);
+
+    const source = readFileSync(filePath, 'utf-8');
+
+    const includePreprocessor = new PreprocessedSource(filePath, {
+      includePaths: this.preprocessor.includePaths
+    });
+    includePreprocessor.macros = this.preprocessor.macros;
+    includePreprocessor.includedFiles = this.preprocessor.includedFiles;
+
+    const includeLexer = new Lexer(source, includePreprocessor);
+    return includeLexer.tokenize();
   }
 }

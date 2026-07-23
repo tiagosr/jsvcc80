@@ -125,25 +125,25 @@ function example(name) { ... }
 - **Processor intrinsics** - `IntrinsicInstruction` IR class, intrinsic detection in `translateCall`, Z80 codegen for special opcodes and port access, 43 intrinsic tests
 - **Block transfer intrinsics** - `IntrinsicMap` extended with `__ini`, `__outi`, `__inir`, `__otir`, `__ind`, `__outd`, `__indr`, `__otdr`; Z80 codegen for INI/OUTI/INIR/OTIR/IND/OUTD/INDR/OTDR block transfer instructions using B for count, C for port, HL for buffer; 19 new tests
 - **Preprocessor directives** - `#define`, `#undef`, `#ifdef`, `#ifndef`, `#else`, `#endif` implemented in lexer; `PreprocessedSource` extended with conditional compilation state machine (`conditionalStack`, `skipDepth`); `readDirective()` replaces `readPragma()` with generalized directive dispatcher; nested conditionals with skip depth tracking; 40 new tests
+- **Include directive** - `#include "file"` and `#include <file>` implemented in lexer; `PreprocessedSource` extended with `includePaths` and `includedFiles` tracking for duplicate prevention; file resolution supports local directory, system include paths, and recursive inclusion; macros propagate across include boundaries; `-I` CLI flag for include directories; 15 new tests
 
 #### 🧪 Test Results
-- 534 passing tests
+- 549 passing tests
 
 ### 🔄 In Progress
 - None
 
 ### 🔜 Next Steps
-1. Implement `#include "..."` and `#include <...>` in the preprocessor
-2. Implement `#if`, `#elif`, expressions and `defined(...)` in the preprocessor
-3. Implement `#define` with parameters and parameter substitution
-4. Implement variadic function signatures
-5. Implement function pointers as types, and extend the type system to support these
-6. Implement linker definitions to add entry point `crt0` to default compiled/linked output
-7.  Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
-8.  Implement `unsigned:n` bit fields
-9.  Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
-10. Implement `__FILENAME__` and `__LINE__` in the preprocessor
-11. Implement symbol map exporting for debugging
+1. Implement `#if`, `#elif`, expressions and `defined(...)` in the preprocessor
+2. Implement `#define` with parameters and parameter substitution
+3. Implement variadic function signatures
+4. Implement function pointers as types, and extend the type system to support these
+5. Implement linker definitions to add entry point `crt0` to default compiled/linked output
+6. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
+7. Implement `unsigned:n` bit fields
+8. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
+9. Implement `__FILENAME__` and `__LINE__` in the preprocessor
+10. Implement symbol map exporting for debugging
 
 ### 📔 Backlog (issues identified during implementation for later priorization)
 - Fix `typedef unsigned int newType` parsing

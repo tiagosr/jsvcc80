@@ -96,7 +96,8 @@ function example(name) { ... }
 - **typedef and default types** - Parser supports `void`, `char`, `short`, `long`, `unsigned`, `signed`, `_Bool` as type specifiers with signedness modifiers; typedef names resolved via two-pass parsing; TypeSpecNode tracks type sizes; typedef aliases resolved in IR translation; 50 new tests
 - **Binary object file format** - `src/linker/objectfile_loader.js` with VCC80O magic header, serialization/deserialization of sections, symbols, relocations, and CLI support for loading .o files
 - **Processor intrinsics** - `IntrinsicInstruction` IR class, intrinsic detection in `translateCall`, Z80 codegen for special opcodes and port access, 43 intrinsic tests
-- 475 passing tests
+- **Block transfer intrinsics** - `IntrinsicMap` extended with `__ini`, `__outi`, `__inir`, `__otir`, `__ind`, `__outd`, `__indr`, `__otdr`; Z80 codegen for INI/OUTI/INIR/OTIR/IND/OUTD/INDR/OTDR block transfer instructions using B for count, C for port, HL for buffer; 19 new tests
+- 494 passing tests
 - Preprocessor/lexer with pragma support (#pragma once, #pragma pack)
 - PEG parser combinator framework (seq, alt, many, some, opt, lit, any, pred, lazy, map)
 - AST node definitions for full C syntax
@@ -130,21 +131,20 @@ function example(name) { ... }
 - None
 
 ### 🔜 Next Steps
-1. Implement block transfer intrinsics (`INI`, `OUTI`, `INIR`, `OTIR`, `IND`, `OUTD`, `INDR`, `OTDR`)
-2. Implement interrupt/NMI semantics, hooking them up to `__attribute__((interrupt("IRQ")))` and `__attribute__((interrupt("nmi")))`, along with the `RETI` and `RETN` opcodes
-3. Implement pointer to pointer, array of arrays and extend the type system to support these
-4. Implement `#define`, `#undef`, `#ifdef`, `#ifndef`, `#else`, `#endif` in the preprocessor (first without parameters)
-5. Implement `#include "..."` and `#include <...>` in the preprocessor
-6. Implement `#if`, `#elif`, expressions and `defined(...)` in the preprocessor
-7. Implement `#define` with parameters and parameter substitution
-8. Implement variadic function signatures
-9. Implement function pointers as types, and extend the type system to support these
-10. Implement linker definitions to add entry point `crt0` to default compiled/linked output
-11. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
-12. Implement `unsigned:n` bit fields
-13. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
-14. Implement `__FILENAME__` and `__LINE__` in the preprocessor
-15. Implement symbol map exporting for debugging
+1. Implement interrupt/NMI semantics, hooking them up to `__attribute__((interrupt("IRQ")))` and `__attribute__((interrupt("nmi")))`, along with the `RETI` and `RETN` opcodes
+2. Implement pointer to pointer, array of arrays and extend the type system to support these
+3. Implement `#define`, `#undef`, `#ifdef`, `#ifndef`, `#else`, `#endif` in the preprocessor (first without parameters)
+4. Implement `#include "..."` and `#include <...>` in the preprocessor
+5. Implement `#if`, `#elif`, expressions and `defined(...)` in the preprocessor
+6. Implement `#define` with parameters and parameter substitution
+7. Implement variadic function signatures
+8. Implement function pointers as types, and extend the type system to support these
+9. Implement linker definitions to add entry point `crt0` to default compiled/linked output
+10. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
+11. Implement `unsigned:n` bit fields
+12. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
+13. Implement `__FILENAME__` and `__LINE__` in the preprocessor
+14. Implement symbol map exporting for debugging
 
 ## Pre-commit Checklist
 - Verify tests pass: `npm test`

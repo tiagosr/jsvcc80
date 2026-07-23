@@ -10,8 +10,8 @@
     "semantic_hash": "76ba87dac3991d8ada5c4e150cf96b99"
   },
   "src/ast/nodes.js": {
-    "mtime": 1784766472.8527818,
-    "ast_hash": "adf13576ee6360db16219272c480f3a9",
+    "mtime": 1784797353.6094456,
+    "ast_hash": "1d369c61e741decfc71a1ce8e4b4b470",
     "semantic_hash": ""
   },
   "src/backend/z80codegen.js": {
@@ -70,8 +70,8 @@
     "semantic_hash": "f94c974f60479ab3790cf66a3aee9b0d"
   },
   "src/nanopass/ast_to_ir.js": {
-    "mtime": 1784792902.5012736,
-    "ast_hash": "82035325745f72a9b16310b470199650",
+    "mtime": 1784805390.5191112,
+    "ast_hash": "61a70a0764007381cc3979b77c02cf95",
     "semantic_hash": ""
   },
   "src/nanopass/il.js": {
@@ -95,8 +95,8 @@
     "semantic_hash": "188f8fe7696459440737535bac1b70c6"
   },
   "src/parser/cparser.js": {
-    "mtime": 1784793764.3558028,
-    "ast_hash": "f251b00aa4e0f14fb5e1db9ae6cf70df",
+    "mtime": 1784804705.1118903,
+    "ast_hash": "058ae9a26b6900d914401693d35fae2a",
     "semantic_hash": ""
   },
   "src/plugins/interfaces.js": {
@@ -105,14 +105,14 @@
     "semantic_hash": "ca938d193286ef0e8f7aa0994334f5bb"
   },
   "src/preprocessor/lexer.js": {
-    "mtime": 1784633447.3745193,
-    "ast_hash": "316350be6fd504b3f561da3db8482daf",
-    "semantic_hash": "316350be6fd504b3f561da3db8482daf"
+    "mtime": 1784805853.5469284,
+    "ast_hash": "c83279b6f882a3b7f3b193f8872b3143",
+    "semantic_hash": ""
   },
   "src/preprocessor/tokenTypes.js": {
-    "mtime": 1784629351.5173712,
-    "ast_hash": "6d1b7dadd23b4106900bc4f9a147020f",
-    "semantic_hash": "6d1b7dadd23b4106900bc4f9a147020f"
+    "mtime": 1784805102.1941283,
+    "ast_hash": "5d359354d3b16cf745bc5b0abd48540f",
+    "semantic_hash": ""
   },
   "src/tests/archive.test.js": {
     "mtime": 1784728835.4548917,
@@ -165,8 +165,8 @@
     "semantic_hash": "cd8f3bb2f24732f924f48b0a13bfeea6"
   },
   "AGENTS.md": {
-    "mtime": 1784794999.6560163,
-    "ast_hash": "7a85bcee7946618bec04f0aa85508dc7",
+    "mtime": 1784807206.9939184,
+    "ast_hash": "c68cc1416e1010d216b32509e8e9a7c5",
     "semantic_hash": ""
   },
   ".opencode/opencode.json": {
@@ -182,6 +182,11 @@
   "src/tests/pointers.test.js": {
     "mtime": 1784793848.6363773,
     "ast_hash": "365ecdf76eeba8444051919021df122d",
+    "semantic_hash": ""
+  },
+  "src/tests/struct.test.js": {
+    "mtime": 1784802083.4239583,
+    "ast_hash": "a821f980c2b83ec9718f50031c7851d1",
     "semantic_hash": ""
   }
 }

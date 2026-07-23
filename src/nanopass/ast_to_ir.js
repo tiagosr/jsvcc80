@@ -84,6 +84,14 @@ const IntrinsicMap = {
   '__in16': { opcode: 'IN16', argCount: 1 },
   '__out': { opcode: 'OUT', argCount: 2 },
   '__out16': { opcode: 'OUT16', argCount: 2 },
+  '__ini': { opcode: 'INI', argCount: 1 },
+  '__outi': { opcode: 'OUTI', argCount: 1 },
+  '__inir': { opcode: 'INIR', argCount: 2 },
+  '__otir': { opcode: 'OTIR', argCount: 2 },
+  '__ind': { opcode: 'IND', argCount: 1 },
+  '__outd': { opcode: 'OUTD', argCount: 1 },
+  '__indr': { opcode: 'INDR', argCount: 2 },
+  '__otdr': { opcode: 'OTDR', argCount: 2 },
 };
 
 /**

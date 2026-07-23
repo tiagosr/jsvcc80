@@ -166,6 +166,62 @@ describe('Processor Intrinsics - AST to IR', () => {
       }
     }
   });
+
+  it('should translate __ini(port) to INI intrinsic', () => {
+    const ir = compile('int main() { __ini(0x60); return 0; }');
+    const instr = findIntrinsic(ir, 'INI');
+    assert.ok(instr !== null, 'INI intrinsic should be present');
+    assert.ok(instr.operands.length >= 2, 'INI should have port operand');
+  });
+
+  it('should translate __outi(port) to OUTI intrinsic', () => {
+    const ir = compile('int main() { __outi(0x60); return 0; }');
+    const instr = findIntrinsic(ir, 'OUTI');
+    assert.ok(instr !== null, 'OUTI intrinsic should be present');
+    assert.ok(instr.operands.length >= 2, 'OUTI should have port operand');
+  });
+
+  it('should translate __inir(port, count) to INIR intrinsic', () => {
+    const ir = compile('int main() { __inir(0x60, 10); return 0; }');
+    const instr = findIntrinsic(ir, 'INIR');
+    assert.ok(instr !== null, 'INIR intrinsic should be present');
+    assert.ok(instr.operands.length >= 3, 'INIR should have port and count operands');
+  });
+
+  it('should translate __otir(port, count) to OTIR intrinsic', () => {
+    const ir = compile('int main() { __otir(0x60, 10); return 0; }');
+    const instr = findIntrinsic(ir, 'OTIR');
+    assert.ok(instr !== null, 'OTIR intrinsic should be present');
+    assert.ok(instr.operands.length >= 3, 'OTIR should have port and count operands');
+  });
+
+  it('should translate __ind(port) to IND intrinsic', () => {
+    const ir = compile('int main() { __ind(0x60); return 0; }');
+    const instr = findIntrinsic(ir, 'IND');
+    assert.ok(instr !== null, 'IND intrinsic should be present');
+    assert.ok(instr.operands.length >= 2, 'IND should have port operand');
+  });
+
+  it('should translate __outd(port) to OUTD intrinsic', () => {
+    const ir = compile('int main() { __outd(0x60); return 0; }');
+    const instr = findIntrinsic(ir, 'OUTD');
+    assert.ok(instr !== null, 'OUTD intrinsic should be present');
+    assert.ok(instr.operands.length >= 2, 'OUTD should have port operand');
+  });
+
+  it('should translate __indr(port, count) to INDR intrinsic', () => {
+    const ir = compile('int main() { __indr(0x60, 10); return 0; }');
+    const instr = findIntrinsic(ir, 'INDR');
+    assert.ok(instr !== null, 'INDR intrinsic should be present');
+    assert.ok(instr.operands.length >= 3, 'INDR should have port and count operands');
+  });
+
+  it('should translate __otdr(port, count) to OTDR intrinsic', () => {
+    const ir = compile('int main() { __otdr(0x60, 10); return 0; }');
+    const instr = findIntrinsic(ir, 'OTDR');
+    assert.ok(instr !== null, 'OTDR intrinsic should be present');
+    assert.ok(instr.operands.length >= 3, 'OTDR should have port and count operands');
+  });
 });
 
 describe('Processor Intrinsics - Z80 Codegen', () => {
@@ -283,6 +339,62 @@ describe('Processor Intrinsics - Z80 Codegen', () => {
     assert.ok(asm.includes('ld bc,'), 'Assembly should load 16-bit port into BC');
     assert.ok(asm.includes('out (c),'), 'Assembly should contain out (c)');
   });
+
+  it('should generate ini for __ini(port)', () => {
+    const asm = compileToAssembly('int main() { __ini(0x60); return 0; }');
+    assert.ok(asm.includes('ld c,'), 'Assembly should load port into C');
+    assert.ok(asm.includes('ld b, 1'), 'Assembly should set B to 1');
+    assert.ok(asm.includes('ini'), 'Assembly should contain ini');
+  });
+
+  it('should generate outi for __outi(port)', () => {
+    const asm = compileToAssembly('int main() { __outi(0x60); return 0; }');
+    assert.ok(asm.includes('ld c,'), 'Assembly should load port into C');
+    assert.ok(asm.includes('ld b, 1'), 'Assembly should set B to 1');
+    assert.ok(asm.includes('outi'), 'Assembly should contain outi');
+  });
+
+  it('should generate inir for __inir(port, count)', () => {
+    const asm = compileToAssembly('int main() { __inir(0x60, 10); return 0; }');
+    assert.ok(asm.includes('ld c,'), 'Assembly should load port into C');
+    assert.ok(asm.includes('ld b,'), 'Assembly should set B to count');
+    assert.ok(asm.includes('inir'), 'Assembly should contain inir');
+  });
+
+  it('should generate otir for __otir(port, count)', () => {
+    const asm = compileToAssembly('int main() { __otir(0x60, 10); return 0; }');
+    assert.ok(asm.includes('ld c,'), 'Assembly should load port into C');
+    assert.ok(asm.includes('ld b,'), 'Assembly should set B to count');
+    assert.ok(asm.includes('otir'), 'Assembly should contain otir');
+  });
+
+  it('should generate ind for __ind(port)', () => {
+    const asm = compileToAssembly('int main() { __ind(0x60); return 0; }');
+    assert.ok(asm.includes('ld c,'), 'Assembly should load port into C');
+    assert.ok(asm.includes('ld b, 1'), 'Assembly should set B to 1');
+    assert.ok(asm.includes('ind'), 'Assembly should contain ind');
+  });
+
+  it('should generate outd for __outd(port)', () => {
+    const asm = compileToAssembly('int main() { __outd(0x60); return 0; }');
+    assert.ok(asm.includes('ld c,'), 'Assembly should load port into C');
+    assert.ok(asm.includes('ld b, 1'), 'Assembly should set B to 1');
+    assert.ok(asm.includes('outd'), 'Assembly should contain outd');
+  });
+
+  it('should generate indr for __indr(port, count)', () => {
+    const asm = compileToAssembly('int main() { __indr(0x60, 10); return 0; }');
+    assert.ok(asm.includes('ld c,'), 'Assembly should load port into C');
+    assert.ok(asm.includes('ld b,'), 'Assembly should set B to count');
+    assert.ok(asm.includes('indr'), 'Assembly should contain indr');
+  });
+
+  it('should generate otdr for __otdr(port, count)', () => {
+    const asm = compileToAssembly('int main() { __otdr(0x60, 10); return 0; }');
+    assert.ok(asm.includes('ld c,'), 'Assembly should load port into C');
+    assert.ok(asm.includes('ld b,'), 'Assembly should set B to count');
+    assert.ok(asm.includes('otdr'), 'Assembly should contain otdr');
+  });
 });
 
 describe('Processor Intrinsics - IR Serialization', () => {
@@ -303,5 +415,26 @@ describe('Processor Intrinsics - IR Serialization', () => {
   it('should have correct string representation', () => {
     const instr = new IL.IntrinsicInstruction('NOP');
     assert.strictEqual(instr.toString(), 'INTRINSIC NOP');
+  });
+
+  it('should serialize INI IntrinsicInstruction to JSON', () => {
+    const instr = new IL.IntrinsicInstruction('INI', ['0x60']);
+    const json = instr.toJSON();
+    assert.strictEqual(json.opcode, 'INTRINSIC');
+    assert.deepStrictEqual(json.operands, ['INI', '0x60']);
+  });
+
+  it('should serialize INIR IntrinsicInstruction to JSON', () => {
+    const instr = new IL.IntrinsicInstruction('INIR', ['0x60', '10']);
+    const json = instr.toJSON();
+    assert.strictEqual(json.opcode, 'INTRINSIC');
+    assert.deepStrictEqual(json.operands, ['INIR', '0x60', '10']);
+  });
+
+  it('should serialize OTDR IntrinsicInstruction to JSON', () => {
+    const instr = new IL.IntrinsicInstruction('OTDR', ['0x60', '10']);
+    const json = instr.toJSON();
+    assert.strictEqual(json.opcode, 'INTRINSIC');
+    assert.deepStrictEqual(json.operands, ['OTDR', '0x60', '10']);
   });
 });

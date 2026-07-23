@@ -836,6 +836,54 @@ export class Z80Codegen {
         this.codeLines.push('  out (c), a');
         break;
 
+      case 'INI':
+        this.codeLines.push(`  ld c, ${args[0]}`);
+        this.codeLines.push('  ld b, 1');
+        this.codeLines.push('  ini (hl), (c)');
+        break;
+
+      case 'OUTI':
+        this.codeLines.push(`  ld c, ${args[0]}`);
+        this.codeLines.push('  ld b, 1');
+        this.codeLines.push('  outi (c), (hl)');
+        break;
+
+      case 'INIR':
+        this.codeLines.push(`  ld c, ${args[0]}`);
+        this.codeLines.push(`  ld b, ${args[1]}`);
+        this.codeLines.push('  inir');
+        break;
+
+      case 'OTIR':
+        this.codeLines.push(`  ld c, ${args[0]}`);
+        this.codeLines.push(`  ld b, ${args[1]}`);
+        this.codeLines.push('  otir');
+        break;
+
+      case 'IND':
+        this.codeLines.push(`  ld c, ${args[0]}`);
+        this.codeLines.push('  ld b, 1');
+        this.codeLines.push('  ind (hl), (c)');
+        break;
+
+      case 'OUTD':
+        this.codeLines.push(`  ld c, ${args[0]}`);
+        this.codeLines.push('  ld b, 1');
+        this.codeLines.push('  outd (c), (hl)');
+        break;
+
+      case 'INDR':
+        this.codeLines.push(`  ld c, ${args[0]}`);
+        this.codeLines.push(`  ld b, ${args[1]}`);
+        this.codeLines.push('  indr');
+        break;
+
+      case 'OTDR':
+        this.codeLines.push(`  ld c, ${args[0]}`);
+        this.codeLines.push(`  ld b, ${args[1]}`);
+        this.codeLines.push('  otdr');
+        break;
+
       default:
         console.warn(`Unknown intrinsic: ${name}`);
     }

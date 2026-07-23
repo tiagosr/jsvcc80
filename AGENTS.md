@@ -91,10 +91,11 @@ function example(name) { ... }
 ## Current Implementation Status
 
 ### ✅ Completed
+- **Pointers, arrays and character strings** - TypeSpecNode extended with `pointerDepth`, `isArray`, `arrayLength`; parser handles pointer/array declarators (`int *p`, `int arr[10]`), address-of operator (`&`), dereference (`*`), string literals emitted as global `.db` data; new IR instructions (`LoadAddrInstruction`, `DerefLoadInstruction`, `DerefStoreInstruction`, `IndexedLoadInstruction`, `IndexedStoreInstruction`); Z80 codegen for pointer operations and indexed memory access; 34 new tests
 - **typedef and default types** - Parser supports `void`, `char`, `short`, `long`, `unsigned`, `signed`, `_Bool` as type specifiers with signedness modifiers; typedef names resolved via two-pass parsing; TypeSpecNode tracks type sizes; typedef aliases resolved in IR translation; 50 new tests
 - **Binary object file format** - `src/linker/objectfile_loader.js` with VCC80O magic header, serialization/deserialization of sections, symbols, relocations, and CLI support for loading .o files
 - **Processor intrinsics** - `IntrinsicInstruction` IR class, intrinsic detection in `translateCall`, Z80 codegen for special opcodes and port access, 43 intrinsic tests
-- 362 passing tests
+- 396 passing tests
 - Preprocessor/lexer with pragma support (#pragma once, #pragma pack)
 - PEG parser combinator framework (seq, alt, many, some, opt, lit, any, pred, lazy, map)
 - AST node definitions for full C syntax
@@ -127,11 +128,11 @@ function example(name) { ... }
 - None
 
 ### 🔜 Next Steps
-1. Implement pointers, arrays and character strings, and extend the type system to support those, along with indexed access
-2. Implement `struct`, `union`, `typeof()`, `sizeof()` and `offsetof()`, and extend the type system to support those
-3. Implement `const`, `volatile` and `register`, and extend the type system to support these
-4. Implement block transfer intrinsics (`INI`, `OUTI`, `INIR`, `OTIR`, `IND`, `OUTD`, `INDR`, `OTDR`)
-5. Implement interrupt/NMI semantics, hooking them up to `__attribute__((interrupt("IRQ")))` and `__attribute__((interrupt("nmi")))`, along with the `RETI` and `RETN` opcodes
+1. Implement `struct`, `union`, `typeof()`, `sizeof()` and `offsetof()`, and extend the type system to support those
+2. Implement `const`, `volatile` and `register`, and extend the type system to support these
+3. Implement block transfer intrinsics (`INI`, `OUTI`, `INIR`, `OTIR`, `IND`, `OUTD`, `INDR`, `OTDR`)
+4. Implement interrupt/NMI semantics, hooking them up to `__attribute__((interrupt("IRQ")))` and `__attribute__((interrupt("nmi")))`, along with the `RETI` and `RETN` opcodes
+5. Implement pointer to pointer, array of arrays and extend the type system to support these
 6. Implement `#define`, `#undef`, `#ifdef`, `#ifndef`, `#else`, `#endif` in the preprocessor (first without parameters)
 7. Implement `#include "..."` and `#include <...>` in the preprocessor
 8. Implement `#if`, `#elif`, expressions and `defined(...)` in the preprocessor

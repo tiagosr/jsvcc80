@@ -2,6 +2,11 @@ import * as AST from '../ast/nodes.js';
 import * as IL from './il.js';
 
 /**
+ * Counter for generating unique string literal labels
+ */
+let stringLiteralCounter = 0;
+
+/**
  * Map of intrinsic function names to their IR opcode and argument count.
  * Zero-argument intrinsics have argCount 0.
  * Intrinsics with arguments evaluate their argument expressions first.
@@ -44,6 +49,8 @@ export class AstToIr {
     this.loopBreakLabel = null;
     this.loopContinueLabel = null;
     this.typedefs = new Map();
+    this.stringData = [];
+    this.stringCounter = 0;
   }
 
   /**
@@ -87,8 +94,61 @@ export class AstToIr {
       }
     }
 
+    for (const node of ast.statements) {
+      if (node instanceof AST.FunctionNode) {
+        this.collectStringLiterals(node);
+      }
+    }
+
+    globals.push(...this.stringData);
     program.globals = globals;
     return program;
+  }
+
+  /**
+   * Recursively collect string literals from function bodies
+   * @param {AST.FunctionNode} func - Function node
+   */
+  collectStringLiterals(func) {
+    this.visitNodeForStrings(func.body);
+  }
+
+  /**
+   * Visit AST nodes to find string literals and emit them as global data
+   * @param {AST.ASTNode} node - Node to visit
+   */
+  visitNodeForStrings(node) {
+    if (!node) return;
+    if (node instanceof AST.LiteralNode && node.type === 'string') {
+      this.emitStringData(node.value);
+      return;
+    }
+    const childKeys = Object.keys(node).filter(k =>
+      typeof node[k] === 'object' && node[k] !== null && !Array.isArray(node[k]) && node[k] instanceof AST.ASTNode
+    );
+    for (const key of childKeys) {
+      this.visitNodeForStrings(node[key]);
+    }
+  }
+
+  /**
+   * Emit string literal data as global
+   * @param {string} value - String value
+   * @returns {string} Label name for the string data
+   */
+  emitStringData(value) {
+    const label = `str_${this.stringCounter++}`;
+    const bytes = [];
+    for (let i = 0; i < value.length; i++) {
+      bytes.push(value.charCodeAt(i));
+    }
+    bytes.push(0);
+    this.stringData.push({
+      name: label,
+      type: 'string',
+      bytes
+    });
+    return label;
   }
 
   /**
@@ -519,11 +579,18 @@ export class AstToIr {
   translateDeclStmt(decl) {
     const blocks = [];
     const resolved = this.resolveType(decl.type);
+    const typeInfo = decl.type;
+    const size = typeInfo.getSize();
     this.symbolTable.define(decl.name.name, {
       name: decl.name.name,
       kind: 'variable',
       type: resolved.baseType,
-      offset: 0
+      offset: 0,
+      size: size,
+      pointerDepth: typeInfo.pointerDepth,
+      isArray: typeInfo.isArray,
+      arrayLength: typeInfo.arrayLength,
+      elemSize: typeInfo.getElementSize()
     });
 
     if (decl.init) {
@@ -532,6 +599,14 @@ export class AstToIr {
       blocks[blocks.length - 1].add(
         new IL.StoreInstruction(decl.name.name, result.result)
       );
+    } else if (typeInfo.isArray) {
+      blocks.push(new IL.BasicBlock(this.label('alloc'), [
+        new IL.AllocStackInstruction(size)
+      ]));
+    } else if (size > 2) {
+      blocks.push(new IL.BasicBlock(this.label('alloc'), [
+        new IL.AllocStackInstruction(size)
+      ]));
     }
 
     return blocks;
@@ -577,6 +652,13 @@ export class AstToIr {
       return this.translateConditional(expr);
     }
     if (expr instanceof AST.LiteralNode) {
+      if (expr.type === 'string') {
+        const label = this.emitStringData(expr.value);
+        const temp = this.temp();
+        const block = new IL.BasicBlock(this.label('str'));
+        block.add(new IL.LoadAddrInstruction(temp, label));
+        return { blocks: [block], result: temp };
+      }
       const temp = this.temp();
       const block = new IL.BasicBlock(this.label('lit'));
       block.add(new IL.LoadInstruction(temp, expr.value));
@@ -595,6 +677,9 @@ export class AstToIr {
     }
 
     if (expr instanceof AST.UnaryOpNode) {
+      if (expr.op === 'deref') {
+        return this.translateDeref({ operand: expr.operand });
+      }
       return this.translateUnaryOp(expr);
     }
 
@@ -608,6 +693,18 @@ export class AstToIr {
 
     if (expr instanceof AST.MemberNode) {
       return this.translateMember(expr);
+    }
+
+    if (expr instanceof AST.AddressOfNode) {
+      return this.translateAddressOf(expr);
+    }
+
+    if (expr instanceof AST.DerefNode) {
+      return this.translateDeref(expr);
+    }
+
+    if (expr instanceof AST.PointerMemberNode) {
+      return this.translatePointerMember(expr);
     }
 
     const temp = this.temp();
@@ -761,11 +858,27 @@ export class AstToIr {
     const idxResult = this.translateExpression(index.index);
     const dest = this.temp();
     const block = new IL.BasicBlock(this.label('index'));
-    block.add(new IL.BinaryOpInstruction(dest, 'index', baseResult.result, idxResult.result));
+    const elemSize = this.inferElementSize(index.base);
+    block.add(new IL.IndexedLoadInstruction(dest, baseResult.result, idxResult.result, elemSize));
     return {
       blocks: [...baseResult.blocks, ...idxResult.blocks, block],
       result: dest
     };
+  }
+
+  /**
+   * Infer element size from an expression's type
+   * @param {AST.ASTNode} expr - Expression to infer type from
+   * @returns {number} Element size in bytes
+   */
+  inferElementSize(expr) {
+    if (expr instanceof AST.IdentifierNode) {
+      const sym = this.symbolTable.lookup(expr.name);
+      if (sym) {
+        return sym.elemSize || 1;
+      }
+    }
+    return 1;
   }
 
   /**
@@ -780,6 +893,70 @@ export class AstToIr {
     block.add(new IL.BinaryOpInstruction(dest, 'member', objResult.result, member.field.name));
     return {
       blocks: [...objResult.blocks, block],
+      result: dest
+    };
+  }
+
+  /**
+   * Translate an address-of expression (&expr)
+   * @param {AST.AddressOfNode} addr - Address-of expression
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translateAddressOf(addr) {
+    const dest = this.temp();
+    const block = new IL.BasicBlock(this.label('addr'));
+    if (addr.operand instanceof AST.IdentifierNode) {
+      block.add(new IL.LoadAddrInstruction(dest, addr.operand.name));
+    } else if (addr.operand instanceof AST.IndexNode) {
+      const baseResult = this.translateExpression(addr.operand.base);
+      const idxResult = this.translateExpression(addr.operand.index);
+      const elemSize = this.inferElementSize(addr.operand.base);
+      const addrTemp = this.temp();
+      block.add(new IL.BinaryOpInstruction(addrTemp, 'add', baseResult.result, idxResult.result));
+      block.add(new IL.LoadAddrInstruction(dest, addrTemp));
+      return {
+        blocks: [...baseResult.blocks, ...idxResult.blocks, block],
+        result: dest
+      };
+    } else {
+      const operandResult = this.translateExpression(addr.operand);
+      block.add(new IL.LoadAddrInstruction(dest, operandResult.result));
+      return {
+        blocks: [...operandResult.blocks, block],
+        result: dest
+      };
+    }
+    return { blocks: [block], result: dest };
+  }
+
+  /**
+   * Translate a dereference expression (*expr)
+   * @param {AST.DerefNode} deref - Dereference expression
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translateDeref(deref) {
+    const ptrResult = this.translateExpression(deref.operand);
+    const dest = this.temp();
+    const block = new IL.BasicBlock(this.label('deref'));
+    block.add(new IL.DerefLoadInstruction(dest, ptrResult.result));
+    return {
+      blocks: [...ptrResult.blocks, block],
+      result: dest
+    };
+  }
+
+  /**
+   * Translate a pointer member access expression (ptr->field)
+   * @param {AST.PointerMemberNode} pmem - Pointer member access
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translatePointerMember(pmem) {
+    const ptrResult = this.translateExpression(pmem.object);
+    const dest = this.temp();
+    const block = new IL.BasicBlock(this.label('pmem'));
+    block.add(new IL.BinaryOpInstruction(dest, 'pmember', ptrResult.result, pmem.field.name));
+    return {
+      blocks: [...ptrResult.blocks, block],
       result: dest
     };
   }

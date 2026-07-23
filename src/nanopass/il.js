@@ -245,6 +245,85 @@ export class IntrinsicInstruction extends Instruction {
 }
 
 /**
+ * Instruction for loading the address of a variable into a register
+ */
+export class LoadAddrInstruction extends Instruction {
+  /**
+   * Creates a load address instruction
+   * @param {string} dest - Destination register for the address
+   * @param {string} src - Variable name whose address to load
+   * @returns {LoadAddrInstruction}
+   */
+  constructor(dest, src) {
+    super('LOAD_ADDR', [dest, src]);
+  }
+}
+
+/**
+ * Instruction for loading a value from a memory address held in a register (pointer dereference)
+ */
+export class DerefLoadInstruction extends Instruction {
+  /**
+   * Creates a dereference load instruction
+   * @param {string} dest - Destination register for the loaded value
+   * @param {string} ptr - Register holding the pointer address
+   * @returns {DerefLoadInstruction}
+   */
+  constructor(dest, ptr) {
+    super('DEREF_LOAD', [dest, ptr]);
+  }
+}
+
+/**
+ * Instruction for storing a value to a memory address held in a register (pointer store)
+ */
+export class DerefStoreInstruction extends Instruction {
+  /**
+   * Creates a dereference store instruction
+   * @param {string} ptr - Register holding the pointer address
+   * @param {string} src - Source register holding the value to store
+   * @returns {DerefStoreInstruction}
+   */
+  constructor(ptr, src) {
+    super('DEREF_STORE', [ptr, src]);
+  }
+}
+
+/**
+ * Instruction for indexed memory access (array indexing with element size)
+ */
+export class IndexedLoadInstruction extends Instruction {
+  /**
+   * Creates an indexed load instruction
+   * @param {string} dest - Destination register for the loaded value
+   * @param {string} base - Base address register
+   * @param {string} index - Index register
+   * @param {number} elemSize - Element size in bytes
+   * @returns {IndexedLoadInstruction}
+   */
+  constructor(dest, base, index, elemSize = 1) {
+    super('INDEXED_LOAD', [dest, base, index, elemSize]);
+  }
+}
+
+/**
+ * Instruction for indexed memory store (array indexed store)
+ */
+export class IndexedStoreInstruction extends Instruction {
+  /**
+   * Creates an indexed store instruction
+   * @param {string} base - Base address register
+   * @param {string} index - Index register
+   * @param {string} src - Source register holding the value to store
+   * @param {number} elemSize - Element size in bytes
+   * @returns {IndexedStoreInstruction}
+   */
+  constructor(base, index, src, elemSize = 1) {
+    super('INDEXED_STORE', [base, index, src, elemSize]);
+  }
+}
+
+/**
  * Intermediate representation for basic blocks and functions
  */
 export class BasicBlock {

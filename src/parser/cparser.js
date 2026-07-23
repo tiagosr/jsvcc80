@@ -53,6 +53,25 @@ function createTypeSpec(typeKw, isSigned, token) {
 }
 
 /**
+ * Merge a base type spec with declarator info (pointer stars, array dimensions)
+ * @param {AST.TypeSpecNode} baseType - Base type specification
+ * @param {number} pointerDepth - Number of pointer indirection levels
+ * @param {Array} arrayDims - Array of dimension sizes (empty if not array)
+ * @returns {AST.TypeSpecNode} Merged type specification
+ */
+function mergeDeclaratorType(baseType, pointerDepth, arrayDims) {
+  const loc = baseType.location || { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } };
+  if (pointerDepth === 0 && arrayDims.length === 0) {
+    return baseType;
+  }
+  if (arrayDims.length > 0) {
+    const dim = arrayDims[0];
+    return new AST.TypeSpecNode(baseType.baseType, baseType.isSigned, baseType.isConst, baseType.bitWidth, loc, 0, true, dim);
+  }
+  return new AST.TypeSpecNode(baseType.baseType, baseType.isSigned, baseType.isConst, baseType.bitWidth, loc, pointerDepth, false, null);
+}
+
+/**
  * Build a type specifier parser rule
  * Matches: [signed|unsigned] [void|char|_Bool|short|int|long]
  * Requires at least one token to be consumed.
@@ -154,17 +173,31 @@ export class CPegParser {
       }
     );
 
-    this.ruleRefs.primaryExpr = map(
-      Parser.alt(
-        Parser.seq(Parser.lit('('), lazy(() => this.ruleRefs.expression), Parser.lit(')')),
-        identifierOrLiteral
-      ),
+    const parenExpr = Parser.seq(Parser.lit('('), lazy(() => this.ruleRefs.expression), Parser.lit(')'));
+
+    const basePrimary = map(
+      Parser.alt(parenExpr, identifierOrLiteral),
       (value) => {
         if (Array.isArray(value)) {
           return value[1];
         }
         return value;
       }
+    );
+
+    const derefExpr = map(
+      Parser.seq(
+        Parser.lit('*'),
+        lazy(() => this.ruleRefs.primaryExpr)
+      ),
+      ([star, operand]) => {
+        return new AST.UnaryOpNode('deref', operand, locFromToken(star));
+      }
+    );
+
+    this.ruleRefs.primaryExpr = Parser.alt(
+      derefExpr,
+      basePrimary
     );
   }
 
@@ -191,8 +224,19 @@ export class CPegParser {
       }
     );
 
+    const addressOf = map(
+      Parser.seq(
+        pred(t => t.type === '&'),
+        lazy(() => this.ruleRefs.unaryExpr)
+      ),
+      ([amp, operand]) => {
+        return new AST.AddressOfNode(operand, locFromToken(amp));
+      }
+    );
+
     this.ruleRefs.unaryExpr = Parser.alt(
       unaryPrefix,
+      addressOf,
       this.ruleRefs.primaryExpr
     );
   }
@@ -645,16 +689,30 @@ export class CPegParser {
     const forInitDecl = map(
       Parser.seq(
         lazy(() => this.ruleRefs.typeSpecifier),
+        Parser.many(Parser.lit('*')),
         pred(t => t.type === 'IDENTIFIER'),
+        Parser.many(Parser.seq(
+          Parser.lit('['),
+          Parser.opt(lazy(() => this.ruleRefs.expression)),
+          Parser.lit(']')
+        )),
         Parser.opt(Parser.seq(Parser.lit('='), lazy(() => this.ruleRefs.expression)))
       ),
-      ([typeSpec, name, init]) => {
+      ([typeSpec, stars, name, arrayDims, init]) => {
+        const pointerDepth = stars.length;
+        const dims = arrayDims.map(dim => {
+          const expr = dim[1];
+          if (expr === null || expr === undefined) return null;
+          if (expr instanceof AST.LiteralNode) return expr.value;
+          return null;
+        });
+        const mergedType = mergeDeclaratorType(typeSpec, pointerDepth, dims);
         let initValue = null;
         if (init) {
           initValue = Array.isArray(init[1]) ? init[1][0] : init[1];
         }
         return new AST.DeclNode('var',
-          typeSpec,
+          mergedType,
           new AST.IdentifierNode(name.value, locFromToken(name)),
           initValue, locFromToken(typeSpec));
       }
@@ -931,17 +989,31 @@ export class CPegParser {
     const localDecl = map(
       Parser.seq(
         lazy(() => this.ruleRefs.typeSpecifier),
+        Parser.many(Parser.lit('*')),
         pred(t => t.type === 'IDENTIFIER'),
+        Parser.many(Parser.seq(
+          Parser.lit('['),
+          Parser.opt(lazy(() => this.ruleRefs.expression)),
+          Parser.lit(']')
+        )),
         Parser.opt(Parser.seq(Parser.lit('='), lazy(() => this.ruleRefs.expression))),
         Parser.lit(';')
       ),
-      ([typeSpec, name, init]) => {
+      ([typeSpec, stars, name, arrayDims, init]) => {
+        const pointerDepth = stars.length;
+        const dims = arrayDims.map(dim => {
+          const expr = dim[1];
+          if (expr === null || expr === undefined) return null;
+          if (expr instanceof AST.LiteralNode) return expr.value;
+          return null;
+        });
+        const mergedType = mergeDeclaratorType(typeSpec, pointerDepth, dims);
         let initValue = null;
         if (init) {
           initValue = Array.isArray(init[1]) ? init[1][0] : init[1];
         }
         return new AST.DeclNode('var',
-          typeSpec,
+          mergedType,
           new AST.IdentifierNode(name.value, locFromToken(name)),
           initValue, locFromToken(typeSpec));
       }
@@ -1086,11 +1158,25 @@ export class CPegParser {
     const typedParam = map(
       Parser.seq(
         lazy(() => this.ruleRefs.typeSpecifier),
-        pred(t => t.type === 'IDENTIFIER')
+        Parser.many(Parser.lit('*')),
+        pred(t => t.type === 'IDENTIFIER'),
+        Parser.many(Parser.seq(
+          Parser.lit('['),
+          Parser.opt(lazy(() => this.ruleRefs.expression)),
+          Parser.lit(']')
+        ))
       ),
-      ([typeSpec, name]) => {
+      ([typeSpec, stars, name, arrayDims]) => {
+        const pointerDepth = stars.length;
+        const dims = arrayDims.map(dim => {
+          const expr = dim[1];
+          if (expr === null || expr === undefined) return null;
+          if (expr instanceof AST.LiteralNode) return expr.value;
+          return null;
+        });
+        const mergedType = mergeDeclaratorType(typeSpec, pointerDepth, dims);
         return new AST.ParameterNode(
-          typeSpec,
+          mergedType,
           name.value,
           locFromToken(typeSpec)
         );
@@ -1149,13 +1235,27 @@ export class CPegParser {
     const variableDecl = map(
       Parser.seq(
         lazy(() => this.ruleRefs.typeSpecifier),
+        Parser.many(Parser.lit('*')),
         pred(t => t.type === 'IDENTIFIER'),
+        Parser.many(Parser.seq(
+          Parser.lit('['),
+          Parser.opt(lazy(() => this.ruleRefs.expression)),
+          Parser.lit(']')
+        )),
         Parser.opt(Parser.seq(Parser.lit('='), lazy(() => this.ruleRefs.expression))),
         Parser.lit(';')
       ),
-      ([typeSpec, name, init]) => {
+      ([typeSpec, stars, name, arrayDims, init]) => {
+        const pointerDepth = stars.length;
+        const dims = arrayDims.map(dim => {
+          const expr = dim[1];
+          if (expr === null || expr === undefined) return null;
+          if (expr instanceof AST.LiteralNode) return expr.value;
+          return null;
+        });
+        const mergedType = mergeDeclaratorType(typeSpec, pointerDepth, dims);
         const initValue = init ? init[1] : null;
-        return new AST.DeclNode('var', typeSpec,
+        return new AST.DeclNode('var', mergedType,
           new AST.IdentifierNode(name.value, locFromToken(name)),
           initValue, locFromToken(typeSpec));
       }

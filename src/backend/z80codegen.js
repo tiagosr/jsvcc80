@@ -6,7 +6,8 @@ import {
   LoadInstruction, StoreInstruction, BinaryOpInstruction, UnaryOpInstruction,
   CallInstruction, ReturnInstruction, JumpIfInstruction, JumpInstruction,
   LabelInstruction, AllocStackInstruction, FreeStackInstruction, PushInstruction, PopInstruction,
-  IntrinsicInstruction
+  IntrinsicInstruction, LoadAddrInstruction, DerefLoadInstruction, DerefStoreInstruction,
+  IndexedLoadInstruction, IndexedStoreInstruction
 } from '../nanopass/il.js';
 
 /**
@@ -110,7 +111,9 @@ export class Z80Codegen {
   generateGlobal(global) {
     const name = global.name;
     
-    if (global.type === 'data') {
+    if (global.type === 'string') {
+      this.codeLines.push(`${name}: .db ${global.bytes.join(', ')}`);
+    } else if (global.type === 'data') {
       // Data declaration: db, dw
       if (global.value !== undefined) {
         this.codeLines.push(`${name}: .db ${this.formatValue(global.value)}`);
@@ -122,6 +125,9 @@ export class Z80Codegen {
     } else if (global.type === 'bss') {
       // Uninitialized data
       this.codeLines.push(`${name}: .ds ${global.size || 1}`);
+    } else {
+      const size = global.size || 1;
+      this.codeLines.push(`${name}: .ds ${size}`);
     }
   }
 
@@ -280,6 +286,26 @@ export class Z80Codegen {
 
       case 'INTRINSIC':
         this.generateIntrinsic(instr);
+        break;
+
+      case 'LOAD_ADDR':
+        this.generateLoadAddr(instr);
+        break;
+
+      case 'DEREF_LOAD':
+        this.generateDerefLoad(instr);
+        break;
+
+      case 'DEREF_STORE':
+        this.generateDerefStore(instr);
+        break;
+
+      case 'INDEXED_LOAD':
+        this.generateIndexedLoad(instr);
+        break;
+
+      case 'INDEXED_STORE':
+        this.generateIndexedStore(instr);
         break;
 
       default:
@@ -816,6 +842,113 @@ export class Z80Codegen {
   }
 
   /**
+   * Generates a LOAD_ADDR instruction (load address of a symbol)
+   * @param {LoadAddrInstruction} instr - Load address instruction
+   */
+  generateLoadAddr(instr) {
+    const [dest, src] = instr.operands;
+    this.codeLines.push(`  ld hl, ${src}`);
+    if (dest !== 'hl') {
+      this.codeLines.push(`  ex de, hl`);
+      this.codeLines.push(`  ld ${dest}, de`);
+    }
+  }
+
+  /**
+   * Generates a DEREF_LOAD instruction (load value from pointer address)
+   * @param {DerefLoadInstruction} instr - Dereference load instruction
+   */
+  generateDerefLoad(instr) {
+    const [dest, ptr] = instr.operands;
+    this.codeLines.push(`  ld hl, ${ptr}`);
+    this.codeLines.push(`  ld a, (hl)`);
+    const reg = this.formatRegister(dest, true);
+    if (reg !== 'a') {
+      this.codeLines.push(`  ld ${reg}, a`);
+    }
+  }
+
+  /**
+   * Generates a DEREF_STORE instruction (store value to pointer address)
+   * @param {DerefStoreInstruction} instr - Dereference store instruction
+   */
+  generateDerefStore(instr) {
+    const [ptr, src] = instr.operands;
+    this.codeLines.push(`  ld hl, ${ptr}`);
+    this.codeLines.push(`  ld a, ${src}`);
+    this.codeLines.push(`  ld (hl), a`);
+  }
+
+  /**
+   * Generates an INDEXED_LOAD instruction (array index with element size)
+   * @param {IndexedLoadInstruction} instr - Indexed load instruction
+   */
+  generateIndexedLoad(instr) {
+    const [dest, base, index, elemSize] = instr.operands;
+    if (elemSize === 1) {
+      this.codeLines.push(`  ld hl, ${base}`);
+      this.codeLines.push(`  ld e, ${index}`);
+      this.codeLines.push(`  ld d, 0`);
+      this.codeLines.push(`  add hl, de`);
+      this.codeLines.push(`  ld a, (hl)`);
+    } else if (elemSize === 2) {
+      this.codeLines.push(`  ld hl, ${base}`);
+      this.codeLines.push(`  ld de, ${index}`);
+      this.codeLines.push(`  add hl, de`);
+      this.codeLines.push(`  add hl, de`);
+      this.codeLines.push(`  ld a, (hl)`);
+    } else {
+      this.codeLines.push(`  ld hl, ${base}`);
+      this.codeLines.push(`  ld de, ${index}`);
+      this.codeLines.push(`  add hl, de`);
+      const loopLabel = this.label('idx');
+      this.codeLines.push(`${loopLabel}:`);
+      this.codeLines.push(`  add hl, de`);
+      this.codeLines.push(`  dec d`);
+      this.codeLines.push(`  ld a, d`);
+      this.codeLines.push(`  or a`);
+      this.codeLines.push(`  jp nz, ${loopLabel}`);
+      this.codeLines.push(`  ld a, (hl)`);
+    }
+    const reg = this.formatRegister(dest, true);
+    if (reg !== 'a') {
+      this.codeLines.push(`  ld ${reg}, a`);
+    }
+  }
+
+  /**
+   * Generates an INDEXED_STORE instruction (array index store with element size)
+   * @param {IndexedStoreInstruction} instr - Indexed store instruction
+   */
+  generateIndexedStore(instr) {
+    const [base, index, src, elemSize] = instr.operands;
+    if (elemSize === 1) {
+      this.codeLines.push(`  ld hl, ${base}`);
+      this.codeLines.push(`  ld e, ${index}`);
+      this.codeLines.push(`  ld d, 0`);
+      this.codeLines.push(`  add hl, de`);
+    } else if (elemSize === 2) {
+      this.codeLines.push(`  ld hl, ${base}`);
+      this.codeLines.push(`  ld de, ${index}`);
+      this.codeLines.push(`  add hl, de`);
+      this.codeLines.push(`  add hl, de`);
+    } else {
+      this.codeLines.push(`  ld hl, ${base}`);
+      this.codeLines.push(`  ld de, ${index}`);
+      this.codeLines.push(`  add hl, de`);
+      const loopLabel = this.label('idx');
+      this.codeLines.push(`${loopLabel}:`);
+      this.codeLines.push(`  add hl, de`);
+      this.codeLines.push(`  dec d`);
+      this.codeLines.push(`  ld a, d`);
+      this.codeLines.push(`  or a`);
+      this.codeLines.push(`  jp nz, ${loopLabel}`);
+    }
+    this.codeLines.push(`  ld a, ${src}`);
+    this.codeLines.push(`  ld (hl), a`);
+  }
+
+  /**
    * Formats a register name for output
    * @param {string} reg - Register identifier
    * @param {boolean} [is8Bit=false] - Whether it's an 8-bit register
@@ -837,6 +970,12 @@ export class Z80Codegen {
     if (lowerReg === Registers.IX) return 'ix';
     if (lowerReg === Registers.IY) return 'iy';
     if (lowerReg === Registers.SP) return 'sp';
+
+    // Temp registers (t0, t1, etc.) - pass through as-is
+    if (/^t\d+$/.test(lowerReg)) return lowerReg;
+
+    // Variable names and labels - pass through as-is
+    if (/^[a-zA-Z_]\w*$/.test(reg)) return reg;
 
     throw new Error(`Unknown register: ${reg}`);
   }

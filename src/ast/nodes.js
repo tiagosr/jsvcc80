@@ -75,6 +75,36 @@ export class UnaryOpNode extends ASTNode {
 }
 
 /**
+ * AST node for address-of operator (&)
+ */
+export class AddressOfNode extends ASTNode {
+  /**
+   * Creates an address-of node
+   * @param {ExpressionNode} operand - Expression to take address of
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(operand, location) {
+    super('AddressOf', location);
+    this.operand = operand;
+  }
+}
+
+/**
+ * AST node for pointer dereference operator (*)
+ */
+export class DerefNode extends ASTNode {
+  /**
+   * Creates a dereference node
+   * @param {ExpressionNode} operand - Pointer expression to dereference
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(operand, location) {
+    super('Deref', location);
+    this.operand = operand;
+  }
+}
+
+/**
  * AST node for literal values
  */
 export class LiteralNode extends ASTNode {
@@ -372,21 +402,61 @@ export class TypeSpecNode extends ASTNode {
    * @param {boolean} isConst - Whether const qualified
    * @param {number} [bitWidth] - Optional bit width for enums/fields
    * @param {SourceLocation} location - Source location
+   * @param {number} [pointerDepth] - Pointer indirection level (0 = non-pointer)
+   * @param {boolean} [isArray] - Whether this is an array type
+   * @param {number} [arrayLength] - Array length (null for incomplete array)
    */
-  constructor(baseType, isSigned = true, isConst = false, bitWidth = null, location) {
+  constructor(baseType, isSigned = true, isConst = false, bitWidth = null, location, pointerDepth = 0, isArray = false, arrayLength = null) {
     super('TypeSpec', location);
     this.baseType = baseType;
     this.isSigned = isSigned;
     this.isConst = isConst;
     this.bitWidth = bitWidth;
+    this.pointerDepth = pointerDepth;
+    this.isArray = isArray;
+    this.arrayLength = arrayLength;
   }
 
   /**
    * Returns the size in bytes for this type on the Z80 target
+   * Pointers are always 2 bytes (16-bit addresses). Arrays are elementSize * length.
    * @returns {number} Size in bytes
    */
   getSize() {
+    const baseSize = TypeSpecNode.TypeSizes[this.baseType] ?? 2;
+    if (this.pointerDepth > 0) {
+      return 2;
+    }
+    if (this.isArray && this.arrayLength != null) {
+      return baseSize * this.arrayLength;
+    }
+    return baseSize;
+  }
+
+  /**
+   * Returns the element size for this type (ignores array length)
+   * @returns {number} Element size in bytes
+   */
+  getElementSize() {
+    if (this.pointerDepth > 0) {
+      return 2;
+    }
     return TypeSpecNode.TypeSizes[this.baseType] ?? 2;
+  }
+
+  /**
+   * Returns the type string representation (e.g., 'int*', 'char[10]')
+   * @returns {string} Type string
+   */
+  typeString() {
+    let s = this.baseType;
+    for (let i = 0; i < this.pointerDepth; i++) {
+      s += '*';
+    }
+    if (this.isArray) {
+      s += `[${this.arrayLength ?? ''}]`;
+    }
+    return s;
   }
 }
 

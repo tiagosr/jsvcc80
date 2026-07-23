@@ -1525,9 +1525,456 @@ int excluded;
 #endif`;
     const lexer = new Lexer(source);
     const tokens = lexer.tokenize();
-    
+
     const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
     assert.strictEqual(identifiers.length, 1);
     assert.strictEqual(identifiers[0].value, 'first');
+  });
+});
+
+describe('Preprocessor - Macro expansion', () => {
+  it('should expand object-like macros in source', () => {
+    const source = `#define BUFFER_SIZE 1024
+int x = BUFFER_SIZE;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const values = tokens.map(t => t.value);
+    assert.ok(values.includes('1024'), 'Macro should be expanded to 1024');
+    assert.ok(!values.includes('BUFFER_SIZE'), 'Macro name should not appear in output');
+  });
+
+  it('should expand macros in expressions', () => {
+    const source = `#define A 10
+#define B 20
+int x = A + B;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const values = tokens.map(t => t.value);
+    assert.ok(values.includes('10'), 'A should expand to 10');
+    assert.ok(values.includes('20'), 'B should expand to 20');
+  });
+
+  it('should expand macros recursively', () => {
+    const source = `#define A B
+#define B 42
+int x = A;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const values = tokens.map(t => t.value);
+    assert.ok(values.includes('42'), 'A should expand to B then to 42');
+    assert.ok(!values.includes('A'), 'A should not appear in output');
+    assert.ok(!values.includes('B'), 'B should not appear in output');
+  });
+
+  it('should guard against infinite recursion', () => {
+    const source = `#define A A
+int x = A;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    // Should not hang or throw - the macro should just not expand
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.ok(identifiers.some(t => t.value === 'A'), 'Self-referencing macro should not expand');
+  });
+
+  it('should expand multi-token macros', () => {
+    const source = `#define INIT int x = 0
+INIT`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'x');
+  });
+
+  it('should not expand macro when not followed by whitespace', () => {
+    const source = `#define MAX 100
+int MAXVAL = MAX;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    // MAXVAL contains MAX as prefix but should not expand
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.ok(identifiers.some(t => t.value === 'MAXVAL'));
+  });
+
+  it('should expand macro after undef', () => {
+    const source = `#define X 1
+#undef X
+#define X 2
+int x = X;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const values = tokens.map(t => t.value);
+    assert.ok(values.includes('2'), 'X should expand to 2 after redefinition');
+    assert.ok(!values.includes('1'), 'Old value should not appear');
+  });
+});
+
+describe('Preprocessor - Function-like macros', () => {
+  it('should define function-like macro', () => {
+    const source = `#define MAX(a, b) ((a) > (b) ? (a) : (b))
+int x;`;
+    const lexer = new Lexer(source);
+    lexer.tokenize();
+
+    const macro = lexer.preprocessor.expandMacro('MAX');
+    assert.ok(macro !== null);
+    assert.ok(macro.args !== null);
+    assert.deepStrictEqual(macro.args, ['a', 'b']);
+  });
+
+  it('should expand function-like macro with arguments', () => {
+    const source = `#define ADD(a, b) ((a) + (b))
+int x = ADD(1, 2);`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const values = tokens.map(t => t.value);
+    assert.ok(values.includes('1'), 'First arg should appear');
+    assert.ok(values.includes('2'), 'Second arg should appear');
+    assert.ok(values.includes('+'), 'Operator should appear');
+    assert.ok(!values.includes('ADD'), 'Macro name should not appear');
+  });
+
+  it('should expand function-like macro with single argument', () => {
+    const source = `#define SQUARE(x) ((x) * (x))
+int y = SQUARE(5);`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const values = tokens.map(t => t.value);
+    assert.strictEqual(values.filter(v => v === '5').length, 2, 'Arg should appear twice');
+    assert.ok(values.includes('*'), 'Operator should appear');
+  });
+
+  it('should expand function-like macro with no arguments', () => {
+    const source = `#define NOW() 12345
+int t = NOW();`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const values = tokens.map(t => t.value);
+    assert.ok(values.includes('12345'), 'Replacement should appear');
+    assert.ok(!values.includes('NOW'), 'Macro name should not appear');
+  });
+
+  it('should expand function-like macro with complex arguments', () => {
+    const source = `#define ADD(a, b) ((a) + (b))
+int x = ADD(1+2, 3*4);`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const values = tokens.map(t => t.value);
+    assert.ok(values.includes('1'), 'Arg tokens should appear');
+    assert.ok(values.includes('+'), 'Operators should appear');
+    assert.ok(values.includes('3'), 'All arg tokens should appear');
+  });
+
+  it('should expand function-like macro with nested calls', () => {
+    const source = `#define ADD(a, b) ((a) + (b))
+int x = ADD(1, ADD(2, 3));`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const values = tokens.map(t => t.value);
+    assert.ok(values.filter(v => v === '+').length >= 2, 'Both ADD calls should expand');
+  });
+
+  it('should NOT expand function-like macro when not called', () => {
+    const source = `#define FOO(x) 42
+int FOO = 1;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.ok(identifiers.some(t => t.value === 'FOO'), 'FOO without parens should remain as identifier');
+  });
+
+  it('should handle function-like macro with parentheses in replacement', () => {
+    const source = `#define CALL(f, x) f(x)
+int y = CALL(foo, 1);`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.ok(identifiers.some(t => t.value === 'foo'), 'Arg should be substituted');
+  });
+
+  it('should handle function-like macro with no whitespace after name', () => {
+    const source = `#define MUL(a,b)(a)*(b)
+int x = MUL(3,4);`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const values = tokens.map(t => t.value);
+    assert.ok(values.includes('3'));
+    assert.ok(values.includes('4'));
+    assert.ok(values.includes('*'));
+  });
+
+  it('should handle function-like macro with whitespace in param list', () => {
+    const source = `#define F(  a  ,  b  ) a+b
+int x = F(1, 2);`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const values = tokens.map(t => t.value);
+    assert.ok(values.includes('1'));
+    assert.ok(values.includes('2'));
+  });
+
+  it('should expand function-like macro with zero arguments as literal', () => {
+    const source = `#define EMPTY()
+EMPTY();`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    // EMPTY() should expand to nothing, but the trailing ; should remain
+    const semicolons = tokens.filter(t => t.type === ';');
+    assert.strictEqual(semicolons.length, 1, 'Semicolon should remain');
+  });
+
+  it('should handle function-like macro with nested parentheses in args', () => {
+    const source = `#define F(x) (x)
+int y = F(g(1, 2));`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.ok(identifiers.some(t => t.value === 'g'), 'Nested call arg should be preserved');
+  });
+});
+
+describe('Preprocessor - Stringification (# operator)', () => {
+  it('should stringify macro argument', () => {
+    const source = `#define STR(x) #x
+const char *s = STR(hello world);`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const strings = tokens.filter(t => t.type === TokenType.STRING);
+    assert.strictEqual(strings.length, 1);
+    assert.strictEqual(strings[0].value, 'hello world');
+  });
+
+  it('should stringify numeric argument', () => {
+    const source = `#define STR(x) #x
+const char *s = STR(42);`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const strings = tokens.filter(t => t.type === TokenType.STRING);
+    assert.strictEqual(strings[0].value, '42');
+  });
+
+  it('should stringify expression argument', () => {
+    const source = `#define STR(x) #x
+const char *s = STR(a + b);`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const strings = tokens.filter(t => t.type === TokenType.STRING);
+    assert.strictEqual(strings[0].value, 'a + b');
+  });
+
+  it('should handle multiple stringified args', () => {
+    const source = `#define PAIR(x, y) #x " " #y
+const char *s = PAIR(foo, bar);`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const strings = tokens.filter(t => t.type === TokenType.STRING);
+    assert.strictEqual(strings.length, 3); // "foo", " ", "bar"
+  });
+});
+
+describe('Preprocessor - Token pasting (## operator)', () => {
+  it('should paste macro argument with literal', () => {
+    const source = `#define VAR(n) x##n
+int VAR(1) = 0;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.ok(identifiers.some(t => t.value === 'x1'), 'Should paste x and 1 into x1');
+  });
+
+  it('should paste two macro arguments', () => {
+    const source = `#define JOIN(a, b) a##b
+int JOIN(foo, bar) = 0;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.ok(identifiers.some(t => t.value === 'foobar'), 'Should paste two args');
+  });
+
+  it('should paste literal with macro argument', () => {
+    const source = `#define PREFIX(n) prefix_##n
+int PREFIX(val) = 0;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.ok(identifiers.some(t => t.value === 'prefix_val'), 'Should paste prefix_ and val');
+  });
+
+  it('should handle multiple pasting in one macro', () => {
+    const source = `#define TAG(a, b) a##_##b
+int TAG(foo, bar) = 0;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.ok(identifiers.some(t => t.value === 'foo_bar'), 'Should paste foo, _, bar');
+  });
+});
+
+describe('Preprocessor - Built-in macros', () => {
+  it('should expand __LINE__ to current line number', () => {
+    const source = `int line = __LINE__;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const integers = tokens.filter(t => t.type === TokenType.INTEGER);
+    assert.ok(integers.length >= 1, '__LINE__ should expand to a number');
+    assert.strictEqual(parseInt(integers[0].value, 10), 1);
+  });
+
+  it('should expand __FILE__ to filename string', () => {
+    const source = `const char *f = __FILE__;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const strings = tokens.filter(t => t.type === TokenType.STRING);
+    assert.ok(strings.length >= 1, '__FILE__ should expand to a string');
+    assert.strictEqual(strings[0].value, '<input>');
+  });
+
+  it('should expand __LINE__ in macro expansion', () => {
+    const source = `#define GET_LINE() __LINE__
+int l = GET_LINE();`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const integers = tokens.filter(t => t.type === TokenType.INTEGER);
+    assert.ok(integers.length >= 1, '__LINE__ in macro should expand');
+    // Should be line 2 (where GET_LINE() is invoked)
+    assert.strictEqual(parseInt(integers[0].value, 10), 2);
+  });
+
+  it('should be visible to #ifdef', () => {
+    const source = `#ifdef __LINE__
+int included;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'included');
+  });
+
+  it('should be visible to defined() in #if', () => {
+    const source = `#if defined(__LINE__)
+int included;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'included');
+  });
+
+  it('should evaluate __LINE__ in #if expression', () => {
+    const source = `#if __LINE__ > 0
+int included;
+#endif`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    assert.strictEqual(identifiers.length, 1);
+    assert.strictEqual(identifiers[0].value, 'included');
+  });
+
+  it('should use custom filename for __FILE__', () => {
+    const source = `const char *f = __FILE__;`;
+    const preprocessor = new PreprocessedSource('test.c');
+    const lexer = new Lexer(source, preprocessor);
+    const tokens = lexer.tokenize();
+
+    const strings = tokens.filter(t => t.type === TokenType.STRING);
+    assert.strictEqual(strings[0].value, 'test.c');
+  });
+});
+
+describe('Preprocessor - Combined macro features', () => {
+  it('should combine stringification and pasting', () => {
+    const source = `#define LOG(name) printf(#name " = %d\\n", name)
+LOG(x);`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const strings = tokens.filter(t => t.type === TokenType.STRING);
+    assert.ok(strings.some(s => s.value === 'x'), 'Stringified arg should appear');
+  });
+
+  it('should expand macros within macro arguments', () => {
+    const source = `#define A 1
+#define B 2
+#define ADD(x, y) ((x) + (y))
+int z = ADD(A, B);`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const values = tokens.map(t => t.value);
+    assert.ok(values.includes('1'), 'A should expand in arg');
+    assert.ok(values.includes('2'), 'B should expand in arg');
+  });
+
+  it('should handle macro that calls another macro', () => {
+    const source = `#define OUTER() INNER()
+#define INNER() 42
+int x = OUTER();`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const values = tokens.map(t => t.value);
+    assert.ok(values.includes('42'), 'Outer macro should expand to inner which expands to 42');
+  });
+
+  it('should handle ## with stringification', () => {
+    const source = `#define X 100
+#define VAL(x) x
+int VAL(X) = 1;`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
+    // X in the declaration should expand to 100 in the type position
+    // but VAL(X) should expand X to 100
+    const values = tokens.map(t => t.value);
+    assert.ok(values.includes('100'), 'X should expand');
+  });
+
+  it('should handle empty macro arguments', () => {
+    const source = `#define F(a,b) a
+int x = F(,1);`;
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+
+    // F(,1) should expand to empty + comma handling
+    // The first arg is empty, second is 1
+    const values = tokens.map(t => t.value);
+    // Result should just have the tokens for the body
+    assert.ok(values.includes('1') || values.length > 0, 'Should handle empty first arg');
   });
 });

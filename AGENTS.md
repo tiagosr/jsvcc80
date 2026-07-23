@@ -127,23 +127,22 @@ function example(name) { ... }
 - **Preprocessor directives** - `#define`, `#undef`, `#ifdef`, `#ifndef`, `#else`, `#endif` implemented in lexer; `PreprocessedSource` extended with conditional compilation state machine (`conditionalStack`, `skipDepth`); `readDirective()` replaces `readPragma()` with generalized directive dispatcher; nested conditionals with skip depth tracking; 40 new tests
 - **Include directive** - `#include "file"` and `#include <file>` implemented in lexer; `PreprocessedSource` extended with `includePaths` and `includedFiles` tracking for duplicate prevention; file resolution supports local directory, system include paths, and recursive inclusion; macros propagate across include boundaries; `-I` CLI flag for include directories; 15 new tests
 - **#if/#elif/defined() preprocessor** - `#if` and `#elif` directives with full constant expression evaluation; recursive descent parser supports arithmetic (+, -, *, /, %), relational (<, >, <=, >=), equality (==, !=), bitwise (&, |, ^, ~), logical (&&, ||), unary (+, -, !, ~), shift (<<, >>), hex/octal literals, parenthesized expressions; `defined(MACRO)` and `defined MACRO` operators; undefined macros evaluate to 0 in expressions; macro values substituted in expressions; conditional stack frames track `branchTaken` for correct `#elif`/`#else` interaction; 40 new tests
+- **Function-like macros with parameter substitution** - `#define MAX(a,b) ((a)>(b)?(a):(b))` function-like macro parsing with parameter list extraction; macro expansion during tokenization with object-like and function-like macro support; parameter substitution in replacement text; `#` (stringification) operator converts argument to string literal; `##` (token pasting) operator concatenates tokens; recursive macro expansion with rescan after substitution; infinite recursion guard prevents self-referencing macros; built-in macros `__FILE__` and `__LINE__` with proper line tracking; 39 new tests
 
 #### 🧪 Test Results
-- 592 passing tests
+- 631 passing tests
 
 ### 🔄 In Progress
 - None
 
 ### 🔜 Next Steps
-1. Implement `#define` with parameters and parameter substitution
-3. Implement variadic function signatures
-4. Implement function pointers as types, and extend the type system to support these
-5. Implement linker definitions to add entry point `crt0` to default compiled/linked output
-6. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
-7. Implement `unsigned:n` bit fields
-8. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
-9. Implement `__FILENAME__` and `__LINE__` in the preprocessor
-10. Implement symbol map exporting for debugging
+1. Implement variadic function signatures
+2. Implement function pointers as types, and extend the type system to support these
+3. Implement linker definitions to add entry point `crt0` to default compiled/linked output
+4. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
+5. Implement `unsigned:n` bit fields
+6. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
+7. Implement symbol map exporting for debugging
 
 ### 📔 Backlog (issues identified during implementation for later priorization)
 - Fix `typedef unsigned int newType` parsing

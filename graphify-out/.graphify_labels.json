@@ -39,5 +39,11 @@
   "37": "EnumNode",
   "38": "EnumValueNode",
   "39": "ExprStmtNode",
-  "40": "GotoNode"
+  "40": "GotoNode",
+  "41": "DerefLoadInstruction",
+  "42": "DerefStoreInstruction",
+  "43": "IndexedLoadInstruction",
+  "44": "IndexedStoreInstruction",
+  "45": "IntrinsicInstruction",
+  "46": "LoadAddrInstruction"
 }

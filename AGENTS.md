@@ -91,13 +91,6 @@ function example(name) { ... }
 ## Current Implementation Status
 
 ### ✅ Completed
-- **Struct, union, sizeof, offsetof, typeof** - `SizeOfNode`, `OffsetOfNode`, `TypeOfNode` AST nodes; `TypeSpecNode` extended with `structType`/`structKind` for struct/union type references; struct/union tag collection and type registry with field offset computation; parser handles `sizeof(type)`, `sizeof(expr)`, `offsetof(Type, field)`, `typeof(expr)`, `struct Tag { ... }`, `union Tag { ... }`, struct variable declarations, member access with offset resolution; lexer `->` operator tokenized; 48 new tests
-- **Pointers, arrays and character strings** - TypeSpecNode extended with `pointerDepth`, `isArray`, `arrayLength`; parser handles pointer/array declarators (`int *p`, `int arr[10]`), address-of operator (`&`), dereference (`*`), string literals emitted as global `.db` data; new IR instructions (`LoadAddrInstruction`, `DerefLoadInstruction`, `DerefStoreInstruction`, `IndexedLoadInstruction`, `IndexedStoreInstruction`); Z80 codegen for pointer operations and indexed memory access; 34 new tests
-- **typedef and default types** - Parser supports `void`, `char`, `short`, `long`, `unsigned`, `signed`, `_Bool` as type specifiers with signedness modifiers; typedef names resolved via two-pass parsing; TypeSpecNode tracks type sizes; typedef aliases resolved in IR translation; 50 new tests
-- **Binary object file format** - `src/linker/objectfile_loader.js` with VCC80O magic header, serialization/deserialization of sections, symbols, relocations, and CLI support for loading .o files
-- **Processor intrinsics** - `IntrinsicInstruction` IR class, intrinsic detection in `translateCall`, Z80 codegen for special opcodes and port access, 43 intrinsic tests
-- **Block transfer intrinsics** - `IntrinsicMap` extended with `__ini`, `__outi`, `__inir`, `__otir`, `__ind`, `__outd`, `__indr`, `__otdr`; Z80 codegen for INI/OUTI/INIR/OTIR/IND/OUTD/INDR/OTDR block transfer instructions using B for count, C for port, HL for buffer; 19 new tests
-- 494 passing tests
 - Preprocessor/lexer with pragma support (#pragma once, #pragma pack)
 - PEG parser combinator framework (seq, alt, many, some, opt, lit, any, pred, lazy, map)
 - AST node definitions for full C syntax
@@ -122,36 +115,46 @@ function example(name) { ... }
 - **WLA DX code generator** - `src/linker/wladxcodegen.js` generates WLA DX-compatible Z80 assembly with section directives, DB/DW/DS data, and relocation support
 - **Linker** - `src/linker/linker.js` combines object files, resolves symbols/relocations, generates binary/WLA DX output and link maps
 - **Z80 codegen quality improvements** - Proper stack frame management using IX as frame pointer, basic block label emission, fixed comparison logic (le/ge flags), valid Z80 stack alloc/free instructions, complete division/mod/shl/shr implementation, copy propagation optimization, fixed constant folding with correct IR op names
-- 268 passing tests
 - **Linker wired into compiler pipeline** - CLI flags `-c` for compile-only (object file output), `--format` for output format selection (assembly/wladx/binary), `--map` for link map generation, multi-file compilation with automatic linking
 - **Static library (.a) support** - `src/linker/archive.js` with Archive/ArchiveMember classes, VCC80A binary format, serialization/deserialization, CLI handling of .a files, Compiler.loadArchive method, and 22 archive tests
 - **const, volatile, and register qualifiers** - `TypeSpecNode` extended with `isVolatile` field (alongside existing `isConst`); `DeclNode` and `ParameterNode` extended with `storageClass` field for `register`; parser handles `const`, `volatile`, and `const volatile` type qualifiers before type keywords; `register` storage class specifier parsed for declarations and function parameters; qualifiers propagated through IR symbol table entries; `typeString()` includes qualifier prefixes; 29 new tests
+- **Struct, union, sizeof, offsetof, typeof** - `SizeOfNode`, `OffsetOfNode`, `TypeOfNode` AST nodes; `TypeSpecNode` extended with `structType`/`structKind` for struct/union type references; struct/union tag collection and type registry with field offset computation; parser handles `sizeof(type)`, `sizeof(expr)`, `offsetof(Type, field)`, `typeof(expr)`, `struct Tag { ... }`, `union Tag { ... }`, struct variable declarations, member access with offset resolution; lexer `->` operator tokenized; 48 new tests
+- **Pointers, arrays and character strings** - TypeSpecNode extended with `pointerDepth`, `isArray`, `arrayLength`; parser handles pointer/array declarators (`int *p`, `int arr[10]`), address-of operator (`&`), dereference (`*`), string literals emitted as global `.db` data; new IR instructions (`LoadAddrInstruction`, `DerefLoadInstruction`, `DerefStoreInstruction`, `IndexedLoadInstruction`, `IndexedStoreInstruction`); Z80 codegen for pointer operations and indexed memory access; 34 new tests
+- **typedef and default types** - Parser supports `void`, `char`, `short`, `long`, `unsigned`, `signed`, `_Bool` as type specifiers with signedness modifiers; typedef names resolved via two-pass parsing; TypeSpecNode tracks type sizes; typedef aliases resolved in IR translation; 50 new tests
+- **Binary object file format** - `src/linker/objectfile_loader.js` with VCC80O magic header, serialization/deserialization of sections, symbols, relocations, and CLI support for loading .o files
+- **Processor intrinsics** - `IntrinsicInstruction` IR class, intrinsic detection in `translateCall`, Z80 codegen for special opcodes and port access, 43 intrinsic tests
+- **Block transfer intrinsics** - `IntrinsicMap` extended with `__ini`, `__outi`, `__inir`, `__otir`, `__ind`, `__outd`, `__indr`, `__otdr`; Z80 codegen for INI/OUTI/INIR/OTIR/IND/OUTD/INDR/OTDR block transfer instructions using B for count, C for port, HL for buffer; 19 new tests
+  
+#### 🧪 Test Results
+- 494 passing tests
 
 ### 🔄 In Progress
 - None
 
 ### 🔜 Next Steps
-1. Implement interrupt/NMI semantics, hooking them up to `__attribute__((interrupt("IRQ")))` and `__attribute__((interrupt("nmi")))`, along with the `RETI` and `RETN` opcodes
-2. Implement pointer to pointer, array of arrays and extend the type system to support these
-3. Implement `#define`, `#undef`, `#ifdef`, `#ifndef`, `#else`, `#endif` in the preprocessor (first without parameters)
-4. Implement `#include "..."` and `#include <...>` in the preprocessor
-5. Implement `#if`, `#elif`, expressions and `defined(...)` in the preprocessor
-6. Implement `#define` with parameters and parameter substitution
-7. Implement variadic function signatures
-8. Implement function pointers as types, and extend the type system to support these
-9. Implement linker definitions to add entry point `crt0` to default compiled/linked output
-10. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
-11. Implement `unsigned:n` bit fields
-12. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
-13. Implement `__FILENAME__` and `__LINE__` in the preprocessor
-14. Implement symbol map exporting for debugging
+1. Implement `#define`, `#undef`, `#ifdef`, `#ifndef`, `#else`, `#endif` in the preprocessor (first without parameters)
+2. Implement `#include "..."` and `#include <...>` in the preprocessor
+3. Implement `#if`, `#elif`, expressions and `defined(...)` in the preprocessor
+4. Implement `#define` with parameters and parameter substitution
+5. Implement pointer to pointer, array of arrays and extend the type system to support these
+6. Implement variadic function signatures
+7. Implement function pointers as types, and extend the type system to support these
+8. Implement linker definitions to add entry point `crt0` to default compiled/linked output
+9.  Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
+10. Implement `unsigned:n` bit fields
+11. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
+12. Implement `__FILENAME__` and `__LINE__` in the preprocessor
+13. Implement symbol map exporting for debugging
+
+### 📔 Backlog (issues identified during implementation for later priorization)
+- Fix `typedef unsigned int newType` parsing
 
 ## Pre-commit Checklist
 - Verify tests pass: `npm test`
 - Check syntax: `node --check src/**/*.js`
 - Ensure JSDoc comments on all exported functions
 - No hardcoded paths - use relative imports from current file
-- Update this file with architecture notes, completed/in-progress/next-steps lists and pre-commit checklists
+- Update this file with architecture notes, completed/in-progress/test results/next-steps/backlog lists and pre-commit checklists
 
 ## graphify
 

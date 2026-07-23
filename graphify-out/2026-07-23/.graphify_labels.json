@@ -39,22 +39,5 @@
   "37": "EnumNode",
   "38": "EnumValueNode",
   "39": "ExprStmtNode",
-  "40": "GotoNode",
-  "41": "IdentifierNode",
-  "42": "InlineAsmNode",
-  "43": "LabelNode",
-  "44": "ParameterNode",
-  "45": "PragmacNode",
-  "46": "StructNode",
-  "47": "IndexNode",
-  "48": "JumpNode",
-  "49": "MemberNode",
-  "50": "PointerMemberNode",
-  "51": "PreprocNode",
-  "52": "ReturnNode",
-  "53": "SizeOfNode",
-  "54": "StructFieldNode",
-  "55": "SwitchNode",
-  "56": "TypeOfNode",
-  "57": "UnaryOpNode"
+  "40": "GotoNode"
 }

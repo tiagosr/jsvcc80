@@ -10,8 +10,8 @@
     "semantic_hash": "76ba87dac3991d8ada5c4e150cf96b99"
   },
   "src/ast/nodes.js": {
-    "mtime": 1784797353.6094456,
-    "ast_hash": "1d369c61e741decfc71a1ce8e4b4b470",
+    "mtime": 1784809314.9962428,
+    "ast_hash": "dd40c7dd8e02eef1faf0745ff25460b2",
     "semantic_hash": ""
   },
   "src/backend/z80codegen.js": {
@@ -70,8 +70,8 @@
     "semantic_hash": "f94c974f60479ab3790cf66a3aee9b0d"
   },
   "src/nanopass/ast_to_ir.js": {
-    "mtime": 1784805390.5191112,
-    "ast_hash": "61a70a0764007381cc3979b77c02cf95",
+    "mtime": 1784810219.5710032,
+    "ast_hash": "e6066155d3a54983d56076f8f557411c",
     "semantic_hash": ""
   },
   "src/nanopass/il.js": {
@@ -95,8 +95,8 @@
     "semantic_hash": "188f8fe7696459440737535bac1b70c6"
   },
   "src/parser/cparser.js": {
-    "mtime": 1784804705.1118903,
-    "ast_hash": "058ae9a26b6900d914401693d35fae2a",
+    "mtime": 1784810704.741209,
+    "ast_hash": "ee83eedc0b1db0190640199599562793",
     "semantic_hash": ""
   },
   "src/plugins/interfaces.js": {
@@ -130,9 +130,9 @@
     "semantic_hash": "13894dd8f2183011d4f394e4d32fdba6"
   },
   "src/tests/cparser.test.js": {
-    "mtime": 1784742909.997584,
-    "ast_hash": "70302a399a685213c328a273f342fce9",
-    "semantic_hash": "70302a399a685213c328a273f342fce9"
+    "mtime": 1784810674.640671,
+    "ast_hash": "183a0bb0ded23643ca898ec3eaa0fe5f",
+    "semantic_hash": ""
   },
   "src/tests/il.test.js": {
     "mtime": 1784631131.1214488,
@@ -165,8 +165,8 @@
     "semantic_hash": "cd8f3bb2f24732f924f48b0a13bfeea6"
   },
   "AGENTS.md": {
-    "mtime": 1784807206.9939184,
-    "ast_hash": "c68cc1416e1010d216b32509e8e9a7c5",
+    "mtime": 1784814900.9324744,
+    "ast_hash": "edf6a720a0694c9ebd850cf97b4a0904",
     "semantic_hash": ""
   },
   ".opencode/opencode.json": {
@@ -180,13 +180,18 @@
     "semantic_hash": ""
   },
   "src/tests/pointers.test.js": {
-    "mtime": 1784793848.6363773,
-    "ast_hash": "365ecdf76eeba8444051919021df122d",
+    "mtime": 1784810915.6486263,
+    "ast_hash": "f84899324ad23045050312443ad718f6",
     "semantic_hash": ""
   },
   "src/tests/struct.test.js": {
-    "mtime": 1784802083.4239583,
-    "ast_hash": "a821f980c2b83ec9718f50031c7851d1",
+    "mtime": 1784810536.1328514,
+    "ast_hash": "05ea2fda18ca646d774cfdf431175af8",
+    "semantic_hash": ""
+  },
+  "src/tests/qualifiers.test.js": {
+    "mtime": 1784812376.954977,
+    "ast_hash": "013a0bf0da0057856fb35132e7f75ce0",
     "semantic_hash": ""
   }
 }

@@ -15,6 +15,8 @@ export class PreprocessedSource {
     this.macros = new Map();
     this.pragmaHandlers = new Map();
     this.locationTracker = new PositionTracker(filename);
+    this.conditionalStack = [];
+    this.skipDepth = 0;
     
     // Register default pragma handlers
     this._registerDefaultPragmas();
@@ -72,6 +74,15 @@ export class PreprocessedSource {
   }
 
   /**
+   * Checks if a macro is defined
+   * @param {string} name - Macro name
+   * @returns {boolean} True if macro is defined
+   */
+  isMacroDefined(name) {
+    return this.macros.has(name.toLowerCase());
+  }
+
+  /**
    * Expands a macro if defined
    * @param {string} name - Macro name to expand
    * @returns {Object|null} Expansion result or null
@@ -88,6 +99,14 @@ export class PreprocessedSource {
    */
   getPragmaHandler(name) {
     return this.pragmaHandlers.get(name.toLowerCase());
+  }
+
+  /**
+   * Checks if current position is in an active conditional block
+   * @returns {boolean} True if all enclosing conditionals are active
+   */
+  isEffectivelyActive() {
+    return this.conditionalStack.every(frame => frame.active);
   }
 
   /**
@@ -359,10 +378,10 @@ export class Lexer {
   }
 
   /**
-   * Reads a pragma directive and returns processed result
-   * @returns {Token|string|null} Token or special pragma result
+   * Reads a preprocessor directive and returns processed result
+   * @returns {Token|string|null} Token or special directive result
    */
-  readPragma() {
+  readDirective() {
     const startLine = this.line;
     const startColumn = this.column;
     
@@ -374,14 +393,10 @@ export class Lexer {
       this.advance();
     }
 
-    // Read pragma keyword
+    // Read directive keyword
     let keyword = '';
-    while (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(this.peek()) || this.peek() === ' ') {
-      if (this.peek() !== ' ') {
-        keyword += this.advance();
-      } else {
-        this.advance();
-      }
+    while (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(this.peek())) {
+      keyword += this.advance();
     }
 
     const location = {
@@ -390,40 +405,196 @@ export class Lexer {
       end: { line: this.line, column: this.column }
     };
 
-    if (keyword.toLowerCase() !== 'pragma') {
-      // Not a pragma directive, return the # token
-      this.pos = this.tokenStartPos;
-      this.line = this.tokenStartLine;
-      this.column = this.tokenStartColumn;
-      return this.makeToken(TokenType.POUND, '#');
+    const kw = keyword.toLowerCase();
+
+    // Handle known directives
+    if (kw === 'define') return this._handleDefine(location);
+    if (kw === 'undef') return this._handleUndef(location);
+    if (kw === 'ifdef') return this._handleIfdef(location);
+    if (kw === 'ifndef') return this._handleIfndef(location);
+    if (kw === 'else') return this._handleElse(location);
+    if (kw === 'endif') return this._handleEndif(location);
+    if (kw === 'pragma') return this._handlePragma(location);
+
+    // Unknown directive - backtrack and emit POUND token
+    this.pos = this.tokenStartPos;
+    this.line = this.tokenStartLine;
+    this.column = this.tokenStartColumn;
+    return this.makeToken(TokenType.POUND, '#');
+  }
+
+  /**
+   * Reads remaining content on current line
+   * @returns {string} Line content trimmed
+   */
+  _readLineContent() {
+    let content = '';
+    while (this.peek() && this.peek() !== '\n') {
+      content += this.advance();
+    }
+    return content.trim();
+  }
+
+  /**
+   * Handles #define directive
+   * @param {Object} location - Source location
+   * @returns {null} No token emitted
+   */
+  _handleDefine(location) {
+    const lineContent = this._readLineContent();
+    
+    if (this.preprocessor.skipDepth > 0 || !this.preprocessor.isEffectivelyActive()) return null;
+    
+    const parts = lineContent.split(/\s+/);
+    
+    if (parts.length < 1 || !parts[0]) {
+      throw new LexerError('#define requires a macro name', location);
     }
 
-    // Get remaining line content for pragma arguments
-    const pragmaContent = this._readPragmaArguments();
+    const name = parts[0];
+    const replacement = parts.slice(1).join(' ') || '';
     
-    const handler = this.preprocessor.getPragmaHandler(keyword);
+    this.preprocessor.defineMacro(name, null, replacement);
+    return null;
+  }
+
+  /**
+   * Handles #undef directive
+   * @param {Object} location - Source location
+   * @returns {null} No token emitted
+   */
+  _handleUndef(location) {
+    const lineContent = this._readLineContent();
+    
+    if (this.preprocessor.skipDepth > 0 || !this.preprocessor.isEffectivelyActive()) return null;
+    
+    const name = lineContent.trim();
+    
+    if (!name) {
+      throw new LexerError('#undef requires a macro name', location);
+    }
+    
+    this.preprocessor.undefineMacro(name);
+    return null;
+  }
+
+  /**
+   * Handles #ifdef directive
+   * @param {Object} location - Source location
+   * @returns {null} No token emitted
+   */
+  _handleIfdef(location) {
+    const lineContent = this._readLineContent();
+    
+    if (this.preprocessor.skipDepth > 0) {
+      this.preprocessor.skipDepth++;
+      return null;
+    }
+    
+    const name = lineContent.trim();
+    
+    if (!name) {
+      throw new LexerError('#ifdef requires a macro name', location);
+    }
+    
+    const isDefined = this.preprocessor.isMacroDefined(name);
+    const isActive = this.preprocessor.isEffectivelyActive() && isDefined;
+    
+    this.preprocessor.conditionalStack.push({ active: isActive, evaluated: false });
+    return null;
+  }
+
+  /**
+   * Handles #ifndef directive
+   * @param {Object} location - Source location
+   * @returns {null} No token emitted
+   */
+  _handleIfndef(location) {
+    const lineContent = this._readLineContent();
+    
+    if (this.preprocessor.skipDepth > 0) {
+      this.preprocessor.skipDepth++;
+      return null;
+    }
+    
+    const name = lineContent.trim();
+    
+    if (!name) {
+      throw new LexerError('#ifndef requires a macro name', location);
+    }
+    
+    const isDefined = this.preprocessor.isMacroDefined(name);
+    const isActive = this.preprocessor.isEffectivelyActive() && !isDefined;
+    
+    this.preprocessor.conditionalStack.push({ active: isActive, evaluated: false });
+    return null;
+  }
+
+  /**
+   * Handles #else directive
+   * @param {Object} location - Source location
+   * @returns {null} No token emitted
+   */
+  _handleElse(location) {
+    if (this.preprocessor.skipDepth > 0) {
+      return null;
+    }
+    
+    if (this.preprocessor.conditionalStack.length === 0) {
+      throw new LexerError('#else without matching #ifdef/#ifndef', location);
+    }
+    
+    const top = this.preprocessor.conditionalStack[this.preprocessor.conditionalStack.length - 1];
+    top.active = !top.active;
+    top.evaluated = true;
+    return null;
+  }
+
+  /**
+   * Handles #endif directive
+   * @param {Object} location - Source location
+   * @returns {null} No token emitted
+   */
+  _handleEndif(location) {
+    if (this.preprocessor.skipDepth > 0) {
+      this.preprocessor.skipDepth--;
+      return null;
+    }
+    
+    if (this.preprocessor.conditionalStack.length === 0) {
+      throw new LexerError('#endif without matching #ifdef/#ifndef', location);
+    }
+    
+    this.preprocessor.conditionalStack.pop();
+    return null;
+  }
+
+  /**
+   * Handles #pragma directive
+   * @param {Object} location - Source location
+   * @returns {Token|null} Pragmac result or null
+   */
+  _handlePragma(location) {
+    if (this.preprocessor.skipDepth > 0) return null;
+    if (!this.preprocessor.isEffectivelyActive()) return null;
+    
+    const pragmaArgs = this._readLineContent();
+    
+    const parts = pragmaArgs.split(/\s+/);
+    const pragmaName = parts[0] || '';
+    const pragmaValue = parts.slice(1).join(' ') || '';
+    
+    const handler = this.preprocessor.getPragmaHandler(pragmaName);
     if (handler) {
       try {
-        const result = handler(this.makeToken(TokenType.IDENTIFIER, keyword), { location });
-        return result; // Return special pragma result instead of token
+        const result = handler({ value: pragmaValue, location }, { location });
+        return result;
       } catch (error) {
         throw new LexerError(error.message || 'Pragma error', location);
       }
     }
 
-    return this.makeToken(TokenType.KEYWORD, `#pragma ${keyword}`);
-  }
-
-  /**
-   * Reads arguments after #pragma keyword
-   * @returns {string} Arguments string
-   */
-  _readPragmaArguments() {
-    let args = '';
-    while (this.peek() && this.peek() !== '\n') {
-      args += this.advance();
-    }
-    return args.trim();
+    return null;
   }
 
   /**
@@ -447,7 +618,17 @@ export class Lexer {
 
     // Handle preprocessor directive
     if (this.column === 0 && ch === '#') {
-      return this.readPragma();
+      const result = this.readDirective();
+      if (result === null) {
+        return this.nextToken();
+      }
+      return result;
+    }
+
+    // Skip lines in inactive conditional blocks
+    if (!this.preprocessor.isEffectivelyActive()) {
+      this._skipLine();
+      return this.nextToken();
     }
 
     // String literal
@@ -520,6 +701,15 @@ export class Lexer {
   }
 
   /**
+   * Skips the rest of the current line
+   */
+  _skipLine() {
+    while (this.peek() && this.peek() !== '\n') {
+      this.advance();
+    }
+  }
+
+  /**
    * Tokenizes the entire source into an array of tokens
    * @returns {Token[]} Array of all tokens
    */
@@ -533,7 +723,7 @@ export class Lexer {
         break;
       }
 
-      // Skip pragma results that are not regular tokens
+      // Skip directive results that are not regular tokens
       if (typeof token !== 'object' || !token.type) {
         continue;
       }

@@ -124,17 +124,18 @@ function example(name) { ... }
 - **Binary object file format** - `src/linker/objectfile_loader.js` with VCC80O magic header, serialization/deserialization of sections, symbols, relocations, and CLI support for loading .o files
 - **Processor intrinsics** - `IntrinsicInstruction` IR class, intrinsic detection in `translateCall`, Z80 codegen for special opcodes and port access, 43 intrinsic tests
 - **Block transfer intrinsics** - `IntrinsicMap` extended with `__ini`, `__outi`, `__inir`, `__otir`, `__ind`, `__outd`, `__indr`, `__otdr`; Z80 codegen for INI/OUTI/INIR/OTIR/IND/OUTD/INDR/OTDR block transfer instructions using B for count, C for port, HL for buffer; 19 new tests
-  
+- **Preprocessor directives** - `#define`, `#undef`, `#ifdef`, `#ifndef`, `#else`, `#endif` implemented in lexer; `PreprocessedSource` extended with conditional compilation state machine (`conditionalStack`, `skipDepth`); `readDirective()` replaces `readPragma()` with generalized directive dispatcher; nested conditionals with skip depth tracking; 40 new tests
+
 #### 🧪 Test Results
-- 494 passing tests
+- 534 passing tests
 
 ### 🔄 In Progress
 - None
 
 ### 🔜 Next Steps
-1. Implement `#define`, `#undef`, `#ifdef`, `#ifndef`, `#else`, `#endif` in the preprocessor (first without parameters)
-2. Implement `#include "..."` and `#include <...>` in the preprocessor
-3. Implement `#if`, `#elif`, expressions and `defined(...)` in the preprocessor
+1. Implement `#include "..."` and `#include <...>` in the preprocessor
+2. Implement `#if`, `#elif`, expressions and `defined(...)` in the preprocessor
+3. Implement `#define` with parameters and parameter substitution
 4. Implement `#define` with parameters and parameter substitution
 5. Implement pointer to pointer, array of arrays and extend the type system to support these
 6. Implement variadic function signatures

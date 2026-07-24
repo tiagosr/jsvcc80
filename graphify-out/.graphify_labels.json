@@ -41,6 +41,7 @@
   "39": "ExprStmtNode",
   "40": "GotoNode",
   "41": "wladxcodegen.js",
+  "42": "WlaDxCodegen",
   "43": "IndexedLoadInstruction",
   "44": "IndexedStoreInstruction",
   "47": "PreprocessedSource"

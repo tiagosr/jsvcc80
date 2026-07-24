@@ -1455,7 +1455,32 @@ export class CPegParser {
       }
     );
 
-    const singleParam = Parser.alt(typedParam, funcPointerParam, bareParam);
+    // Helper to build recursive function pointer parameter for nested cases
+function buildRecursiveFuncPointerParam() {
+  // This handles cases where a function parameter is itself a function pointer returning another function pointer
+  return map(
+    Parser.seq(
+      Parser.opt(kw('register')),
+      lazy(() => this.ruleRefs.typeSpecifier),
+      Parser.lit('('),
+      basicFuncPointerPattern,
+      Parser.lit(')'),
+      lazy(() => paramList)
+    ),
+    ([regKw, typeSpec, lparen, inner, rparen, params]) => {
+      const returnBase = new AST.TypeSpecNode(typeSpec.baseType, typeSpec.isSigned, false, false);
+      const funcPtrType = createFunctionPointerType(returnBase, params || [], locFromToken(rparen));
+      return new AST.ParameterNode(
+        funcPtrType,
+        inner.name,
+        locFromToken(inner.name),
+        regKw ? 'register' : null
+      );
+    }
+  );
+}
+
+const singleParam = Parser.alt(typedParam, funcPointerParam, bareParam);
 
     // Variadic function: at least one named parameter followed by ellipsis (nothing after)
     const variadicWithEllipsis = map(
@@ -1657,20 +1682,33 @@ export class CPegParser {
       }
     );
 
-    // Function pointer declarator: (*name)(params)
-    const funcPointer = map(
+    // Array dimension: [3]
+    const arrayDim = map(
       Parser.seq(
-        Parser.lit('('),
-        Parser.opt(Parser.many(Parser.lit('*'))),
-        Parser.opt(pred(t => t.type === 'IDENTIFIER')),
-        Parser.lit(')'),
-        lazy(() => paramList)
+        Parser.lit('['),
+        pred(t => t.type === 'INTEGER'),
+        Parser.lit(']')
       ),
-      ([lparen, stars, nameOpt, rparen, params]) => {
-        return { kind: 'funcPointer', stars: stars || [], name: nameOpt, params: params || [] };
+      ([, dimToken]) => {
+        return parseInt(dimToken.value, 10);
       }
     );
 
-    this.ruleRefs.funcPointerDeclarator = funcPointer;
+    // Function pointer declarator - basic pattern (*name)(params) with array dimension support
+    const funcPointerDeclarator = map(
+      Parser.seq(
+        Parser.lit('('),
+        Parser.opt(Parser.many(Parser.lit('*'))),
+        pred(t => t.type === 'IDENTIFIER'),
+        Parser.opt(arrayDim),
+        Parser.lit(')'),
+        lazy(() => paramList)
+      ),
+      ([lparen, stars, name, arrayDim, rparen, params]) => {
+        return { kind: 'funcPointer', stars: stars || [], name: name.value, arrayDim: arrayDim || null, params };
+      }
+    );
+
+    this.ruleRefs.funcPointerDeclarator = funcPointerDeclarator;
   }
 }

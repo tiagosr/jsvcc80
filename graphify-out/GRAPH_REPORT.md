@@ -1,16 +1,16 @@
 # Graph Report - jsvcc80  (2026-07-24)
 
 ## Corpus Check
-- 39 files · ~67,739 words
+- 39 files · ~68,188 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 760 nodes · 1563 edges · 45 communities (18 shown, 27 thin omitted)
-- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.84)
+- 763 nodes · 1572 edges · 45 communities (20 shown, 25 thin omitted)
+- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `2a1bba0b`
+- Built from commit: `b6df1e4b`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -65,7 +65,7 @@
 1. `Lexer` - 54 edges
 2. `AstToIr` - 51 edges
 3. `CPegParser` - 39 edges
-4. `Z80Codegen` - 36 edges
+4. `Z80Codegen` - 37 edges
 5. `locFromToken()` - 30 edges
 6. `pred()` - 25 edges
 7. `PreprocessedSource` - 22 edges
@@ -86,11 +86,11 @@
 - **Compilation Pipeline Stages** — agents_preprocessor_lexer, agents_parser_cparser, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_backend_z80codegen [INFERRED]
 - **Core Modules Read Order** — agents_compiler_entry, agents_preprocessor_lexer, agents_parser_combinators, agents_parser_cparser, agents_nanopass_il, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_nanopass_register_passes, agents_backend_z80codegen [INFERRED]
 
-## Communities (45 total, 27 thin omitted)
+## Communities (45 total, 25 thin omitted)
 
 ### Community 0 - "AST Node Definitions"
 Cohesion: 0.04
-Nodes (39): AddressOfNode, AnnotatedDeclNode, ASTNode, AttributeNode, BinaryOpNode, CallNode, CaseClauseNode, CompoundNode (+31 more)
+Nodes (35): AddressOfNode, AnnotatedDeclNode, AttributeNode, BinaryOpNode, CallNode, CaseClauseNode, CompoundNode, ControlFlowNode (+27 more)
 
 ### Community 1 - "Parser Combinators"
 Cohesion: 0.13
@@ -160,24 +160,32 @@ Nodes (4): Linker, Binary Object File Format, Static Library Support, WLA DX Cod
 Cohesion: 0.22
 Nodes (3): AltParser, LazyParser, SeqParser
 
+### Community 33 - "TypeSpecNode"
+Cohesion: 0.22
+Nodes (3): ASTNode, FunctionNode, ParameterNode
+
+### Community 47 - "PreprocessedSource"
+Cohesion: 0.11
+Nodes (3): PreprocessedSource, Keywords, TokenType
+
 ## Knowledge Gaps
-- **42 isolated node(s):** `__filename`, `__dirname`, `IntrinsicMap`, `TypeInfos`, `name` (+37 more)
+- **42 isolated node(s):** `IntrinsicMap`, `TypeInfos`, `__filename`, `__dirname`, `name` (+37 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **27 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **25 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Lexer` connect `Lexer & C Parser` to `AST Node Definitions`, `Parser Combinators`, `PreprocessedSource`, `CLI Entry & Compiler`?**
-  _High betweenness centrality (0.125) - this node is a cross-community bridge._
+  _High betweenness centrality (0.124) - this node is a cross-community bridge._
 - **Why does `AstToIr` connect `AST to IR Translation` to `Parser Combinators`?**
-  _High betweenness centrality (0.105) - this node is a cross-community bridge._
+  _High betweenness centrality (0.108) - this node is a cross-community bridge._
 - **Why does `Z80Codegen` connect `Z80 Code Generator` to `AST Node Definitions`, `AST to IR Translation`?**
-  _High betweenness centrality (0.085) - this node is a cross-community bridge._
-- **What connects `__filename`, `__dirname`, `IntrinsicMap` to the rest of the system?**
+  _High betweenness centrality (0.087) - this node is a cross-community bridge._
+- **What connects `IntrinsicMap`, `TypeInfos`, `__filename` to the rest of the system?**
   _42 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AST Node Definitions` be split into smaller, more focused modules?**
-  _Cohesion score 0.035493827160493825 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.037477477477477476 - nodes in this community are weakly interconnected._
 - **Should `Parser Combinators` be split into smaller, more focused modules?**
   _Cohesion score 0.12784313725490196 - nodes in this community are weakly interconnected._
 - **Should `Z80 Codegen & IR Base` be split into smaller, more focused modules?**

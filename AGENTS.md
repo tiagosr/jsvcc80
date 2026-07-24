@@ -128,6 +128,7 @@ function example(name) { ... }
 - **Include directive** - `#include "file"` and `#include <file>` implemented in lexer; `PreprocessedSource` extended with `includePaths` and `includedFiles` tracking for duplicate prevention; file resolution supports local directory, system include paths, and recursive inclusion; macros propagate across include boundaries; `-I` CLI flag for include directories; 15 new tests
 - **#if/#elif/defined() preprocessor** - `#if` and `#elif` directives with full constant expression evaluation; recursive descent parser supports arithmetic (+, -, *, /, %), relational (<, >, <=, >=), equality (==, !=), bitwise (&, |, ^, ~), logical (&&, ||), unary (+, -, !, ~), shift (<<, >>), hex/octal literals, parenthesized expressions; `defined(MACRO)` and `defined MACRO` operators; undefined macros evaluate to 0 in expressions; macro values substituted in expressions; conditional stack frames track `branchTaken` for correct `#elif`/`#else` interaction; 40 new tests
 - **Function-like macros with parameter substitution** - `#define MAX(a,b) ((a)>(b)?(a):(b))` function-like macro parsing with parameter list extraction; macro expansion during tokenization with object-like and function-like macro support; parameter substitution in replacement text; `#` (stringification) operator converts argument to string literal; `##` (token pasting) operator concatenates tokens; recursive macro expansion with rescan after substitution; infinite recursion guard prevents self-referencing macros; built-in macros `__FILE__` and `__LINE__` with proper line tracking; 39 new tests
+- **Variadic function signatures** - Parser handles `func(...)` with ellipsis-only parameters; Parser handles `func(int a, int b, ...)` with named params followed by ellipsis; ParameterNode tracks `isVariadic` flag for ellipsis parameter; FunctionDefinitionNode computes `isVariadic` from parameters; Z80Codegen tracks variadic functions via currentFunctions Map; Variadic functions skip stack cleanup in CALL instruction (caller responsibility); IR excludes variadic param names from parameter list
 
 #### 🧪 Test Results
 - 631 passing tests
@@ -136,14 +137,6 @@ function example(name) { ... }
 - None
 
 ### 🔜 Next Steps
-1. ✅ Implement variadic function signatures - DONE (Jul 24, 2026)
-   - Parser handles `func(...)` with ellipsis-only parameters
-   - Parser handles `func(int a, int b, ...)` with named params followed by ellipsis  
-   - ParameterNode tracks `isVariadic` flag for ellipsis parameter
-   - FunctionDefinitionNode computes `isVariadic` from parameters
-   - Z80Codegen tracks variadic functions via currentFunctions Map
-   - Variadic functions skip stack cleanup in CALL instruction (caller responsibility)
-   - IR excludes variadic param names from parameter list
 2. Implement function pointers as types, and extend the type system to support these
 3. Implement linker definitions to add entry point `crt0` to default compiled/linked output
 4. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
@@ -159,7 +152,13 @@ function example(name) { ... }
 - Check syntax: `node --check src/**/*.js`
 - Ensure JSDoc comments on all exported functions
 - No hardcoded paths - use relative imports from current file
-- Update this file with architecture notes, completed/in-progress/test results/next-steps/backlog lists and pre-commit checklists
+- Update this file:
+  - Add collected architecture notes
+  - Move the current completed task from the "Next Steps" to the "Completed" list, with a short description of the features worked on
+  - If any part of the current task can be taken on in the next iteration, move the task to the "In Progress" list
+  - Update the "Test Results" count
+  - If any part of the current task should be deferred to a later moment, add these parts to the "Backlog" list
+  - If any debugging approach resulted in successful fixes after more than 5 other alternatives, add a short description of the approach to the "Debugging tips" list
 
 ## graphify
 

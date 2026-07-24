@@ -10,13 +10,13 @@
     "semantic_hash": "76ba87dac3991d8ada5c4e150cf96b99"
   },
   "src/ast/nodes.js": {
-    "mtime": 1784809314.9962428,
-    "ast_hash": "dd40c7dd8e02eef1faf0745ff25460b2",
+    "mtime": 1784852362.8323548,
+    "ast_hash": "8ff798a0623d26c6d7ad19565d07f10e",
     "semantic_hash": ""
   },
   "src/backend/z80codegen.js": {
-    "mtime": 1784816780.2306154,
-    "ast_hash": "425ec51192bd759ffd55e64b4e51a391",
+    "mtime": 1784854188.7185392,
+    "ast_hash": "83419b0a6c6301328a1bc1fa2850c9b0",
     "semantic_hash": ""
   },
   "src/compiler.js": {
@@ -70,8 +70,8 @@
     "semantic_hash": "f94c974f60479ab3790cf66a3aee9b0d"
   },
   "src/nanopass/ast_to_ir.js": {
-    "mtime": 1784816719.9288242,
-    "ast_hash": "e7f16a49caa96154b1255e4e96827e4b",
+    "mtime": 1784854200.0938766,
+    "ast_hash": "710250d76d48c33fa6d70250a64d3bc5",
     "semantic_hash": ""
   },
   "src/nanopass/il.js": {
@@ -95,8 +95,8 @@
     "semantic_hash": "188f8fe7696459440737535bac1b70c6"
   },
   "src/parser/cparser.js": {
-    "mtime": 1784810704.741209,
-    "ast_hash": "ee83eedc0b1db0190640199599562793",
+    "mtime": 1784854146.16317,
+    "ast_hash": "74a99bc62d2def4efe21acb8a414e6b9",
     "semantic_hash": ""
   },
   "src/plugins/interfaces.js": {
@@ -105,13 +105,13 @@
     "semantic_hash": "ca938d193286ef0e8f7aa0994334f5bb"
   },
   "src/preprocessor/lexer.js": {
-    "mtime": 1784842760.28599,
-    "ast_hash": "ddac409f1f8d3e8112ef0d3aff9109d3",
+    "mtime": 1784852717.344272,
+    "ast_hash": "e72c68f359f5856c742520182b8fd7a2",
     "semantic_hash": ""
   },
   "src/preprocessor/tokenTypes.js": {
-    "mtime": 1784805102.1941283,
-    "ast_hash": "5d359354d3b16cf745bc5b0abd48540f",
+    "mtime": 1784852733.9810262,
+    "ast_hash": "1f359460b561946fed7f7f721961c7a9",
     "semantic_hash": ""
   },
   "src/tests/archive.test.js": {
@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1784843256.6302266,
-    "ast_hash": "fa7f632e69afebf462e1b54bc168ae0b",
+    "mtime": 1784854259.5504653,
+    "ast_hash": "5ddc9b28d4c1f70f119dfe1a447ade41",
     "semantic_hash": ""
   },
   ".opencode/opencode.json": {

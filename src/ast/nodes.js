@@ -154,6 +154,23 @@ export class CallNode extends ASTNode {
 }
 
 /**
+ * AST node for calling through a function pointer
+ */
+export class FunctionPointerCallNode extends ASTNode {
+  /**
+   * Creates a function pointer call node
+   * @param {ExpressionNode} pointer - Function pointer expression
+   * @param {ExpressionNode[]} args - Call arguments
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(pointer, args, location) {
+    super('FuncPtrCall', location);
+    this.pointer = pointer;
+    this.args = args;
+  }
+}
+
+/**
  * AST node for array indexing
  */
 export class IndexNode extends ASTNode {

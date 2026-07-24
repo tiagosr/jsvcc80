@@ -731,6 +731,22 @@ export class AstToIr {
    */
   translateDecl(decl) {
     const resolved = this.resolveType(decl.type);
+    
+    // Handle function pointer declarations specially
+    if (resolved.isFunctionPointer) {
+      return {
+        name: decl.name.name,
+        type: {
+          baseType: 'function_pointer',
+          isFunctionPointer: true,
+          functionReturnType: resolved.functionReturnType.baseType,
+          functionParams: resolved.functionParams.map(p => p.type),
+          getSize: () => 2
+        },
+        initial: null
+      };
+    }
+    
     return {
       name: decl.name.name,
       type: resolved.baseType,
@@ -796,7 +812,19 @@ export class AstToIr {
     }
 
     if (expr instanceof AST.CallNode) {
+      // Check if callee is a function pointer and use special handling
+      const calleeName = expr.callee?.name || (typeof expr.callee === 'string' ? expr.callee : null);
+      if (calleeName && this.symbolTable) {
+        const sym = this.symbolTable.lookup(calleeName);
+        if (sym && sym.type === 'function_pointer') {
+          return this.translateFuncPtrCallForRegularNode(expr);
+        }
+      }
       return this.translateCall(expr);
+    }
+
+    if (expr instanceof AST.FunctionPointerCallNode) {
+      return this.translateFuncPtrCall(expr);
     }
 
     if (expr instanceof AST.IndexNode) {
@@ -943,12 +971,53 @@ export class AstToIr {
   }
 
   /**
+   * Translate a call through a function pointer
+   * @param {AST.FunctionPointerCallNode} fpCall - Function pointer call
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translateFuncPtrCall(fpCall) {
+    const blocks = [];
+    const args = Array.isArray(fpCall.args) ? fpCall.args : [];
+
+    const pointerResult = this.translateExpression(fpCall.pointer);
+    blocks.push(...pointerResult.blocks);
+
+    for (const arg of args) {
+      const argResult = this.translateExpression(arg);
+      blocks.push(...argResult.blocks);
+      blocks.push(new IL.BasicBlock(this.label('arg'), [
+        new IL.PushInstruction(argResult.result)
+      ]));
+    }
+
+    const dest = this.temp();
+    const pushedRegs = [];
+    for (let i = 0; i < args.length; i++) {
+      pushedRegs.push(`arg${i}`);
+    }
+    const block = new IL.BasicBlock(this.label('funcptrcall'));
+    block.add(new IL.CallInstruction(pointerResult.result, pushedRegs));
+    block.add(new IL.LoadInstruction(dest, 'ret_val'));
+    return { blocks: [...blocks, block], result: dest };
+  }
+
+  /**
    * Translate an intrinsic function call to IR
    * @param {string} name - Intrinsic function name
    * @param {AST.ASTNode[]} args - Argument AST nodes
    * @param {IL.BasicBlock[]} blocks - Blocks array to push to
    * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
    */
+  /**
+   * Translate a regular call node that is actually a function pointer call
+   */
+  translateFuncPtrCallForRegularNode(call) {
+    return this.translateFuncPtrCall({
+      ...call,
+      callee: { name: call.callee.name || call.callee }
+    });
+  }
+
   translateIntrinsic(name, args, blocks) {
     const intrinsic = IntrinsicMap[name];
     const translatedArgs = [];

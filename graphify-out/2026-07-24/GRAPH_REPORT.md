@@ -1,16 +1,16 @@
 # Graph Report - jsvcc80  (2026-07-24)
 
 ## Corpus Check
-- 39 files · ~68,058 words
+- 39 files · ~68,188 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 763 nodes · 1576 edges · 45 communities (20 shown, 25 thin omitted)
+- 763 nodes · 1572 edges · 45 communities (20 shown, 25 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `171549f8`
+- Built from commit: `b6df1e4b`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -177,9 +177,9 @@ Nodes (3): PreprocessedSource, Keywords, TokenType
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Lexer` connect `Lexer & C Parser` to `AST Node Definitions`, `Parser Combinators`, `PreprocessedSource`, `CLI Entry & Compiler`?**
-  _High betweenness centrality (0.121) - this node is a cross-community bridge._
+  _High betweenness centrality (0.124) - this node is a cross-community bridge._
 - **Why does `AstToIr` connect `AST to IR Translation` to `Parser Combinators`?**
-  _High betweenness centrality (0.107) - this node is a cross-community bridge._
+  _High betweenness centrality (0.108) - this node is a cross-community bridge._
 - **Why does `Z80Codegen` connect `Z80 Code Generator` to `AST Node Definitions`, `AST to IR Translation`?**
   _High betweenness centrality (0.087) - this node is a cross-community bridge._
 - **What connects `IntrinsicMap`, `TypeInfos`, `__filename` to the rest of the system?**

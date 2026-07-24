@@ -10,8 +10,8 @@
     "semantic_hash": "76ba87dac3991d8ada5c4e150cf96b99"
   },
   "src/ast/nodes.js": {
-    "mtime": 1784852362.8323548,
-    "ast_hash": "8ff798a0623d26c6d7ad19565d07f10e",
+    "mtime": 1784878960.9823358,
+    "ast_hash": "691eed3a749997d72011dde9d25371eb",
     "semantic_hash": ""
   },
   "src/backend/z80codegen.js": {
@@ -95,8 +95,8 @@
     "semantic_hash": "188f8fe7696459440737535bac1b70c6"
   },
   "src/parser/cparser.js": {
-    "mtime": 1784854146.16317,
-    "ast_hash": "74a99bc62d2def4efe21acb8a414e6b9",
+    "mtime": 1784881087.139908,
+    "ast_hash": "1990fff3fb307ab2cce88281d259f1d3",
     "semantic_hash": ""
   },
   "src/plugins/interfaces.js": {
@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1784854259.5504653,
-    "ast_hash": "5ddc9b28d4c1f70f119dfe1a447ade41",
+    "mtime": 1784881549.7311163,
+    "ast_hash": "a2d7ef65f1a1e4edb69d0276c44da5e7",
     "semantic_hash": ""
   },
   ".opencode/opencode.json": {
@@ -192,6 +192,11 @@
   "src/tests/qualifiers.test.js": {
     "mtime": 1784812376.954977,
     "ast_hash": "013a0bf0da0057856fb35132e7f75ce0",
+    "semantic_hash": ""
+  },
+  "src/tests/function_pointers.test.js": {
+    "mtime": 1784881036.2974205,
+    "ast_hash": "2546d15d47500aeb84836bc6c095f9f1",
     "semantic_hash": ""
   }
 }

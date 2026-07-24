@@ -560,29 +560,34 @@ export class Z80Codegen {
     * Generates a CALL instruction
     * @param {CallInstruction} instr - Call instruction
     */
-   generateCall(instr) {
-     const [func, ...args] = instr.operands;
+    generateCall(instr) {
+      const [func, ...args] = instr.operands;
 
-     // Push arguments onto stack (right-to-left for Z80 convention)
-     for (const arg of args.reverse()) {
-       this.codeLines.push(`  ld a, ${arg}`);
-       this.codeLines.push('  push af');
-     }
+      // Push arguments onto stack (right-to-left for Z80 convention)
+      for (const arg of args.reverse()) {
+        this.codeLines.push(`  ld a, ${arg}`);
+        this.codeLines.push('  push af');
+      }
 
-     // Perform the call
-     this.codeLines.push(`  call ${func}`);
+      // Perform the call - func can be a label (regular function) or a register (function pointer)
+      if (this.isRegisterName(func)) {
+        this.codeLines.push('  ld hl, ' + func);
+        this.codeLines.push('  call hl');
+      } else {
+        this.codeLines.push(`  call ${func}`);
+      }
 
-     // Clean up stack arguments (each argument pushed as AF = 2 bytes)
-     // Variadic functions don't clean up - caller is responsible for cleanup
-     if (args.length > 0 && !this.isVariadicFunction(func)) {
-       const bytes = args.length * 2;
-       this.codeLines.push(`  ld hl, sp`);
-       this.codeLines.push(`  ld de, ${bytes}`);
-       this.codeLines.push('  add hl, de');
-       this.codeLines.push('  ld sp, l');
-       this.codeLines.push('  ld sp, h');
-     }
-   }
+      // Clean up stack arguments (each argument pushed as AF = 2 bytes)
+      // Variadic functions don't clean up - caller is responsible for cleanup
+      if (args.length > 0 && !this.isVariadicFunction(func)) {
+        const bytes = args.length * 2;
+        this.codeLines.push(`  ld hl, sp`);
+        this.codeLines.push(`  ld de, ${bytes}`);
+        this.codeLines.push('  add hl, de');
+        this.codeLines.push('  ld sp, l');
+        this.codeLines.push('  ld sp, h');
+      }
+    }
 
   /**
      * Checks if a function is variadic (has ellipsis parameter)
@@ -593,6 +598,17 @@ export class Z80Codegen {
       const func = this.currentFunctions?.get(funcName);
       return func ? func.metadata?.isVariadic : false;
     }
+
+  /**
+   * Checks if a name is a Z80 register or temp register name
+   * @param {string} name - Name to check
+   * @returns {boolean} True if it's a register name
+   */
+  isRegisterName(name) {
+    if (['a', 'b', 'c', 'd', 'e', 'h', 'l', 'af', 'hl', 'de', 'ix', 'iy', 'sp'].includes(name)) return true;
+    if (name.startsWith('v_') || name.startsWith('arg')) return true;
+    return false;
+  }
 
   /**
    * Generates a RETURN instruction

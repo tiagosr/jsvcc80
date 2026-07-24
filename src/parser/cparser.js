@@ -69,9 +69,39 @@ function mergeDeclaratorType(baseType, pointerDepth, arrayDims) {
   }
   if (arrayDims.length > 0) {
     const dim = arrayDims[0];
-    return new AST.TypeSpecNode(baseType.baseType, baseType.isSigned, baseType.isConst, baseType.isVolatile, baseType.bitWidth, loc, 0, true, dim);
+    return new AST.TypeSpecNode(
+      baseType.baseType, 
+      baseType.isSigned, 
+      baseType.isConst, 
+      baseType.isVolatile, 
+      baseType.bitWidth, 
+      loc, 
+      0, 
+      true, 
+      dim,
+      null,
+      null,
+      baseType.isFunctionPointer,
+      baseType.functionReturnType,
+      baseType.functionParams
+    );
   }
-  return new AST.TypeSpecNode(baseType.baseType, baseType.isSigned, baseType.isConst, baseType.isVolatile, baseType.bitWidth, loc, pointerDepth, false, null);
+  return new AST.TypeSpecNode(
+    baseType.baseType, 
+    baseType.isSigned, 
+    baseType.isConst, 
+    baseType.isVolatile, 
+    baseType.bitWidth, 
+    loc, 
+    pointerDepth, 
+    false, 
+    null,
+    null,
+    null,
+    baseType.isFunctionPointer,
+    baseType.functionReturnType,
+    baseType.functionParams
+  );
 }
 
 /**
@@ -427,7 +457,11 @@ export class CPegParser {
         for (const op of ops) {
           switch (op.kind) {
             case 'call':
-              node = new AST.CallNode(node, op.args, locFromToken(node));
+              if (node instanceof AST.UnaryOpNode && node.op === 'deref') {
+                node = new AST.FunctionPointerCallNode(node, op.args, locFromToken(node));
+              } else {
+                node = new AST.CallNode(node, op.args, locFromToken(node));
+              }
               break;
             case 'index':
               node = new AST.IndexNode(node, op.index, locFromToken(node));
@@ -1151,6 +1185,33 @@ export class CPegParser {
       }
     );
 
+    const localDeclWithFuncPointer = map(
+      Parser.seq(
+        Parser.opt(kw('register')),
+        lazy(() => this.ruleRefs.typeSpecifier),
+        this.ruleRefs.funcPointerDeclarator,
+        Parser.opt(Parser.seq(Parser.lit('='), lazy(() => this.ruleRefs.expression))),
+        Parser.lit(';')
+      ),
+      ([regKw, typeSpec, fpDecl, init]) => {
+        const stars = fpDecl.stars || [];
+        const pointerDepth = stars.length;
+        const name = fpDecl.name ? fpDecl.name.value : null;
+        const params = fpDecl.params || [];
+        const returnBase = new AST.TypeSpecNode(typeSpec.baseType, typeSpec.isSigned, false, false);
+        const funcPtrType = createFunctionPointerType(returnBase, params, locFromToken(fpDecl.name || fpDecl.stars[0]));
+        const mergedType = mergeDeclaratorType(funcPtrType, pointerDepth, []);
+        let initValue = null;
+        if (init) {
+          initValue = Array.isArray(init[1]) ? init[1][0] : init[1];
+        }
+        const ident = name ? new AST.IdentifierNode(name, locFromToken(fpDecl.name)) : null;
+        return new AST.DeclNode('var', mergedType,
+          ident, initValue, locFromToken(typeSpec),
+          regKw ? 'register' : null);
+      }
+    );
+
     const exprStmt = map(
       Parser.seq(
         lazy(() => this.ruleRefs.expression),
@@ -1173,6 +1234,7 @@ export class CPegParser {
       this.ruleRefs.gotoStmt,
       this.ruleRefs.labelStmt,
       returnStmt,
+      localDeclWithFuncPointer,
       localDecl,
       exprStmt
     );
@@ -1370,7 +1432,30 @@ export class CPegParser {
       }
     );
 
-    const singleParam = Parser.alt(typedParam, bareParam);
+    const funcPointerParam = map(
+      Parser.seq(
+        Parser.opt(kw('register')),
+        lazy(() => this.ruleRefs.typeSpecifier),
+        this.ruleRefs.funcPointerDeclarator
+      ),
+      ([regKw, typeSpec, fpDecl]) => {
+        const stars = fpDecl.stars || [];
+        const pointerDepth = stars.length;
+        const name = fpDecl.name ? fpDecl.name.value : null;
+        const params = fpDecl.params || [];
+        const returnBase = new AST.TypeSpecNode(typeSpec.baseType, typeSpec.isSigned, false, false);
+        const funcPtrType = createFunctionPointerType(returnBase, params, locFromToken(fpDecl.name || fpDecl.stars[0]));
+        const mergedType = mergeDeclaratorType(funcPtrType, pointerDepth, []);
+        return new AST.ParameterNode(
+          mergedType,
+          name,
+          locFromToken(fpDecl.name || fpDecl.stars[0]),
+          regKw ? 'register' : null
+        );
+      }
+    );
+
+    const singleParam = Parser.alt(typedParam, funcPointerParam, bareParam);
 
     // Variadic function: at least one named parameter followed by ellipsis (nothing after)
     const variadicWithEllipsis = map(
@@ -1489,21 +1574,20 @@ export class CPegParser {
         Parser.seq(
           Parser.opt(kw('register')),
           lazy(() => this.ruleRefs.typeSpecifier),
-          Parser.lit('('),
-          Parser.lit('*'),
-          pred(t => t.type === 'IDENTIFIER'),
-          Parser.lit(')'),
-          Parser.lit('('),
-          Parser.opt(Parser.alt(kw('void'))),
-          Parser.lit(')'),
+          this.ruleRefs.funcPointerDeclarator,
           Parser.lit(';')
         ),
-        ([regKw, typeSpec, , , name]) => {
+        ([regKw, typeSpec, fpDecl]) => {
+          const stars = fpDecl.stars || [];
+          const pointerDepth = stars.length;
+          const name = fpDecl.name ? fpDecl.name.value : null;
+          const params = fpDecl.params || [];
           const returnBase = new AST.TypeSpecNode(typeSpec.baseType, typeSpec.isSigned, false, false);
-          return new AST.DeclNode('var', 
-            createFunctionPointerType(returnBase, [], locFromToken(name)),
-            new AST.IdentifierNode(name.value, locFromToken(name)),
-            null, locFromToken(typeSpec),
+          const funcPtrType = createFunctionPointerType(returnBase, params, locFromToken(fpDecl.name || fpDecl.stars[0]));
+          const mergedType = mergeDeclaratorType(funcPtrType, pointerDepth, []);
+          const ident = name ? new AST.IdentifierNode(name, locFromToken(fpDecl.name)) : null;
+          return new AST.DeclNode('var', mergedType,
+            ident, null, locFromToken(typeSpec),
             regKw ? 'register' : null);
         }
       ),
@@ -1583,7 +1667,7 @@ export class CPegParser {
         lazy(() => paramList)
       ),
       ([lparen, stars, nameOpt, rparen, params]) => {
-        return { kind: 'funcPointer', name: nameOpt, params: params || [] };
+        return { kind: 'funcPointer', stars: stars || [], name: nameOpt, params: params || [] };
       }
     );
 

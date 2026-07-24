@@ -46,5 +46,17 @@
   "44": "IndexedStoreInstruction",
   "45": "Current Implementation Status",
   "46": "function_pointer.test.js",
-  "47": "PreprocessedSource"
+  "47": "PreprocessedSource",
+  "48": "LabelNode",
+  "49": "LiteralNode",
+  "50": "MemberNode",
+  "51": "OffsetOfNode",
+  "52": "PointerMemberNode",
+  "53": "PreprocNode",
+  "54": "SizeOfNode",
+  "55": "StructFieldNode",
+  "56": "StructNode",
+  "57": "SwitchNode",
+  "58": "TypeOfNode",
+  "59": "UnaryOpNode"
 }

@@ -1,16 +1,16 @@
 # Graph Report - jsvcc80  (2026-07-24)
 
 ## Corpus Check
-- 43 files · ~70,709 words
+- 42 files · ~70,703 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 778 nodes · 1599 edges · 47 communities (21 shown, 26 thin omitted)
+- 779 nodes · 1599 edges · 48 communities (22 shown, 26 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8df14af0`
+- Built from commit: `ecc91224`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -88,7 +88,7 @@
 - **Compilation Pipeline Stages** — agents_preprocessor_lexer, agents_parser_cparser, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_backend_z80codegen [INFERRED]
 - **Core Modules Read Order** — agents_compiler_entry, agents_preprocessor_lexer, agents_parser_combinators, agents_parser_cparser, agents_nanopass_il, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_nanopass_register_passes, agents_backend_z80codegen [INFERRED]
 
-## Communities (47 total, 26 thin omitted)
+## Communities (48 total, 26 thin omitted)
 
 ### Community 0 - "AST Node Definitions"
 Cohesion: 0.04
@@ -187,7 +187,7 @@ _Questions this graph is uniquely positioned to answer:_
 - **Why does `AstToIr` connect `AST to IR Translation` to `Parser Combinators`?**
   _High betweenness centrality (0.109) - this node is a cross-community bridge._
 - **Why does `Z80Codegen` connect `Z80 Code Generator` to `AST Node Definitions`, `AST to IR Translation`?**
-  _High betweenness centrality (0.087) - this node is a cross-community bridge._
+  _High betweenness centrality (0.086) - this node is a cross-community bridge._
 - **What connects `🧪 Test Results`, `🔄 In Progress`, `🔜 Next Steps` to the rest of the system?**
   _46 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AST Node Definitions` be split into smaller, more focused modules?**

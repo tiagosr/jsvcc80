@@ -199,11 +199,6 @@
     "ast_hash": "2546d15d47500aeb84836bc6c095f9f1",
     "semantic_hash": ""
   },
-  "run_test.sh": {
-    "mtime": 1784897210.3015957,
-    "ast_hash": "cfc637e289591cc6849197fce5a027a7",
-    "semantic_hash": ""
-  },
   "src/tests/function_pointer.test.js": {
     "mtime": 1784897023.60188,
     "ast_hash": "365e7ad1556d1e374ab40ee921d51df4",

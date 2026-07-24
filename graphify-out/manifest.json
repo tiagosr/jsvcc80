@@ -95,8 +95,8 @@
     "semantic_hash": "188f8fe7696459440737535bac1b70c6"
   },
   "src/parser/cparser.js": {
-    "mtime": 1784890377.8494437,
-    "ast_hash": "71baff8ac3aacfaec50c7aaa45d02b62",
+    "mtime": 1784899569.0326796,
+    "ast_hash": "bcc0ddd08f3ba38140cc0a910a235446",
     "semantic_hash": ""
   },
   "src/plugins/interfaces.js": {
@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1784888779.3279316,
-    "ast_hash": "a2d7ef65f1a1e4edb69d0276c44da5e7",
+    "mtime": 1784895224.3087316,
+    "ast_hash": "965b15f298061142592cbbe7c37d2000",
     "semantic_hash": ""
   },
   ".opencode/opencode.json": {
@@ -197,6 +197,16 @@
   "src/tests/function_pointers.test.js": {
     "mtime": 1784892616.9062717,
     "ast_hash": "2546d15d47500aeb84836bc6c095f9f1",
+    "semantic_hash": ""
+  },
+  "src/tests/function_pointer.test.js": {
+    "mtime": 1784897023.60188,
+    "ast_hash": "365e7ad1556d1e374ab40ee921d51df4",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1784899664.4297695,
+    "ast_hash": "ae03c1883592e7d3d190ef8e044ddb6c",
     "semantic_hash": ""
   }
 }

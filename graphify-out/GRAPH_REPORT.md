@@ -1,16 +1,16 @@
 # Graph Report - jsvcc80  (2026-07-24)
 
 ## Corpus Check
-- 40 files · ~70,148 words
+- 42 files · ~70,703 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 771 nodes · 1594 edges · 46 communities (20 shown, 26 thin omitted)
+- 779 nodes · 1599 edges · 48 communities (22 shown, 26 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `bc03344f`
+- Built from commit: `ecc91224`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -60,6 +60,7 @@
 - WlaDxCodegen
 - IndexedLoadInstruction
 - IndexedStoreInstruction
+- Current Implementation Status
 - PreprocessedSource
 
 ## God Nodes (most connected - your core abstractions)
@@ -87,7 +88,7 @@
 - **Compilation Pipeline Stages** — agents_preprocessor_lexer, agents_parser_cparser, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_backend_z80codegen [INFERRED]
 - **Core Modules Read Order** — agents_compiler_entry, agents_preprocessor_lexer, agents_parser_combinators, agents_parser_cparser, agents_nanopass_il, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_nanopass_register_passes, agents_backend_z80codegen [INFERRED]
 
-## Communities (46 total, 26 thin omitted)
+## Communities (48 total, 26 thin omitted)
 
 ### Community 0 - "AST Node Definitions"
 Cohesion: 0.04
@@ -165,12 +166,16 @@ Nodes (3): AltParser, LazyParser, SeqParser
 Cohesion: 0.22
 Nodes (3): ASTNode, FunctionNode, ParameterNode
 
+### Community 45 - "Current Implementation Status"
+Cohesion: 0.29
+Nodes (6): 📔 Backlog (issues identified during implementation for later priorization), ✅ Completed, Current Implementation Status, 🔄 In Progress, 🔜 Next Steps, 🧪 Test Results
+
 ### Community 47 - "PreprocessedSource"
 Cohesion: 0.11
 Nodes (3): PreprocessedSource, Keywords, TokenType
 
 ## Knowledge Gaps
-- **42 isolated node(s):** `IntrinsicMap`, `TypeInfos`, `__filename`, `__dirname`, `name` (+37 more)
+- **46 isolated node(s):** `🧪 Test Results`, `🔄 In Progress`, `🔜 Next Steps`, `📔 Backlog (issues identified during implementation for later priorization)`, `TypeInfos` (+41 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **26 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -178,13 +183,13 @@ Nodes (3): PreprocessedSource, Keywords, TokenType
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Lexer` connect `Lexer & C Parser` to `AST Node Definitions`, `Parser Combinators`, `PreprocessedSource`, `CLI Entry & Compiler`?**
-  _High betweenness centrality (0.121) - this node is a cross-community bridge._
+  _High betweenness centrality (0.120) - this node is a cross-community bridge._
 - **Why does `AstToIr` connect `AST to IR Translation` to `Parser Combinators`?**
-  _High betweenness centrality (0.110) - this node is a cross-community bridge._
+  _High betweenness centrality (0.109) - this node is a cross-community bridge._
 - **Why does `Z80Codegen` connect `Z80 Code Generator` to `AST Node Definitions`, `AST to IR Translation`?**
-  _High betweenness centrality (0.088) - this node is a cross-community bridge._
-- **What connects `IntrinsicMap`, `TypeInfos`, `__filename` to the rest of the system?**
-  _42 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _High betweenness centrality (0.086) - this node is a cross-community bridge._
+- **What connects `🧪 Test Results`, `🔄 In Progress`, `🔜 Next Steps` to the rest of the system?**
+  _46 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AST Node Definitions` be split into smaller, more focused modules?**
   _Cohesion score 0.03843226788432268 - nodes in this community are weakly interconnected._
 - **Should `Parser Combinators` be split into smaller, more focused modules?**

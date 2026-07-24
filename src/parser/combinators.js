@@ -397,9 +397,64 @@ class MapParser extends Parser {
  * @param {Function} fn - Transform function(value) => newValue
  * @returns {Parser} Mapped parser
  */
-export function map(parser, fn) {
-  return new MapParser(parser, fn);
-}
+export const map = (parser, fn) => new MapParser(parser, fn);
+
+/**
+ * Parser for literal token matching
+ * @param {string} type - Token type to match
+ * @param {string} [value] - Expected token value (optional)
+ * @returns {Parser} Parser 
+ */
+export const lit = (type, value=null) => new LitParser(type, value);
+
+/**
+ * Creates a choice parser (try alternatives in order)
+ * @param {...Parser} parsers - Parsers to try
+ * @returns {Parser} Choice parser
+ */
+export const alt = (...parsers) => new AltParser(parsers);
+
+/**
+ * Creates a sequence parser (match all in order)
+ * @param {...Parser} parsers - Parsers to match sequentially
+ * @returns {Parser} Sequence parser
+ */
+export const seq = (...parsers) => new SeqParser(parsers);
+
+/**
+ * Matches zero or more repetitions
+ * @param {Parser} inner - Parser to repeat
+ * @returns {Parser} Repetition parser
+ */
+export const many = (inner) => new ManyParser(inner);
+
+/**
+ * Matches one or more repetitions
+ * @param {Parser} inner - Parser to repeat
+ * @returns {Parser} Repetition parser
+ */
+export const some = (inner) => new SomeParser(inner);
+
+/**
+ * Matches zero or one (optional)
+ * @param {Parser} inner - Parser to make optional
+ * @returns {Parser} Optional parser
+ */
+export const opt = (inner) => new OptParser(inner);
+
+/**
+ * Matches any token of specified types
+ * @param {...string} types - Token types to match
+ * @returns {Parser} Any parser
+ */
+export const any = (...types) => new AnyParser(types);
+
+/**
+ * Matches when the next tokens satisfy a condition
+ * @param {Function} predicate - Function(token, pos) => boolean
+ * @returns {Parser} Predicate parser
+ */
+export const pred = (predicate) => new PredParser(predicate);
 
 /**
  * Parser that lazily resolves its inner parser at parse time.
@@ -429,13 +484,9 @@ class LazyParser extends Parser {
  * @param {Function} resolver - Function returning the parser to resolve
  * @returns {Parser} Lazy parser
  */
-export function lazy(resolver) {
-  return new LazyParser(resolver);
-}
+export const lazy = (resolver) => new LazyParser(resolver);
 
 /**
  * Wraps a parser to capture location information on all results
  */
-export function withLocation(inner) {
-  return new LocationParser(inner);
-}
+export const withLocation = (inner) => new LocationParser(inner);

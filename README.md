@@ -47,19 +47,19 @@ The intention is to learn what are the processes that avoid "agent orchestration
 - **Function-like macros with parameter substitution** - `#define MAX(a,b) ((a)>(b)?(a):(b))` function-like macro parsing with parameter list extraction; macro expansion during tokenization with object-like and function-like macro support; parameter substitution in replacement text; `#` (stringification) operator converts argument to string literal; `##` (token pasting) operator concatenates tokens; recursive macro expansion with rescan after substitution; infinite recursion guard prevents self-referencing macros; built-in macros `__FILE__` and `__LINE__` with proper line tracking; 39 new tests
 - **Variadic function signatures** - Parser handles `func(...)` with ellipsis-only parameters; Parser handles `func(int a, int b, ...)` with named params followed by ellipsis; ParameterNode tracks `isVariadic` flag for ellipsis parameter; FunctionDefinitionNode computes `isVariadic` from parameters; Z80Codegen tracks variadic functions via currentFunctions Map; Variadic functions skip stack cleanup in CALL instruction (caller responsibility); IR excludes variadic param names from parameter list
 - **Function pointers - Type system foundation** - Extended `TypeSpecNode` with `isFunctionPointer`, `functionReturnType`, and `functionParams` fields for representing function pointer types; Added `createFunctionPointerType()` helper to construct function pointer type specifications; Updated `getSize()` and `getElementSize()` to return 2 bytes for function pointers (16-bit Z80 addresses); Enhanced `typeString()` to format function pointers as `returnType (*)(paramTypes)`; Function pointers have `pointerDepth = 1` and `isFunctionPointer = true`; All type system operations properly handle function pointer types with correct size calculations; Comprehensive test suite covering function pointer type creation, size queries, string representations with various qualifiers (const/volatile), parameter lists, and edge cases
+- **Function pointer declarator parsing** - Enhanced parser to support full function pointer declarators including array dimensions (`int (*fp[3])(int)`); Fixed parser issues causing test failures; Added proper handling for `(*name)(params)` pattern with optional array dimension in function pointer declarations; 7 out of 8 function pointer tests now passing
 
 #### 🧪 Test Results
-- 644 passing tests
+- 651 passing tests
 
 ### 🔄 In Progress
 - None
 
 ### 🔜 Next Steps
-1. Implement full parsing of function pointer declarators (e.g., `int (*fp)(int)`) with parameter type extraction
-2. Implement IR translation for calling through function pointers and storing/loading them
+1. Implement IR translation for calling through function pointers and storing/loading them
 3. Implement Z80 code generation for function pointer operations (store, load, call via pointer)
-4. Implement linker definitions to add entry point `crt0` to default compiled/linked output
-4. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
+2. Implement linker definitions to add entry point `crt0` to default compiled/linked output
+3. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
 5. Implement `unsigned:n` bit fields
 6. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
 7. Implement symbol map exporting for debugging

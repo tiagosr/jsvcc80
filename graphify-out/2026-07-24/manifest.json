@@ -105,8 +105,8 @@
     "semantic_hash": "ca938d193286ef0e8f7aa0994334f5bb"
   },
   "src/preprocessor/lexer.js": {
-    "mtime": 1784842760.28599,
-    "ast_hash": "ddac409f1f8d3e8112ef0d3aff9109d3",
+    "mtime": 1784829507.660929,
+    "ast_hash": "0e4944fecdd3b2d8b80676e2950ebf7b",
     "semantic_hash": ""
   },
   "src/preprocessor/tokenTypes.js": {
@@ -160,13 +160,13 @@
     "semantic_hash": "ad3d41abf6d48f3d0d2bb822b931a0ff"
   },
   "src/tests/preprocessor.test.js": {
-    "mtime": 1784840617.2080626,
-    "ast_hash": "c8ba870773560ad2c03b6b0c328a062c",
+    "mtime": 1784828700.1001518,
+    "ast_hash": "98d0e1fc5a8a5b61228b0bb1b8427afc",
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1784843256.6302266,
-    "ast_hash": "fa7f632e69afebf462e1b54bc168ae0b",
+    "mtime": 1784830508.1797762,
+    "ast_hash": "192833b2f81c3b4755e5a7876513f9d5",
     "semantic_hash": ""
   },
   ".opencode/opencode.json": {

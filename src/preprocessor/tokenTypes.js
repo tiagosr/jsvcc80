@@ -67,6 +67,7 @@ export const TokenType = {
   DEC: '--',
   QUESTION: '?',
   COLON_COLON: '::',
+  ELLIPSIS: '...',
 
   // Preprocessor directives
   POUND: '#',

@@ -548,31 +548,43 @@ export class Z80Codegen {
   }
 
   /**
-   * Generates a CALL instruction
-   * @param {CallInstruction} instr - Call instruction
-   */
-  generateCall(instr) {
-    const [func, ...args] = instr.operands;
+    * Generates a CALL instruction
+    * @param {CallInstruction} instr - Call instruction
+    */
+   generateCall(instr) {
+     const [func, ...args] = instr.operands;
 
-    // Push arguments onto stack (right-to-left for Z80 convention)
-    for (const arg of args.reverse()) {
-      this.codeLines.push(`  ld a, ${arg}`);
-      this.codeLines.push('  push af');
-    }
+     // Push arguments onto stack (right-to-left for Z80 convention)
+     for (const arg of args.reverse()) {
+       this.codeLines.push(`  ld a, ${arg}`);
+       this.codeLines.push('  push af');
+     }
 
-    // Perform the call
-    this.codeLines.push(`  call ${func}`);
+     // Perform the call
+     this.codeLines.push(`  call ${func}`);
 
-    // Clean up stack arguments (each argument pushed as AF = 2 bytes)
-    if (args.length > 0) {
-      const bytes = args.length * 2;
-      this.codeLines.push(`  ld hl, sp`);
-      this.codeLines.push(`  ld de, ${bytes}`);
-      this.codeLines.push('  add hl, de');
-      this.codeLines.push('  ld sp, l');
-      this.codeLines.push('  ld sp, h');
-    }
-  }
+     // Clean up stack arguments (each argument pushed as AF = 2 bytes)
+     // Variadic functions don't clean up - caller is responsible for cleanup
+     if (args.length > 0 && !this.isVariadicFunction(func)) {
+       const bytes = args.length * 2;
+       this.codeLines.push(`  ld hl, sp`);
+       this.codeLines.push(`  ld de, ${bytes}`);
+       this.codeLines.push('  add hl, de');
+       this.codeLines.push('  ld sp, l');
+       this.codeLines.push('  ld sp, h');
+     }
+   }
+
+  /**
+    * Checks if a function is variadic (has ellipsis parameter)
+    * @param {string} funcName - Function name to check
+    * @returns {boolean} True if the function is variadic
+    */
+   isVariadicFunction(funcName) {
+     // For now, assume external functions like printf are not variadic
+     // In a full implementation, we'd look up the function definition metadata
+     return false;
+   }
 
   /**
    * Generates a RETURN instruction

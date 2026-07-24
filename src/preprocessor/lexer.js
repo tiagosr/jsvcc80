@@ -1059,6 +1059,15 @@ export class Lexer {
       '<<=', '>>='
     ];
 
+    // Three-character operators (ellipsis for variadic functions)
+    const threeChar = ch + this.peekNext(1) + this.peekNext(2);
+    if (threeChar === '...') {
+      this.advance();
+      this.advance();
+      this.advance();
+      return this.makeToken('ELLIPSIS', '...');
+    }
+
     if (twoChar === '::') {
       this.advance();
       this.advance();
@@ -2043,6 +2052,15 @@ export class Lexer {
         this.advance();
         return this.makeToken(op, op);
       }
+    }
+
+    // Three-character operators (ellipsis for variadic functions)
+    const threeChar = ch + this.peekNext(1) + this.peekNext(2);
+    if (threeChar === '...') {
+      this.advance();
+      this.advance();
+      this.advance();
+      return this.makeToken('ELLIPSIS', '...');
     }
 
     // Single character tokens

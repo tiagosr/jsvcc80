@@ -1,5 +1,6 @@
 import { ParserError } from '../core/errors.js';
 import * as AST from '../ast/nodes.js';
+import { TokenType } from '../preprocessor/tokenTypes.js';
 import { 
   Parser, LitParser, SeqParser, AltParser, ManyParser, SomeParser, OptParser, PredParser,
   lazy, map
@@ -1334,18 +1335,44 @@ export class CPegParser {
 
     const singleParam = Parser.alt(typedParam, bareParam);
 
-    const paramList = map(
+    // Variadic function: at least one named parameter followed by ellipsis (nothing after)
+    const variadicWithEllipsis = map(
       Parser.seq(
         singleParam,
-        Parser.many(Parser.seq(Parser.lit(','), singleParam))
+        Parser.many(Parser.seq(Parser.lit(','), singleParam)),
+        Parser.lit(','),
+        pred(t => t.type === 'ELLIPSIS')
       ),
-      ([firstParam, rest]) => {
+      ([firstParam, restMiddle, , lastComma, ellipsis]) => {
         const params = [firstParam];
-        for (const [, param] of rest) {
+        for (const [, param] of restMiddle) {
           params.push(param);
         }
-        return params;
+        // Create ellipsis parameter node - just return the AST.ParameterNode
+        return new AST.ParameterNode(
+          new AST.TypeSpecNode('int', false, false, false, 0),
+          null,
+          locFromToken(ellipsis),
+          null,
+          true
+        );
       }
+    );
+
+    const paramList = Parser.alt(variadicWithEllipsis, 
+      map(
+        Parser.seq(
+          singleParam,
+          Parser.many(Parser.seq(Parser.lit(','), singleParam))
+        ),
+        ([firstParam, rest]) => {
+          const params = [firstParam];
+          for (const [, param] of rest) {
+            params.push(param);
+          }
+          return params;
+        }
+      )
     );
 
     const functionDef = map(
@@ -1359,7 +1386,7 @@ export class CPegParser {
       ),
       ([returnType, name, , params, , body]) => {
         let paramNodes = [];
-        if (params && Array.isArray(params)) {
+        if (params !== undefined && Array.isArray(params)) {
           paramNodes = params;
         }
         return new AST.FunctionNode(

@@ -503,6 +503,21 @@ export class FunctionNode extends ASTNode {
     this.returnType = returnType;
     this.parameters = parameters;
     this.body = body;
+    this.isVariadic = parameters.some(p => p && p.isVariadic);
+  }
+
+  /**
+   * Returns JSON representation of the function node
+   * @returns {Object}
+   */
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      name: this.name ? this.name.value : null,
+      returnType: this.returnType.toJSON ? this.returnType.toJSON() : 'unknown',
+      parameters: this.parameters.map(p => p.toJSON ? p.toJSON() : p),
+      isVariadic: this.isVariadic
+    };
   }
 }
 
@@ -516,12 +531,28 @@ export class ParameterNode extends ASTNode {
    * @param {IdentifierNode} name - Parameter name (null for unnamed)
    * @param {SourceLocation} location - Source location
    * @param {string} [storageClass] - Storage class specifier ('register')
+   * @param {boolean} [isVariadic] - True if this is a variadic ellipsis parameter (...)
    */
-  constructor(type, name = null, location, storageClass = null) {
+  constructor(type, name = null, location, storageClass = null, isVariadic = false) {
     super('Parameter', location);
     this.type = type;
     this.name = name;
     this.storageClass = storageClass;
+    this.isVariadic = isVariadic;
+  }
+
+  /**
+   * Returns JSON representation of the parameter node
+   * @returns {Object}
+   */
+  toJSON() {
+    return {
+      ...super.toJSON(),
+      type: this.type.toJSON ? this.type.toJSON() : 'unknown',
+      name: this.name ? this.name.value : null,
+      storageClass: this.storageClass,
+      isVariadic: this.isVariadic
+    };
   }
 }
 

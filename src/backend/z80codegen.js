@@ -52,47 +52,56 @@ export class Z80Codegen {
   }
 
   /**
-   * Generates Z80 assembly from a program IR
-   * @param {ProgramIR} ir - Program intermediate representation
-   * @returns {string} Generated Z80 assembly source
-   */
-  generate(ir) {
-    this.reset();
-    
-    // Generate header
-    this.generateHeader();
+    * Generates Z80 assembly from a program IR
+    * @param {ProgramIR} ir - Program intermediate representation
+    * @returns {string} Generated Z80 assembly source
+    */
+   generate(ir) {
+     this.reset();
+     
+     // Build function lookup map for variadic detection
+     this.currentFunctions = new Map();
+     if (ir.functions && ir.functions.length > 0) {
+       for (const func of ir.functions) {
+         this.currentFunctions.set(func.name, func);
+       }
+     }
+     
+     // Generate header
+     this.generateHeader();
 
-    // Generate global data section
-    if (ir.globals && ir.globals.length > 0) {
-      this.codeLines.push('');
-      this.codeLines.push('; Global Data Section');
-      for (const global of ir.globals) {
-        this.generateGlobal(global);
-      }
-    }
+     // Generate global data section
+     if (ir.globals && ir.globals.length > 0) {
+       this.codeLines.push('');
+       this.codeLines.push('; Global Data Section');
+       for (const global of ir.globals) {
+         this.generateGlobal(global);
+       }
+     }
 
-    // Generate functions
-    if (ir.functions && ir.functions.length > 0) {
-      for (const func of ir.functions) {
-        this.currentFunction = func;
-        this.codeLines.push('');
-        this.generateFunction(func);
-      }
-    }
+     // Generate functions
+     if (ir.functions && ir.functions.length > 0) {
+       for (const func of ir.functions) {
+         this.currentFunction = func;
+         this.codeLines.push('');
+         this.generateFunction(func);
+       }
+     }
 
-    return this.codeLines.join('\n') + '\n';
-  }
+     return this.codeLines.join('\n') + '\n';
+   }
 
   /**
-   * Resets internal state for new code generation
-   */
-  reset() {
-    this.currentFunction = null;
-    this.labelsUsed.clear();
-    this.tempVariables.clear();
-    this.nextTempId = 0;
-    this.codeLines = [];
-  }
+    * Resets internal state for new code generation
+    */
+   reset() {
+     this.currentFunction = null;
+     this.currentFunctions = undefined;
+     this.labelsUsed.clear();
+     this.tempVariables.clear();
+     this.nextTempId = 0;
+     this.codeLines = [];
+   }
 
   /**
    * Generates the assembler header/directives
@@ -576,15 +585,14 @@ export class Z80Codegen {
    }
 
   /**
-    * Checks if a function is variadic (has ellipsis parameter)
-    * @param {string} funcName - Function name to check
-    * @returns {boolean} True if the function is variadic
-    */
-   isVariadicFunction(funcName) {
-     // For now, assume external functions like printf are not variadic
-     // In a full implementation, we'd look up the function definition metadata
-     return false;
-   }
+     * Checks if a function is variadic (has ellipsis parameter)
+     * @param {string} funcName - Function name to check
+     * @returns {boolean} True if the function is variadic
+     */
+    isVariadicFunction(funcName) {
+      const func = this.currentFunctions?.get(funcName);
+      return func ? func.metadata?.isVariadic : false;
+    }
 
   /**
    * Generates a RETURN instruction

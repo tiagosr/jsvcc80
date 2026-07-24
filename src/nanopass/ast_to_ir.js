@@ -309,7 +309,7 @@ export class AstToIr {
       blocks,
       {
         returnType: resolvedReturn.baseType,
-        parameters: func.parameters.map(p => p.name),
+        parameters: func.parameters.filter(p => p.name && !p.isVariadic).map(p => p.name),
         isVariadic: func.isVariadic
       }
     );

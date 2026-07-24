@@ -136,7 +136,14 @@ function example(name) { ... }
 - None
 
 ### 🔜 Next Steps
-1. Implement variadic function signatures
+1. ✅ Implement variadic function signatures - DONE (Jul 24, 2026)
+   - Parser handles `func(...)` with ellipsis-only parameters
+   - Parser handles `func(int a, int b, ...)` with named params followed by ellipsis  
+   - ParameterNode tracks `isVariadic` flag for ellipsis parameter
+   - FunctionDefinitionNode computes `isVariadic` from parameters
+   - Z80Codegen tracks variadic functions via currentFunctions Map
+   - Variadic functions skip stack cleanup in CALL instruction (caller responsibility)
+   - IR excludes variadic param names from parameter list
 2. Implement function pointers as types, and extend the type system to support these
 3. Implement linker definitions to add entry point `crt0` to default compiled/linked output
 4. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)

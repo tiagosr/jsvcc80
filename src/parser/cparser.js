@@ -1348,18 +1348,34 @@ export class CPegParser {
         for (const [, param] of restMiddle) {
           params.push(param);
         }
-        // Create ellipsis parameter node - just return the AST.ParameterNode
-        return new AST.ParameterNode(
+        // Create ellipsis parameter node and add to list
+        const ellipsisParam = new AST.ParameterNode(
           new AST.TypeSpecNode('int', false, false, false, 0),
           null,
           locFromToken(ellipsis),
           null,
           true
         );
+        params.push(ellipsisParam);
+        return params;
       }
     );
 
-    const paramList = Parser.alt(variadicWithEllipsis, 
+    // Variadic function with only ellipsis: ...
+    const variadicOnly = map(
+      pred(t => t.type === 'ELLIPSIS'),
+      (ellipsis) => {
+        return [new AST.ParameterNode(
+          new AST.TypeSpecNode('int', false, false, false, 0),
+          null,
+          locFromToken(ellipsis),
+          null,
+          true
+        )];
+      }
+    );
+
+    const paramList = Parser.alt(variadicWithEllipsis, variadicOnly, 
       map(
         Parser.seq(
           singleParam,

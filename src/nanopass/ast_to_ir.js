@@ -897,6 +897,10 @@ export class AstToIr {
       return this.translateTypeOf(expr);
     }
 
+    if (expr instanceof AST.CastNode) {
+      return this.translateCast(expr);
+    }
+
     const temp = this.temp();
     const block = new IL.BasicBlock(this.label('expr'));
     block.add(new IL.LoadInstruction(temp, 'unknown'));
@@ -979,6 +983,10 @@ export class AstToIr {
    * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
    */
   translateUnaryOp(unaryOp) {
+    // Handle postfix increment/decrement (inc/dec)
+    if (unaryOp.op === 'inc' || unaryOp.op === 'dec') {
+      return this.translateIncDec(unaryOp);
+    }
     const operandResult = this.translateExpression(unaryOp.operand);
     const dest = this.temp();
     const block = new IL.BasicBlock(this.label('unop'));
@@ -987,6 +995,47 @@ export class AstToIr {
       blocks: [...operandResult.blocks, block],
       result: dest
     };
+  }
+
+  /**
+   * Translate postfix increment/decrement (inc/dec)
+   * @param {AST.UnaryOpNode} unaryOp - Increment/decrement operation
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translateIncDec(unaryOp) {
+    const operandResult = this.translateExpression(unaryOp.operand);
+    const originalTemp = operandResult.result;
+    const dest = this.temp();
+    const blocks = [...operandResult.blocks];
+    
+    // Get the variable name from the operand (should be an identifier)
+    let varName = null;
+    const operand = unaryOp.operand;
+    if (operand instanceof AST.IdentifierNode) {
+      varName = operand.name;
+    }
+    
+    if (varName) {
+      // For postfix inc/dec: load original value, modify, store back
+      const addSubOp = unaryOp.op === 'inc' ? 'add' : 'sub';
+      const modifiedTemp = this.temp();
+      const storeBlock = new IL.BasicBlock(this.label('incdec'));
+      
+      // Calculate modified value: original + 1 or original - 1
+      storeBlock.add(new IL.BinaryOpInstruction(modifiedTemp, addSubOp, originalTemp, 1));
+      
+      // Store back to variable
+      storeBlock.add(new IL.StoreInstruction(varName, modifiedTemp));
+      
+      // Return original value
+      return {
+        blocks: [...blocks, storeBlock],
+        result: originalTemp
+      };
+    } else {
+      // For expressions (like *(p++)): just return the operand
+      return operandResult;
+    }
   }
 
   /**
@@ -1500,6 +1549,22 @@ export class AstToIr {
     return {
       blocks: [...operandResult.blocks, block],
       result: temp
+    };
+  }
+
+  /**
+   * Translate a C-style cast expression
+   * @param {AST.CastNode} cast - Cast expression
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translateCast(cast) {
+    // Cast to pointer type: just evaluate the operand (pointer arithmetic handles the cast)
+    // Cast to integer type: no explicit IR instruction needed, the value is preserved
+    // The type information is used by the codegen to emit proper instructions
+    const operandResult = this.translateExpression(cast.operand);
+    return {
+      blocks: operandResult.blocks,
+      result: operandResult.result
     };
   }
 

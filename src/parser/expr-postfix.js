@@ -52,7 +52,14 @@ function buildPostfixExpr(ctx) {
     functionCall,
     arraySubscript,
     memberAccessDot,
-    memberAccessArrow
+    memberAccessArrow,
+    // Postfix increment/decrement: x++, x--
+    map(
+      pred(t => ['++', '--'].includes(t.type)),
+      (op) => {
+        return { kind: 'postfixIncDec', op: op.value };
+      }
+    )
   );
 
   ctx.ruleRefs.postfixExpr = map(
@@ -79,6 +86,9 @@ function buildPostfixExpr(ctx) {
             break;
           case 'pointerMember':
             node = new AST.PointerMemberNode(node, op.field, locFromToken(node));
+            break;
+          case 'postfixIncDec':
+            node = new AST.UnaryOpNode(op.op === '++' ? 'inc' : 'dec', node, locFromToken(op));
             break;
         }
       }

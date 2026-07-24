@@ -800,3 +800,33 @@ export class AnnotatedDeclNode extends ASTNode {
     this.attributes = attributes;
   }
 }
+
+/**
+ * AST node for C-style cast expressions
+ */
+export class CastNode extends ASTNode {
+  /**
+   * Creates a cast node
+   * @param {TypeSpecNode} castType - Type being cast to
+   * @param {ASTNode} operand - Expression being cast
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(castType, operand, location) {
+    super('Cast', location);
+    this.castType = castType;
+    this.operand = operand;
+  }
+
+  /**
+   * Returns a JSON-serializable representation
+   * @returns {Object} JSON representation
+   */
+  toJSON() {
+    return {
+      type: this.type,
+      castType: this.castType.toJSON(),
+      operand: this.operand ? this.operand.toJSON() : null,
+      location: this.location
+    };
+  }
+}

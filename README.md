@@ -56,22 +56,22 @@ I'm compiling findings about this process on FINDINGS.md.
 - **Processor intrinsics** - `IntrinsicInstruction` IR class, intrinsic detection in `translateCall`, Z80 codegen for special opcodes and port access, 43 intrinsic tests
 - **Block transfer intrinsics** - `IntrinsicMap` extended with `__ini`, `__outi`, `__inir`, `__otir`, `__ind`, `__outd`, `__indr`, `__otdr`; Z80 codegen for INI/OUTI/INIR/OTIR/IND/OUTD/INDR/OTDR block transfer instructions using B for count, C for port, HL for buffer; 19 new tests
 - **Setjmp/Longjmp/Alloca intrinsics** - `IntrinsicMap` extended with `__setjmp`, `__longjmp`, `__alloca`; Z80 codegen for context save/restore (PC, SP, IX, HL, DE, BC, AF) for setjmp/longjmp, stack allocation for alloca; 12 new tests
+- **C standard library - memory operations** - `memset`, `memcpy`, `memcmp`, `memmove`, `memchr` implemented as C source files in `src/core/stdlib/`; parser support for C-style casts `(type)expr`, postfix increment/decrement (`x++`, `x--`), brace-enclosed array initializers `{1, 2, 3}`, and `NULL` keyword; 10 new tests
 
 ### 🔄 In Progress
 - Implement linker definitions to add entry point `crt0` to default compiled/linked output
 
 ### 🔜 Next Steps
-1. Implement `unsigned:n` bit fields
-2. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
-3. Implement symbol map exporting for debugging
-4. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.) - COMPLETED
+1. Add character string operations to the C standard library (`sprintf`, `sscanf`, `strlen`, `strtoi`, etc.)
+2. Add file stream abstractions to the C standard library (`FILE`, `putc`, `getc`, `fprintf`, `fscanf`, etc.)
+3. Add file stream abstractions to the C standard library (`FILE`, `putc`, `getc`, `fprintf`, `fscanf`, etc.)
+4. Implement symbol map compiling and exporting for debugging
 5. Implement `unsigned:n` bit fields
-6. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
-7. Implement symbol map exporting for debugging
 
 #### 🧪 Test Results
-- 672 passing tests
+- 682 passing tests
 
 ### 📔 Backlog (issues identified during implementation for later priorization)
 - Fix `typedef unsigned int newType` parsing
-- Nested function pointer parsing (pointer to function returning function pointer) - COMPLETED
+- C standard library - character string operations (sprintf, sscanf, strlen, etc.)
+- C standard library - file stream abstractions (FILE, putc, getc, etc.)

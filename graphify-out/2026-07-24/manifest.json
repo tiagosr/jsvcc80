@@ -15,8 +15,8 @@
     "semantic_hash": ""
   },
   "src/backend/z80codegen.js": {
-    "mtime": 1784888779.3449152,
-    "ast_hash": "7e7dbf64bbe1fae5842ed46d4ed630b0",
+    "mtime": 1784917442.8811872,
+    "ast_hash": "658179806772d22c79ccaf6c6a854c3d",
     "semantic_hash": ""
   },
   "src/compiler.js": {
@@ -70,19 +70,19 @@
     "semantic_hash": "f94c974f60479ab3790cf66a3aee9b0d"
   },
   "src/nanopass/ast_to_ir.js": {
-    "mtime": 1784891791.2684424,
-    "ast_hash": "94f6bc3947b79533a5ca5d714446a880",
+    "mtime": 1784917234.2814891,
+    "ast_hash": "1d19134e004df32a45f62f6c356f0ab0",
     "semantic_hash": ""
   },
   "src/nanopass/il.js": {
-    "mtime": 1784888779.351429,
-    "ast_hash": "a9f1f28e9df3a391869ab235b1d07cba",
+    "mtime": 1784917078.860657,
+    "ast_hash": "eec6fb457e828cf385497577f0cb9348",
     "semantic_hash": ""
   },
   "src/nanopass/optimizations.js": {
-    "mtime": 1784888779.3520777,
-    "ast_hash": "8e75a20a716b0195846305166dd0942e",
-    "semantic_hash": "8e75a20a716b0195846305166dd0942e"
+    "mtime": 1784917572.7746904,
+    "ast_hash": "f353b21302052f18469cd8268cf32570",
+    "semantic_hash": ""
   },
   "src/nanopass/register_passes.js": {
     "mtime": 1784888779.3526392,
@@ -95,8 +95,8 @@
     "semantic_hash": ""
   },
   "src/parser/cparser.js": {
-    "mtime": 1784915471.1516693,
-    "ast_hash": "b45067d74ec35886188691d953fe3ff3",
+    "mtime": 1784916128.3264272,
+    "ast_hash": "83563e065e4d077858bd72109759c6e4",
     "semantic_hash": ""
   },
   "src/plugins/interfaces.js": {
@@ -200,13 +200,13 @@
     "semantic_hash": ""
   },
   "src/tests/function_pointer.test.js": {
-    "mtime": 1784897023.60188,
-    "ast_hash": "365e7ad1556d1e374ab40ee921d51df4",
+    "mtime": 1784917598.0906785,
+    "ast_hash": "85030111ef03bcfb16c8e34618bcb77e",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1784901722.327284,
-    "ast_hash": "c49d5b946409105e2a07fb11ebd60b78",
+    "mtime": 1784917623.1602411,
+    "ast_hash": "962004d8e93a59ce309e51288f45c68a",
     "semantic_hash": ""
   },
   "FINDINGS.md": {
@@ -280,8 +280,8 @@
     "semantic_hash": ""
   },
   "src/parser/function-pointers.js": {
-    "mtime": 1784915450.4144773,
-    "ast_hash": "3af7b905c1156531a6cf57aaeae66a76",
+    "mtime": 1784916882.9129233,
+    "ast_hash": "d8360899a820d08161f7959f62c36aae",
     "semantic_hash": ""
   },
   "src/parser/stmt-control.js": {
@@ -290,13 +290,18 @@
     "semantic_hash": ""
   },
   "src/parser/stmt-local.js": {
-    "mtime": 1784915029.9818854,
-    "ast_hash": "b950fcd1d813247b5624922aef9a517f",
+    "mtime": 1784916116.680665,
+    "ast_hash": "116f3466bc89ef774cf3a9c33efc94a9",
     "semantic_hash": ""
   },
   "src/parser/type-system.js": {
     "mtime": 1784915338.2212958,
     "ast_hash": "05db0187168157b81ad1b3b84bf1b8c6",
+    "semantic_hash": ""
+  },
+  "src/tests/function_pointer_ir.test.js": {
+    "mtime": 1784917278.6108065,
+    "ast_hash": "74a9234a275adb288e91dac9e14a8d49",
     "semantic_hash": ""
   }
 }

@@ -306,20 +306,43 @@ export class CPegParser {
     const functionDef = map(
       seq(
         lazy(() => this.ruleRefs.typeSpecifier),
+        many(lit('*')),
         pred(t => t.type === 'IDENTIFIER'),
         lit('('),
         opt(alt(paramList, voidParam)),
         lit(')'),
         this.ruleRefs.statement
       ),
-      ([returnType, name, , params, , body]) => {
+      ([returnType, stars, name, , params, , body]) => {
+        // Merge pointer depth into return type
+        const pointerDepth = stars.length;
+        let mergedReturnType = returnType;
+        if (pointerDepth > 0) {
+          const loc = returnType.location || { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } };
+          mergedReturnType = new AST.TypeSpecNode(
+            returnType.baseType,
+            returnType.isSigned,
+            returnType.isConst,
+            returnType.isVolatile,
+            returnType.bitWidth,
+            loc,
+            pointerDepth,
+            false,
+            null,
+            null,
+            null,
+            returnType.isFunctionPointer,
+            returnType.functionReturnType,
+            returnType.functionParams
+          );
+        }
         let paramNodes = [];
         if (params !== undefined && Array.isArray(params)) {
           paramNodes = params;
         }
         return new AST.FunctionNode(
           new AST.IdentifierNode(name.value, locFromToken(name)),
-          returnType,
+          mergedReturnType,
           paramNodes,
           body,
           locFromToken(returnType)

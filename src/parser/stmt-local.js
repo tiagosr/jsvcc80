@@ -67,6 +67,37 @@ function buildStatement(ctx) {
     }
   );
 
+  const literalExpr = map(
+    pred(t => t.type === 'INTEGER' || t.type === 'STRING'),
+    (t) => {
+      return new AST.LiteralNode(t.value, t);
+    }
+  );
+
+  const braceInit = map(
+    seq(
+      lit('{'),
+      many(seq(
+        literalExpr,
+        opt(lit(','))
+      )),
+      lit('}')
+    ),
+    ([, items]) => {
+      // Extract values from the initializer list
+      const values = [];
+      for (const item of items) {
+        const expr = item[0];
+        if (expr instanceof AST.LiteralNode) {
+          values.push(expr.value);
+        } else {
+          values.push(null);
+        }
+      }
+      return values;
+    }
+  );
+
   const localDecl = map(
     seq(
       opt(kw('register')),
@@ -78,7 +109,10 @@ function buildStatement(ctx) {
         opt(lazy(() => ctx.ruleRefs.expression)),
         lit(']')
       )),
-      opt(seq(lit('='), lazy(() => ctx.ruleRefs.expression))),
+      opt(alt(
+        seq(lit('='), braceInit),  // Brace-enclosed initializer: = {1, 2, 3}
+        seq(lit('='), lazy(() => ctx.ruleRefs.expression))  // Single expression initializer: = value
+      )),
       lit(';')
     ),
     ([regKw, typeSpec, stars, name, arrayDims, init]) => {
@@ -92,7 +126,14 @@ function buildStatement(ctx) {
       const mergedType = mergeDeclaratorType(typeSpec, pointerDepth, dims);
       let initValue = null;
       if (init) {
-        initValue = Array.isArray(init[1]) ? init[1][0] : init[1];
+        const initializer = init[1];
+        if (Array.isArray(initializer)) {
+          // Brace-enclosed initializer
+          initValue = initializer;
+        } else {
+          // Single expression initializer
+          initValue = Array.isArray(initializer) ? initializer[0] : initializer;
+        }
       }
       return new AST.DeclNode('var',
         mergedType,

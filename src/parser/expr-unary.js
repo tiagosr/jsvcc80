@@ -1,16 +1,12 @@
 import * as AST from '../ast/nodes.js';
-import { Parser, some, seq, map, lazy, pred, lit, alt } from './combinators.js';
+import { Parser, some, seq, map, lazy, pred, lit, alt, many } from './combinators.js';
+import { buildTypeSpecifier, locFromToken } from './type-system.js';
 
 /**
  * Match a keyword token (type is KEYWORD, value is the keyword)
  * @param {string} keyword - Keyword to match
  */
 const kw = (keyword) => pred(t => t.type === 'KEYWORD' && t.value === keyword);
-
-/**
- * Get location from first token in parse result
- */
-const locFromToken = (token) => token?.location || { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } };
 
 /**
  * Build unary expression rule (prefix operators)
@@ -46,7 +42,42 @@ function buildUnaryExpr(ctx) {
     }
   );
 
+  // C-style cast: (type)expression
+  // Handles: (int)x, (char *)p, (unsigned char)c
+  const castExpr = map(
+    seq(
+      lit('('),
+      lazy(() => ctx.ruleRefs.typeSpecifier),
+      many(lit('*')),
+      lit(')'),
+      lazy(() => ctx.ruleRefs.unaryExpr)
+    ),
+    ([_, typeSpec, stars, , operand]) => {
+      const pointerDepth = stars.length;
+      const loc = typeSpec.location || locFromToken(typeSpec);
+      // Create a TypeSpecNode with the appropriate pointer depth
+      const castType = new AST.TypeSpecNode(
+        typeSpec.baseType,
+        typeSpec.isSigned,
+        typeSpec.isConst,
+        typeSpec.isVolatile,
+        typeSpec.bitWidth,
+        loc,
+        pointerDepth,
+        false,
+        null,
+        null,
+        null,
+        typeSpec.isFunctionPointer,
+        typeSpec.functionReturnType,
+        typeSpec.functionParams
+      );
+      return new AST.CastNode(castType, operand, locFromToken(typeSpec));
+    }
+  );
+
   ctx.ruleRefs.unaryExpr = alt(
+    castExpr,
     unaryPrefix,
     addressOf,
     ctx.ruleRefs.primaryExpr

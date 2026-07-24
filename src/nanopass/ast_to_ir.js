@@ -294,12 +294,19 @@ export class AstToIr {
     for (const param of func.parameters) {
       if (param.name) {
         const resolvedParam = this.resolveType(param.type);
-        this.symbolTable.define(param.name, {
+        const paramSymbol = {
           name: param.name,
           kind: 'variable',
           type: resolvedParam.baseType,
           offset: 0
-        });
+        };
+        // Track function pointer parameters
+        if (resolvedParam.isFunctionPointer) {
+          paramSymbol.isFunctionPointer = true;
+          paramSymbol.functionReturnType = resolvedParam.functionReturnType;
+          paramSymbol.functionParams = resolvedParam.functionParams;
+        }
+        this.symbolTable.define(param.name, paramSymbol);
       }
     }
 
@@ -688,6 +695,8 @@ export class AstToIr {
       }
     }
     
+    const isFuncPtr = resolved.isFunctionPointer;
+    
     this.symbolTable.define(decl.name.name, {
       name: decl.name.name,
       kind: 'variable',
@@ -702,15 +711,25 @@ export class AstToIr {
       structKind: typeInfo.structKind || null,
       isConst: typeInfo.isConst || false,
       isVolatile: typeInfo.isVolatile || false,
-      storageClass: decl.storageClass || null
+      storageClass: decl.storageClass || null,
+      isFunctionPointer: isFuncPtr,
+      functionReturnType: isFuncPtr ? resolved.functionReturnType : null,
+      functionParams: isFuncPtr ? resolved.functionParams : null
     });
 
     if (decl.init) {
       const result = this.translateExpression(decl.init);
       blocks.push(...result.blocks);
-      blocks[blocks.length - 1].add(
-        new IL.StoreInstruction(decl.name.name, result.result)
-      );
+      if (isFuncPtr) {
+        // For function pointer initialization, store the address properly
+        const initBlock = blocks[blocks.length - 1];
+        initBlock.add(new IL.LoadAddrInstruction('fp_addr', decl.name.name));
+        initBlock.add(new IL.BinaryOpInstruction('fp_addr', 'addr', 'fp_addr', result.result));
+      } else {
+        blocks[blocks.length - 1].add(
+          new IL.StoreInstruction(decl.name.name, result.result)
+        );
+      }
     } else if (typeInfo.isArray) {
       blocks.push(new IL.BasicBlock(this.label('alloc'), [
         new IL.AllocStackInstruction(size)
@@ -794,6 +813,18 @@ export class AstToIr {
     }
 
     if (expr instanceof AST.IdentifierNode) {
+      const sym = this.symbolTable.lookup(expr.name);
+      // Check if this identifier is a function - return its address (function pointer)
+      if (sym && sym.kind === 'function') {
+        const temp = this.temp();
+        const block = new IL.BasicBlock(this.label('func_addr'));
+        block.add(new IL.LoadAddrInstruction(temp, expr.name));
+        return { blocks: [block], result: temp };
+      }
+      // Check if this is a function pointer variable - load its stored address
+      if (sym && (sym.isFunctionPointer || sym.type === 'function_pointer')) {
+        return this.translateLoadFunctionPointer(expr.name);
+      }
       const temp = this.temp();
       const block = new IL.BasicBlock(this.label('ident'));
       block.add(new IL.LoadInstruction(temp, expr.name));
@@ -816,9 +847,13 @@ export class AstToIr {
       const calleeName = expr.callee?.name || (typeof expr.callee === 'string' ? expr.callee : null);
       if (calleeName && this.symbolTable) {
         const sym = this.symbolTable.lookup(calleeName);
-        if (sym && sym.type === 'function_pointer') {
+        if (sym && (sym.type === 'function_pointer' || sym.isFunctionPointer)) {
           return this.translateFuncPtrCallForRegularNode(expr);
         }
+      }
+      // Check if callee is an IndexNode (array element call like fp[0]())
+      if (expr.callee instanceof AST.IndexNode) {
+        return this.translateFuncPtrCallForIndexCall(expr);
       }
       return this.translateCall(expr);
     }
@@ -902,8 +937,14 @@ export class AstToIr {
     const block = new IL.BasicBlock(this.label('assign'));
 
     let target;
+    let isFuncPtrTarget = false;
     if (assign.left instanceof AST.IdentifierNode) {
       target = assign.left.name;
+      // Check if target is a function pointer variable
+      const targetSym = this.symbolTable.lookup(target);
+      if (targetSym && (targetSym.isFunctionPointer || targetSym.type === 'function_pointer')) {
+        isFuncPtrTarget = true;
+      }
     } else {
       const leftResult = this.translateExpression(assign.left);
       block.add(new IL.BinaryOpInstruction('addr', 'addr', leftResult.result, 'sp'));
@@ -914,7 +955,15 @@ export class AstToIr {
       };
     }
 
-    block.add(new IL.StoreInstruction(target, rightResult.result));
+    // Handle function pointer assignment: store the address
+    if (isFuncPtrTarget) {
+      // Store the function address to the function pointer variable
+      // Load the address of the target variable, then store the pointer value there
+      block.add(new IL.LoadAddrInstruction('fp_addr', target));
+      block.add(new IL.BinaryOpInstruction('fp_addr', 'addr', 'fp_addr', rightResult.result));
+    } else {
+      block.add(new IL.StoreInstruction(target, rightResult.result));
+    }
     return {
       blocks: [...rightResult.blocks, block],
       result: rightResult.result
@@ -1016,6 +1065,41 @@ export class AstToIr {
       ...call,
       callee: { name: call.callee.name || call.callee }
     });
+  }
+
+  /**
+   * Translate a call through a function pointer array element (fp[i](args))
+   * Handles calls like fp[0](5) where fp is an array of function pointers
+   * @param {AST.CallNode} call - Call node with IndexNode callee
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translateFuncPtrCallForIndexCall(call) {
+    const blocks = [];
+    const args = Array.isArray(call.args) ? call.args : [];
+
+    // Translate the index expression (e.g., fp[0]) to get the function pointer address
+    const indexResult = this.translateExpression(call.callee);
+    blocks.push(...indexResult.blocks);
+
+    // Translate arguments
+    for (const arg of args) {
+      const argResult = this.translateExpression(arg);
+      blocks.push(...argResult.blocks);
+      blocks.push(new IL.BasicBlock(this.label('arg'), [
+        new IL.PushInstruction(argResult.result)
+      ]));
+    }
+
+    // Generate the call through the function pointer
+    const dest = this.temp();
+    const pushedRegs = [];
+    for (let i = 0; i < args.length; i++) {
+      pushedRegs.push(`arg${i}`);
+    }
+    const block = new IL.BasicBlock(this.label('funcptrcall'));
+    block.add(new IL.CallInstruction(indexResult.result, pushedRegs));
+    block.add(new IL.LoadInstruction(dest, 'ret_val'));
+    return { blocks: [...blocks, block], result: dest };
   }
 
   translateIntrinsic(name, args, blocks) {
@@ -1129,6 +1213,14 @@ export class AstToIr {
     const dest = this.temp();
     const block = new IL.BasicBlock(this.label('addr'));
     if (addr.operand instanceof AST.IdentifierNode) {
+      // Check if this is the address of a function (returns function pointer)
+      const sym = this.symbolTable.lookup(addr.operand.name);
+      if (sym && sym.kind === 'function') {
+        // Get the address of a function - this IS a function pointer value
+        block.add(new IL.LoadAddrInstruction(dest, addr.operand.name));
+        return { blocks: [block], result: dest };
+      }
+      // Regular variable - get its address
       block.add(new IL.LoadAddrInstruction(dest, addr.operand.name));
     } else if (addr.operand instanceof AST.IndexNode) {
       const baseResult = this.translateExpression(addr.operand.base);
@@ -1150,6 +1242,55 @@ export class AstToIr {
       };
     }
     return { blocks: [block], result: dest };
+  }
+
+  /**
+   * Check if a symbol refers to a function
+   * @param {string} name - Symbol name
+   * @returns {boolean} True if symbol is a function
+   */
+  isFunctionSymbol(name) {
+    const sym = this.symbolTable.lookup(name);
+    return sym && sym.kind === 'function';
+  }
+
+  /**
+   * Check if a symbol is a function pointer type
+   * @param {string} name - Symbol name
+   * @returns {boolean} True if symbol is a function pointer
+   */
+  isFunctionPointerSymbol(name) {
+    const sym = this.symbolTable.lookup(name);
+    return sym && (sym.isFunctionPointer || sym.type === 'function_pointer');
+  }
+
+  /**
+   * Translate loading a function pointer value from a variable
+   * Used when reading from a function pointer variable
+   * @param {string} varName - Variable name holding the function pointer
+   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+   */
+  translateLoadFunctionPointer(varName) {
+    const dest = this.temp();
+    const block = new IL.BasicBlock(this.label('load_func_ptr'));
+    // Load the address stored in the function pointer variable
+    block.add(new IL.LoadAddrInstruction(dest, varName));
+    return { blocks: [block], result: dest };
+  }
+
+  /**
+   * Translate storing a function pointer value to a variable
+   * Used when assigning a function address to a function pointer variable
+   * @param {string} varName - Variable name to store the function pointer
+   * @param {string} address - Register holding the function address
+   * @returns {IL.BasicBlock[]} Blocks with store instruction
+   */
+  translateStoreFunctionPointer(varName, address) {
+    const block = new IL.BasicBlock(this.label('store_func_ptr'));
+    // Store the address to the function pointer variable
+    block.add(new IL.LoadAddrInstruction('addr_temp', varName));
+    block.add(new IL.BinaryOpInstruction('addr_temp', 'addr', 'addr_temp', address));
+    return [block];
   }
 
   /**

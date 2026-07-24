@@ -229,7 +229,8 @@ export class CPegParser {
       ([regKw, typeSpec, fpDecl]) => {
         const stars = fpDecl.stars || [];
         const pointerDepth = stars.length;
-        const name = fpDecl.name ? fpDecl.name.value : null;
+        // fpDecl.name is already a string (extracted by funcPointerDeclarator)
+        const name = fpDecl.name || null;
         const params = fpDecl.params || [];
         const returnBase = new AST.TypeSpecNode(typeSpec.baseType, typeSpec.isSigned, false, false);
         const funcPtrType = createFunctionPointerType(returnBase, params, locFromToken(fpDecl.name || fpDecl.stars[0]));

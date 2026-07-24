@@ -377,6 +377,16 @@ export class Z80Codegen {
       return;
     }
 
+    // Handle address store operation (used for function pointer storage)
+    if (op === 'addr') {
+      // dest = address to store to
+      // src2 = value to store
+      // Generate: store src2 value at address in dest
+      this.codeLines.push(`  ld hl, ${src2}`);
+      this.codeLines.push(`  ld (${dest}), hl`);
+      return;
+    }
+
     // Most Z80 operations work with accumulator (A), so we need to be careful
     this.codeLines.push(`  ld a, ${src1}`);
 

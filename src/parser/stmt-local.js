@@ -113,7 +113,8 @@ function buildStatement(ctx) {
     ([regKw, typeSpec, fpDecl, init]) => {
       const stars = fpDecl.stars || [];
       const pointerDepth = stars.length;
-      const name = fpDecl.name ? fpDecl.name.value : null;
+      // fpDecl.name is already a string (extracted by funcPointerDeclarator)
+      const name = fpDecl.name || null;
       const params = fpDecl.params || [];
       const returnBase = new AST.TypeSpecNode(typeSpec.baseType, typeSpec.isSigned, false, false);
       const funcPtrType = createFunctionPointerType(returnBase, params, locFromToken(fpDecl.name || fpDecl.stars[0]));
@@ -122,7 +123,7 @@ function buildStatement(ctx) {
       if (init) {
         initValue = Array.isArray(init[1]) ? init[1][0] : init[1];
       }
-      const ident = name ? new AST.IdentifierNode(name, locFromToken(fpDecl.name)) : null;
+      const ident = name ? new AST.IdentifierNode(name, locFromToken(fpDecl.name || fpDecl.stars[0])) : null;
       return new AST.DeclNode('var', mergedType,
         ident, initValue, locFromToken(typeSpec),
         regKw ? 'register' : null);

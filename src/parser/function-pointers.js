@@ -28,7 +28,7 @@ function buildParamList(ctx) {
     }
   );
 
-  return map(
+  const paramListParser = map(
     seq(
       lit('('),
       opt(alt(kw('void'), seq(paramType, many(seq(lit(','), paramType))))),
@@ -48,6 +48,10 @@ function buildParamList(ctx) {
       return null;
     }
   );
+  
+  // Store in ruleRefs for use by FunctionPointerDeclaratorParser
+  ctx.ruleRefs.paramList = paramListParser;
+  return paramListParser;
 }
 
 /**
@@ -78,26 +82,117 @@ const arrayDimParser = map(
 );
 
 /**
+ * Custom parser for function pointer declarators with nested support
+ * Handles: (*name)(params) and (*(*innerName)(innerParams))(outerParams)
+ */
+class FunctionPointerDeclaratorParser extends Parser {
+  constructor(ctx) {
+    super();
+    this.ctx = ctx;
+  }
+
+  parse(tokens, pos) {
+    // Match opening '('
+    const openParenResult = lit('(').parse(tokens, pos);
+    if (!openParenResult.success) {
+      return openParenResult;
+    }
+    
+    // Match optional '*' tokens
+    const starsResult = opt(many(lit('*'))).parse(tokens, openParenResult.nextPos);
+    const outerStars = starsResult.value || [];
+    let currentPos = starsResult.nextPos;
+    
+    // Check what comes next to determine nested vs simple
+    const nextToken = tokens[currentPos];
+    
+    if (nextToken && nextToken.type === '(') {
+      // NESTED function pointer: parse inner declarator recursively
+      const innerResult = this.ctx.ruleRefs.funcPointerDeclarator.parse(tokens, currentPos);
+      if (!innerResult.success) {
+        return { success: false, error: 'Failed to parse nested function pointer', nextPos: currentPos };
+      }
+      
+      const inner = innerResult.value;
+      // Combine outer stars with inner stars; name comes from inner
+      const combinedStars = outerStars.concat(inner.stars || []);
+      
+      // Parse optional array dimension
+      const arrayDimResult = arrayDimParser.parse(tokens, innerResult.nextPos);
+      let finalPos = innerResult.nextPos;
+      let arrayDim = null;
+      if (arrayDimResult.success) {
+        arrayDim = arrayDimResult.value;
+        finalPos = arrayDimResult.nextPos;
+      }
+      
+      // Parse closing ')'
+      const rparenResult = lit(')').parse(tokens, finalPos);
+      if (!rparenResult.success) {
+        return { success: false, error: 'Expected ")" in function pointer declarator', nextPos: finalPos };
+      }
+      finalPos = rparenResult.nextPos;
+      
+      // Parse parameter list
+      const paramsResult = lazy(() => this.ctx.ruleRefs.paramList).parse(tokens, finalPos);
+      if (!paramsResult.success) {
+        return { success: false, error: 'Failed to parse function pointer parameters', nextPos: finalPos };
+      }
+      
+      return {
+        success: true,
+        value: { kind: 'funcPointer', stars: combinedStars, name: inner.name, arrayDim: arrayDim, params: paramsResult.value },
+        nextPos: paramsResult.nextPos
+      };
+    } else {
+      // SIMPLE function pointer: match identifier
+      const nameResult = pred(t => t.type === 'IDENTIFIER').parse(tokens, currentPos);
+      if (!nameResult.success) {
+        return { success: false, error: 'Expected identifier in function pointer declarator', nextPos: currentPos };
+      }
+      
+      // Parse optional array dimension
+      const arrayDimResult = arrayDimParser.parse(tokens, nameResult.nextPos);
+      let finalPos = nameResult.nextPos;
+      let arrayDim = null;
+      if (arrayDimResult.success) {
+        arrayDim = arrayDimResult.value;
+        finalPos = arrayDimResult.nextPos;
+      }
+      
+      // Parse closing ')'
+      const rparenResult = lit(')').parse(tokens, finalPos);
+      if (!rparenResult.success) {
+        return { success: false, error: 'Expected ")" in function pointer declarator', nextPos: finalPos };
+      }
+      finalPos = rparenResult.nextPos;
+      
+      // Parse parameter list
+      const paramsResult = lazy(() => this.ctx.ruleRefs.paramList).parse(tokens, finalPos);
+      if (!paramsResult.success) {
+        return { success: false, error: 'Failed to parse function pointer parameters', nextPos: finalPos };
+      }
+      
+      return {
+        success: true,
+        value: { kind: 'funcPointer', stars: outerStars, name: nameResult.value.value, arrayDim: arrayDim, params: paramsResult.value },
+        nextPos: paramsResult.nextPos
+      };
+    }
+  }
+}
+
+/**
  * Build function pointer declarator parser rule
  * Recognizes: (*name)(params) or (*)(params) for function pointers
+ * Also handles nested function pointers: (*(*innerName)(innerParams))(outerParams)
  * @param {CPegParser} ctx 
  */
 function buildFunctionPointerDeclarator(ctx) {
-  const paramList = buildParamList(ctx);
-  const funcPointerDeclarator = map(
-    seq(
-      lit('('),
-      opt(many(lit('*'))),
-      pred(t => t.type === 'IDENTIFIER'),
-      opt(arrayDimParser),
-      lit(')'),
-      lazy(() => paramList)
-    ),
-    ([lparen, stars, name, arrayDim, rparen, params]) => {
-      return { kind: 'funcPointer', stars: stars || [], name: name.value, arrayDim: arrayDim || null, params };
-    }
-  );
-
+  // Set up paramList first (stores in ctx.ruleRefs.paramList)
+  buildParamList(ctx);
+  
+  const funcPointerDeclarator = new FunctionPointerDeclaratorParser(ctx);
   ctx.ruleRefs.funcPointerDeclarator = funcPointerDeclarator;
 }
 

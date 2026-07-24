@@ -50,6 +50,7 @@ I'm compiling findings about this process on FINDINGS.md.
 - **Variadic function signatures** - Parser handles `func(...)` with ellipsis-only parameters; Parser handles `func(int a, int b, ...)` with named params followed by ellipsis; ParameterNode tracks `isVariadic` flag for ellipsis parameter; FunctionDefinitionNode computes `isVariadic` from parameters; Z80Codegen tracks variadic functions via currentFunctions Map; Variadic functions skip stack cleanup in CALL instruction (caller responsibility); IR excludes variadic param names from parameter list
 - **Function pointers - Type system foundation** - Extended `TypeSpecNode` with `isFunctionPointer`, `functionReturnType`, and `functionParams` fields for representing function pointer types; Added `createFunctionPointerType()` helper to construct function pointer type specifications; Updated `getSize()` and `getElementSize()` to return 2 bytes for function pointers (16-bit Z80 addresses); Enhanced `typeString()` to format function pointers as `returnType (*)(paramTypes)`; Function pointers have `pointerDepth = 1` and `isFunctionPointer = true`; All type system operations properly handle function pointer types with correct size calculations; Comprehensive test suite covering function pointer type creation, size queries, string representations with various qualifiers (const/volatile), parameter lists, and edge cases
 - **Function pointer declarator parsing** - Enhanced parser to support full function pointer declarators including array dimensions (`int (*fp[3])(int)`); Fixed parser issues causing test failures; Added proper handling for `(*name)(params)` pattern with optional array dimension in function pointer declarations; 7 out of 8 function pointer tests now passing
+- **Nested function pointer parsing** - Fixed parsing of pointer-to-function-returning-function-pointer declarations (`int (*(*fp)(int))(int)`); Implemented custom `FunctionPointerDeclaratorParser` class with recursive nested parsing, lookahead for nested vs simple function pointers, and proper token value extraction; All 8 function pointer tests passing
 - **Function pointer IR translation** - Implemented complete IR translation for function pointers: address-of function (`&func`) returns function pointer, storing function pointers to variables via `LOAD_ADDR` + `BINOP addr` pattern, loading function pointers from variables, calling through function pointers (both direct and through array elements `fp[i](args)`), function pointer parameters, and function pointer local variable declarations with initialization; Fixed parser bug where function pointer declaration names were not extracted correctly; 6 new IR translation tests + 13 existing type system tests passing
 
 #### 🧪 Test Results
@@ -59,13 +60,16 @@ I'm compiling findings about this process on FINDINGS.md.
 - None
 
 ### 🔜 Next Steps
-1. ~~Implement IR translation for calling through function pointers and storing/loading them~~ (✅ COMPLETED)
-2. Implement Z80 code generation for function pointer operations (store, load, call via pointer)
-3. Implement linker definitions to add entry point `crt0` to default compiled/linked output
-4. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
-5. Implement `unsigned:n` bit fields
-6. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
-7. Implement symbol map exporting for debugging
+1. Implement Z80 code generation for function pointer operations (store, load, call via pointer)
+2. Implement linker definitions to add entry point `crt0` to default compiled/linked output
+3. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
+4. Implement `unsigned:n` bit fields
+5. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
+6. Implement symbol map exporting for debugging
+
+#### 🧪 Test Results
+- 658 passing tests
 
 ### 📔 Backlog (issues identified during implementation for later priorization)
 - Fix `typedef unsigned int newType` parsing
+- Nested function pointer parsing (pointer to function returning function pointer) - COMPLETED

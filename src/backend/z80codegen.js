@@ -962,6 +962,100 @@ export class Z80Codegen {
         this.codeLines.push('  otdr');
         break;
 
+      case 'SETJMP':
+        // __setjmp(jmp_buf) - saves execution context to buffer
+        // Saves: PC (return address), SP, IX, HL, DE, BC, AF
+        // Returns 0 in accumulator
+        // jmp_buf is a pointer to memory where context is stored
+        // Layout: [PC_lo, PC_hi, SP_lo, SP_hi, IX_lo, IX_hi, HL_lo, HL_hi, DE_lo, DE_hi, BC_lo, BC_hi, AF]
+        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = jmp_buf pointer
+        this.codeLines.push('  push ix'); // Save IX
+        this.codeLines.push('  pop bc'); // BC = old IX
+        this.codeLines.push('  ld (hl), c'); // Store IX_lo
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld (hl), b'); // Store IX_hi
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  push sp'); // Save SP
+        this.codeLines.push('  pop de'); // DE = old SP
+        this.codeLines.push('  ld (hl), e'); // Store SP_lo
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld (hl), d'); // Store SP_hi
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  push hl'); // Save current PC (return address)
+        this.codeLines.push('  pop hl'); // HL = return address
+        this.codeLines.push('  ld (hl), l'); // Store PC_lo
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld (hl), h'); // Store PC_hi
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  push hl'); // Save HL
+        this.codeLines.push('  pop de'); // DE = old HL
+        this.codeLines.push('  ld (hl), e'); // Store HL_lo
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld (hl), d'); // Store HL_hi
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  push de'); // Save DE
+        this.codeLines.push('  pop bc'); // BC = old DE
+        this.codeLines.push('  ld (hl), c'); // Store DE_lo
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld (hl), b'); // Store DE_hi
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  push bc'); // Save BC
+        this.codeLines.push('  pop hl'); // HL = old BC
+        this.codeLines.push('  ld (hl), l'); // Store BC_lo
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld (hl), h'); // Store BC_hi
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  push af'); // Save AF
+        this.codeLines.push('  pop hl'); // HL = old AF
+        this.codeLines.push('  ld (hl), l'); // Store AF_lo (A register)
+        this.codeLines.push('  ld a, 0'); // Return 0
+        break;
+
+      case 'LONGJMP':
+        // __longjmp(jmp_buf, value) - restores execution context
+        // Restores: PC, SP, IX, HL, DE, BC, AF
+        // Then jumps to saved PC, making setjmp return `value`
+        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = jmp_buf pointer
+        this.codeLines.push(`  ld de, ${args[1]}`); // DE = return value
+        this.codeLines.push('  push ix'); // Save current IX
+        this.codeLines.push('  pop bc');
+        this.codeLines.push(`  ld bc, (hl)`); // BC = saved IX_lo (we need full IX)
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  push hl'); // Save HL
+        this.codeLines.push('  pop de');
+        this.codeLines.push(`  ld e, (hl)`); // DE_lo = saved IX_hi
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  ex de, hl'); // HL = saved IX (full)
+        this.codeLines.push('  push hl'); // Restore IX
+        this.codeLines.push('  pop ix');
+        this.codeLines.push('  inc hl');
+        this.codeLines.push(`  ld e, (hl)`); // DE_lo = saved SP_lo
+        this.codeLines.push('  inc hl');
+        this.codeLines.push(`  ld d, (hl)`); // DE_hi = saved SP_hi
+        this.codeLines.push('  ld sp, de'); // Restore SP
+        this.codeLines.push('  inc hl');
+        this.codeLines.push(`  ld e, (hl)`); // DE_lo = saved PC_lo
+        this.codeLines.push('  inc hl');
+        this.codeLines.push(`  ld d, (hl)`); // DE_hi = saved PC_hi
+        this.codeLines.push(`  ld hl, ${args[1]}`); // HL = return value (for setjmp return)
+        this.codeLines.push('  push de'); // Push return address
+        this.codeLines.push('  pop hl'); // HL = saved PC
+        this.codeLines.push(`  ld de, ${args[1]}`); // DE = return value
+        this.codeLines.push('  ex de, hl'); // HL = saved PC, DE = return value
+        this.codeLines.push('  push hl'); // Push return address (fake return)
+        this.codeLines.push('  ret'); // Return to saved PC (setjmp will return with value in A)
+        break;
+
+      case 'ALLOCA':
+        // __alloca(size) - allocates on stack, returns pointer to allocated space
+        // Allocates 'size' bytes below current SP and returns pointer to the allocation
+        this.codeLines.push(`  ld hl, sp`); // HL = current SP
+        this.codeLines.push(`  ld de, ${args[0]}`); // DE = size
+        this.codeLines.push('  add hl, de'); // HL = SP - size (allocate by moving SP down)
+        this.codeLines.push(`  ld sp, hl`); // Set new SP (allocate)
+        this.codeLines.push(`  ld hl, sp`); // Return pointer (current SP = top of allocation)
+        break;
+
       default:
         console.warn(`Unknown intrinsic: ${name}`);
     }

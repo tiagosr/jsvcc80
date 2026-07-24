@@ -53,25 +53,24 @@ I'm compiling findings about this process on FINDINGS.md.
 - **Nested function pointer parsing** - Fixed parsing of pointer-to-function-returning-function-pointer declarations (`int (*(*fp)(int))(int)`); Implemented custom `FunctionPointerDeclaratorParser` class with recursive nested parsing, lookahead for nested vs simple function pointers, and proper token value extraction; All 8 function pointer tests passing
 - **Function pointer IR translation** - Implemented complete IR translation for function pointers: address-of function (`&func`) returns function pointer, storing function pointers to variables via `LOAD_ADDR` + `BINOP addr` pattern, loading function pointers from variables, calling through function pointers (both direct and through array elements `fp[i](args)`), function pointer parameters, and function pointer local variable declarations with initialization; Fixed parser bug where function pointer declaration names were not extracted correctly; 6 new IR translation tests + 13 existing type system tests passing
 - **Z80 code generation for function pointers** - Added `CallIndirectInstruction` IR class for function pointer calls, updated `translateLoadFunctionPointer` to use `DerefLoadInstruction` for proper loading, implemented `generateCallIndirect` in Z80 codegen that loads function address from register and calls through it, added register allocator support for `CallIndirectInstruction`, updated IR translation to use `CallIndirectInstruction` instead of `CallInstruction` for function pointer calls, fixed old `generateCall` to only handle regular (non-pointer) function calls; 2 new end-to-end tests for Z80 code generation
-
-#### 🧪 Test Results
-- 660 passing tests
+- **Processor intrinsics** - `IntrinsicInstruction` IR class, intrinsic detection in `translateCall`, Z80 codegen for special opcodes and port access, 43 intrinsic tests
+- **Block transfer intrinsics** - `IntrinsicMap` extended with `__ini`, `__outi`, `__inir`, `__otir`, `__ind`, `__outd`, `__indr`, `__otdr`; Z80 codegen for INI/OUTI/INIR/OTIR/IND/OUTD/INDR/OTDR block transfer instructions using B for count, C for port, HL for buffer; 19 new tests
+- **Setjmp/Longjmp/Alloca intrinsics** - `IntrinsicMap` extended with `__setjmp`, `__longjmp`, `__alloca`; Z80 codegen for context save/restore (PC, SP, IX, HL, DE, BC, AF) for setjmp/longjmp, stack allocation for alloca; 12 new tests
 
 ### 🔄 In Progress
 - Implement linker definitions to add entry point `crt0` to default compiled/linked output
 
 ### 🔜 Next Steps
-1. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
-2. Implement `unsigned:n` bit fields
-3. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
-4. Implement symbol map exporting for debugging
-3. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
-4. Implement `unsigned:n` bit fields
-5. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
-6. Implement symbol map exporting for debugging
+1. Implement `unsigned:n` bit fields
+2. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
+3. Implement symbol map exporting for debugging
+4. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.) - COMPLETED
+5. Implement `unsigned:n` bit fields
+6. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
+7. Implement symbol map exporting for debugging
 
 #### 🧪 Test Results
-- 658 passing tests
+- 672 passing tests
 
 ### 📔 Backlog (issues identified during implementation for later priorization)
 - Fix `typedef unsigned int newType` parsing

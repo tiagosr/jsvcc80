@@ -92,6 +92,9 @@ const IntrinsicMap = {
   '__outd': { opcode: 'OUTD', argCount: 1 },
   '__indr': { opcode: 'INDR', argCount: 2 },
   '__otdr': { opcode: 'OTDR', argCount: 2 },
+  '__setjmp': { opcode: 'SETJMP', argCount: 1 },
+  '__longjmp': { opcode: 'LONGJMP', argCount: 2 },
+  '__alloca': { opcode: 'ALLOCA', argCount: 1 },
 };
 
 /**
@@ -1123,6 +1126,14 @@ export class AstToIr {
 
     block.add(new IL.IntrinsicInstruction(intrinsic.opcode, opcodeArgs));
     return { blocks: [...blocks, block], result: dest };
+  }
+
+  /**
+   * Returns the IntrinsicMap for external access
+   * @returns {Object} The intrinsic map
+   */
+  static getIntrinsicMap() {
+    return IntrinsicMap;
   }
 
   /**

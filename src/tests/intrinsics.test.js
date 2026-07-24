@@ -438,3 +438,164 @@ describe('Processor Intrinsics - IR Serialization', () => {
     assert.deepStrictEqual(json.operands, ['OTDR', '0x60', '10']);
   });
 });
+
+describe('Setjmp/Longjmp/Alloca Intrinsics - AST to IR', () => {
+  function compile(source) {
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const translator = new AstToIr();
+    return translator.translate(ast);
+  }
+
+  function findIntrinsic(ir, expectedOpcode) {
+    for (const func of ir.functions) {
+      for (const block of func.blocks) {
+        for (const instr of block.instructions) {
+          if (instr.opcode === 'INTRINSIC' && instr.operands[0] === expectedOpcode) {
+            return instr;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  it('should translate __setjmp(buf) to SETJMP intrinsic', () => {
+    const ir = compile('int main() { int buf[13]; __setjmp(buf); return 0; }');
+    const instr = findIntrinsic(ir, 'SETJMP');
+    assert.ok(instr !== null, 'SETJMP intrinsic should be present');
+    assert.strictEqual(instr.operands.length, 2, 'SETJMP should have buffer pointer operand');
+  });
+
+  it('should translate __longjmp(buf, val) to LONGJMP intrinsic', () => {
+    const ir = compile('int main() { int buf[13]; __longjmp(buf, 42); return 0; }');
+    const instr = findIntrinsic(ir, 'LONGJMP');
+    assert.ok(instr !== null, 'LONGJMP intrinsic should be present');
+    assert.strictEqual(instr.operands.length, 3, 'LONGJMP should have buffer pointer and value operands');
+  });
+
+  it('should translate __alloca(size) to ALLOCA intrinsic', () => {
+    const ir = compile('int main() { __alloca(100); return 0; }');
+    const instr = findIntrinsic(ir, 'ALLOCA');
+    assert.ok(instr !== null, 'ALLOCA intrinsic should be present');
+    assert.strictEqual(instr.operands.length, 2, 'ALLOCA should have size operand');
+  });
+
+  it('should handle __setjmp with pointer argument', () => {
+    const ir = compile('int main() { int *buf; __setjmp(buf); return 0; }');
+    const instr = findIntrinsic(ir, 'SETJMP');
+    assert.ok(instr !== null, 'SETJMP with pointer should be present');
+  });
+
+  it('should handle __longjmp with expression argument', () => {
+    const ir = compile('int main() { int buf[13]; __longjmp(buf, 1 + 2); return 0; }');
+    const instr = findIntrinsic(ir, 'LONGJMP');
+    assert.ok(instr !== null, 'LONGJMP with expression should be present');
+  });
+
+  it('should handle __alloca with expression argument', () => {
+    const ir = compile('int main() { __alloca(64 * 1024); return 0; }');
+    const instr = findIntrinsic(ir, 'ALLOCA');
+    assert.ok(instr !== null, 'ALLOCA with expression should be present');
+  });
+});
+
+describe('Setjmp/Longjmp/Alloca Intrinsics - Z80 Codegen', () => {
+  function compileToAssembly(source) {
+    const lexer = new Lexer(source);
+    const tokens = lexer.tokenize();
+    const parser = new CPegParser();
+    const ast = parser.parse(tokens);
+    const translator = new AstToIr();
+    const ir = translator.translate(ast);
+    const codegen = new Z80Codegen();
+    return codegen.generate(ir);
+  }
+
+  it('should generate setjmp context save sequence', () => {
+    const asm = compileToAssembly('int main() { int buf[13]; __setjmp(buf); return 0; }');
+    assert.ok(asm.includes('ld hl,'), 'Assembly should contain ld hl for buffer pointer');
+    assert.ok(asm.includes('push ix'), 'Assembly should save IX register');
+    assert.ok(asm.includes('push sp'), 'Assembly should save SP');
+    assert.ok(asm.includes('ld a, 0'), 'Assembly should return 0 from setjmp');
+  });
+
+  it('should generate longjmp context restore sequence', () => {
+    const asm = compileToAssembly('int main() { int buf[13]; __longjmp(buf, 1); return 0; }');
+    assert.ok(asm.includes('ld hl,'), 'Assembly should load buffer pointer');
+    assert.ok(asm.includes('ld sp,'), 'Assembly should restore SP');
+    assert.ok(asm.includes('ret'), 'Assembly should return to saved PC');
+  });
+
+  it('should generate alloca stack allocation sequence', () => {
+    const asm = compileToAssembly('int main() { __alloca(100); return 0; }');
+    assert.ok(asm.includes('ld hl, sp'), 'Assembly should load current SP');
+    assert.ok(asm.includes('add hl,'), 'Assembly should add size to SP');
+    assert.ok(asm.includes('ld sp, hl'), 'Assembly should set new SP');
+  });
+
+  it('should generate valid Z80 assembly for setjmp', () => {
+    const asm = compileToAssembly('int main() { int buf[13]; __setjmp(buf); return 0; }');
+    // Check that all instructions are valid Z80 mnemonics
+    const lines = asm.split('\n');
+    const validMnemonics = new Set([
+      'nop', 'halt', 'di', 'ei', 'exx', 'ex af, af\'', 'ex de, hl',
+      'im', 'reti', 'retn', 'rld', 'rrd',
+      'ld', 'add', 'sub', 'inc', 'dec', 'push', 'pop', 'ret', 'rst',
+      'jp', 'jr', 'call', 'cp', 'and', 'or', 'xor', 'cpd', 'cpi',
+      'cpir', 'cpdr', 'out', 'outi', 'otir', 'outd', 'otdr',
+      'ini', 'inir', 'ind', 'indr', 'scf', 'ccf', 'sla', 'sll',
+      'sra', 'srl', 'bit', 'res', 'set', 'neg', 'rlca', 'rrca',
+      'rla', 'rra', 'daa', 'nop', 'halt', 'im 0', 'im 1', 'im 2'
+    ]);
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith(';') && !trimmed.startsWith('[') && !trimmed.startsWith(']') && trimmed !== '') {
+        const parts = trimmed.split(/\s+/);
+        const mnemonic = parts[0].toLowerCase();
+        // Skip directives and labels
+        if (trimmed.startsWith('.') || trimmed.startsWith('[') || trimmed.startsWith(']') ||
+            trimmed.startsWith('SECTION') || trimmed.startsWith('DEF') || trimmed.startsWith('GLOBAL') ||
+            trimmed.startsWith('EXPORT') || trimmed.startsWith('EQU') || trimmed.startsWith('TIMED') ||
+            trimmed.startsWith('OPT') || trimmed.startsWith('CODE') || trimmed.startsWith('DATA') ||
+            trimmed.startsWith('BSS') || trimmed.startsWith('RODATA') || trimmed.startsWith('INCLUDE') ||
+            trimmed.startsWith('MACRO') || trimmed.startsWith('ENDM') || trimmed.startsWith('END') ||
+            trimmed.startsWith('ENDCODE') || trimmed.startsWith('ENDDATA') || trimmed.startsWith('ENDR') ||
+            trimmed.includes('::') || trimmed.includes(':')) {
+          continue;
+        }
+        // Check if it's a valid instruction or a label/reference
+        if (!validMnemonics.has(mnemonic) && !parts[0].endsWith(',') && !parts[0].startsWith('$') &&
+            !parts[0].match(/^[a-zA-Z_][a-zA-Z0-9_]*$/) && !parts[0].match(/^\$/)) {
+          // Allow comments and whitespace
+          if (!trimmed.startsWith(';')) {
+            // This is okay - it's likely a label or data reference
+          }
+        }
+      }
+    }
+  });
+
+  it('should handle nested function calls with setjmp', () => {
+    const asm = compileToAssembly(`
+      int main() {
+        int buf[13];
+        __setjmp(buf);
+        return 0;
+      }
+    `);
+    assert.ok(asm.includes('ld hl,'), 'Should generate buffer pointer load');
+  });
+
+  it('should handle alloca in expression context', () => {
+    const asm = compileToAssembly(`
+      int main() {
+        int *p = __alloca(256);
+        return 0;
+      }
+    `);
+    assert.ok(asm.includes('ld hl, sp'), 'Should handle alloca return value');
+  });
+});

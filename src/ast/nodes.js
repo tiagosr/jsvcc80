@@ -410,8 +410,11 @@ export class TypeSpecNode extends ASTNode {
    * @param {number} [arrayLength] - Array length (null for incomplete array)
    * @param {string} [structType] - Struct/union type name (e.g., 'Point')
    * @param {string} [structKind] - 'struct' or 'union' (null for non-struct types)
+   * @param {boolean} [isFunctionPointer] - Whether this is a function pointer type
+   * @param {TypeSpecNode|null} [functionReturnType] - Return type of function (for function pointers)
+   * @param {ParameterNode[]|null} [functionParams] - Parameter types of function (for function pointers)
    */
-  constructor(baseType, isSigned = true, isConst = false, isVolatile = false, bitWidth = null, location, pointerDepth = 0, isArray = false, arrayLength = null, structType = null, structKind = null) {
+  constructor(baseType, isSigned = true, isConst = false, isVolatile = false, bitWidth = null, location, pointerDepth = 0, isArray = false, arrayLength = null, structType = null, structKind = null, isFunctionPointer = false, functionReturnType = null, functionParams = null) {
     super('TypeSpec', location);
     this.baseType = baseType;
     this.isSigned = isSigned;
@@ -423,16 +426,20 @@ export class TypeSpecNode extends ASTNode {
     this.arrayLength = arrayLength;
     this.structType = structType;
     this.structKind = structKind;
+    this.isFunctionPointer = isFunctionPointer;
+    this.functionReturnType = functionReturnType;
+    this.functionParams = functionParams;
   }
 
   /**
    * Returns the size in bytes for this type on the Z80 target
    * Pointers are always 2 bytes (16-bit addresses). Arrays are elementSize * length.
    * Struct types use structSize if available, otherwise compute from fields.
+   * Function pointers are also 2 bytes (16-bit function addresses).
    * @returns {number} Size in bytes
    */
   getSize(structRegistry = null) {
-    if (this.pointerDepth > 0) {
+    if (this.pointerDepth > 0 || this.isFunctionPointer) {
       return 2;
     }
     if (this.structKind && this.structType && structRegistry) {
@@ -454,7 +461,7 @@ export class TypeSpecNode extends ASTNode {
    * @returns {number} Element size in bytes
    */
   getElementSize(structRegistry = null) {
-    if (this.pointerDepth > 0) {
+    if (this.pointerDepth > 0 || this.isFunctionPointer) {
       return 2;
     }
     if (this.structKind && this.structType && structRegistry) {
@@ -467,19 +474,34 @@ export class TypeSpecNode extends ASTNode {
   }
 
   /**
-   * Returns the type string representation (e.g., 'const int*', 'volatile char[10]', 'struct Point')
+   * Returns the type string representation (e.g., 'const int*', 'volatile char[10]', 'struct Point', 'int (*)(int)')
    * @returns {string} Type string
    */
   typeString() {
     let s = '';
     if (this.isConst) s += 'const ';
     if (this.isVolatile) s += 'volatile ';
-    s += this.structKind ? `${this.structKind} ${this.structType}` : this.baseType;
-    for (let i = 0; i < this.pointerDepth; i++) {
-      s += '*';
-    }
-    if (this.isArray) {
-      s += `[${this.arrayLength ?? ''}]`;
+    
+    if (this.isFunctionPointer && this.functionReturnType) {
+      // Function pointer: int (*)(int, char)
+      const returnStr = this.functionReturnType.typeString();
+      s += `${returnStr} (*)`;
+      
+      if (this.functionParams && this.functionParams.length > 0) {
+        s += '(';
+        s += this.functionParams.map(p => p.type.typeString() + ' ' + (p.name || '')).join(', ');
+        s += ')';
+      } else {
+        s += '(void)';
+      }
+    } else {
+      s += this.structKind ? `${this.structKind} ${this.structType}` : this.baseType;
+      for (let i = 0; i < this.pointerDepth; i++) {
+        s += '*';
+      }
+      if (this.isArray) {
+        s += `[${this.arrayLength ?? ''}]`;
+      }
     }
     return s;
   }

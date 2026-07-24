@@ -129,16 +129,19 @@ function example(name) { ... }
 - **#if/#elif/defined() preprocessor** - `#if` and `#elif` directives with full constant expression evaluation; recursive descent parser supports arithmetic (+, -, *, /, %), relational (<, >, <=, >=), equality (==, !=), bitwise (&, |, ^, ~), logical (&&, ||), unary (+, -, !, ~), shift (<<, >>), hex/octal literals, parenthesized expressions; `defined(MACRO)` and `defined MACRO` operators; undefined macros evaluate to 0 in expressions; macro values substituted in expressions; conditional stack frames track `branchTaken` for correct `#elif`/`#else` interaction; 40 new tests
 - **Function-like macros with parameter substitution** - `#define MAX(a,b) ((a)>(b)?(a):(b))` function-like macro parsing with parameter list extraction; macro expansion during tokenization with object-like and function-like macro support; parameter substitution in replacement text; `#` (stringification) operator converts argument to string literal; `##` (token pasting) operator concatenates tokens; recursive macro expansion with rescan after substitution; infinite recursion guard prevents self-referencing macros; built-in macros `__FILE__` and `__LINE__` with proper line tracking; 39 new tests
 - **Variadic function signatures** - Parser handles `func(...)` with ellipsis-only parameters; Parser handles `func(int a, int b, ...)` with named params followed by ellipsis; ParameterNode tracks `isVariadic` flag for ellipsis parameter; FunctionDefinitionNode computes `isVariadic` from parameters; Z80Codegen tracks variadic functions via currentFunctions Map; Variadic functions skip stack cleanup in CALL instruction (caller responsibility); IR excludes variadic param names from parameter list
+- **Function pointers - Type system foundation** - Extended `TypeSpecNode` with `isFunctionPointer`, `functionReturnType`, and `functionParams` fields for representing function pointer types; Added `createFunctionPointerType()` helper to construct function pointer type specifications; Updated `getSize()` and `getElementSize()` to return 2 bytes for function pointers (16-bit Z80 addresses); Enhanced `typeString()` to format function pointers as `returnType (*)(paramTypes)`; Function pointers have `pointerDepth = 1` and `isFunctionPointer = true`; All type system operations properly handle function pointer types with correct size calculations; Comprehensive test suite covering function pointer type creation, size queries, string representations with various qualifiers (const/volatile), parameter lists, and edge cases
 
 #### 🧪 Test Results
-- 631 passing tests
+- 644 passing tests
 
 ### 🔄 In Progress
 - None
 
 ### 🔜 Next Steps
-2. Implement function pointers as types, and extend the type system to support these
-3. Implement linker definitions to add entry point `crt0` to default compiled/linked output
+1. Implement full parsing of function pointer declarators (e.g., `int (*fp)(int)`) with parameter type extraction
+2. Implement IR translation for calling through function pointers and storing/loading them
+3. Implement Z80 code generation for function pointer operations (store, load, call via pointer)
+4. Implement linker definitions to add entry point `crt0` to default compiled/linked output
 4. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
 5. Implement `unsigned:n` bit fields
 6. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)

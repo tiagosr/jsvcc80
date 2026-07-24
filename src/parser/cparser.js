@@ -75,6 +75,42 @@ function mergeDeclaratorType(baseType, pointerDepth, arrayDims) {
 }
 
 /**
+ * Create a function pointer type specification
+ * @param {AST.TypeSpecNode} returnType - Function return type
+ * @param {AST.ParameterNode[]} params - Function parameters (empty for void)
+ * @param {SourceLocation} location - Source location
+ * @returns {AST.TypeSpecNode} Function pointer type
+ */
+function createFunctionPointerType(returnType, params, location) {
+  // Create a copy of return type without const/volatile for function return
+  const returnCopy = new AST.TypeSpecNode(
+    returnType.baseType,
+    returnType.isSigned,
+    false,  // Functions don't have const returns in C
+    false,
+    returnType.bitWidth,
+    location
+  );
+  
+  return new AST.TypeSpecNode(
+    'function',
+    true,
+    false,
+    false,
+    null,
+    location,
+    1,  // pointerDepth = 1 for function pointers
+    false,
+    null,
+    null,
+    null,
+    true,  // isFunctionPointer = true
+    returnCopy,
+    params || []
+  );
+}
+
+/**
  * Build a type specifier parser rule
  * Matches: [const|volatile]* [signed|unsigned] [void|char|_Bool|short|int|long] or struct/union tag
  * Requires at least one token to be consumed.
@@ -182,6 +218,7 @@ export class CPegParser {
     this.buildStructDecl();
     this.buildEnumDecl();
     this.buildTypedefDecl();
+    this.buildFunctionPointerDeclarator();
     this.buildStatement();
   }
 
@@ -1446,12 +1483,39 @@ export class CPegParser {
       }
     );
 
+    const variableDeclWithFuncPointer = Parser.alt(
+      // Function pointer: type (*name)(params)
+      map(
+        Parser.seq(
+          Parser.opt(kw('register')),
+          lazy(() => this.ruleRefs.typeSpecifier),
+          Parser.lit('('),
+          Parser.lit('*'),
+          pred(t => t.type === 'IDENTIFIER'),
+          Parser.lit(')'),
+          Parser.lit('('),
+          Parser.opt(Parser.alt(kw('void'))),
+          Parser.lit(')'),
+          Parser.lit(';')
+        ),
+        ([regKw, typeSpec, , , name]) => {
+          const returnBase = new AST.TypeSpecNode(typeSpec.baseType, typeSpec.isSigned, false, false);
+          return new AST.DeclNode('var', 
+            createFunctionPointerType(returnBase, [], locFromToken(name)),
+            new AST.IdentifierNode(name.value, locFromToken(name)),
+            null, locFromToken(typeSpec),
+            regKw ? 'register' : null);
+        }
+      ),
+      variableDecl
+    );
+
     const globalDecl = Parser.alt(
       this.ruleRefs.structDecl,
       this.ruleRefs.enumDecl,
       this.ruleRefs.typedefDecl,
       functionDef,
-      variableDecl
+      variableDeclWithFuncPointer
     );
     const programParser = Parser.many(globalDecl);
 
@@ -1470,5 +1534,59 @@ export class CPegParser {
 
     return new AST.CompoundNode([],
       { file: '<input>', start: { line: 1, column: 0 }, end: { line: 1, column: 0 } });
+  }
+
+  /**
+   * Build function pointer declarator parser rule
+   * Recognizes: (*name)(params) or (*)(params) for function pointers
+   */
+  buildFunctionPointerDeclarator() {
+    // Parse parameter list for function pointer
+    const paramType = map(
+      Parser.seq(
+        lazy(() => this.ruleRefs.typeSpecifier),
+        Parser.opt(pred(t => t.type === 'IDENTIFIER'))
+      ),
+      ([typeSpec, nameOpt]) => {
+        return new AST.ParameterNode(typeSpec, nameOpt ? nameOpt.value : null, locFromToken(typeSpec));
+      }
+    );
+
+    const paramList = map(
+      Parser.seq(
+        Parser.lit('('),
+        Parser.opt(Parser.alt(kw('void'), Parser.seq(paramType, Parser.many(Parser.seq(Parser.lit(','), paramType))))),
+        Parser.lit(')')
+      ),
+      ([lparen, params]) => {
+        if (!params || (Array.isArray(params) && params.length === 0)) {
+          return null;
+        }
+        if (Array.isArray(params) && Array.isArray(params[1])) {
+          const allParams = [params[0]];
+          for (const [, p] of params[1]) {
+            allParams.push(p);
+          }
+          return allParams;
+        }
+        return null;
+      }
+    );
+
+    // Function pointer declarator: (*name)(params)
+    const funcPointer = map(
+      Parser.seq(
+        Parser.lit('('),
+        Parser.opt(Parser.many(Parser.lit('*'))),
+        Parser.opt(pred(t => t.type === 'IDENTIFIER')),
+        Parser.lit(')'),
+        lazy(() => paramList)
+      ),
+      ([lparen, stars, nameOpt, rparen, params]) => {
+        return { kind: 'funcPointer', name: nameOpt, params: params || [] };
+      }
+    );
+
+    this.ruleRefs.funcPointerDeclarator = funcPointer;
   }
 }

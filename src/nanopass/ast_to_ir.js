@@ -1045,7 +1045,7 @@ export class AstToIr {
       pushedRegs.push(`arg${i}`);
     }
     const block = new IL.BasicBlock(this.label('funcptrcall'));
-    block.add(new IL.CallInstruction(pointerResult.result, pushedRegs));
+    block.add(new IL.CallIndirectInstruction(pointerResult.result, pushedRegs));
     block.add(new IL.LoadInstruction(dest, 'ret_val'));
     return { blocks: [...blocks, block], result: dest };
   }
@@ -1097,7 +1097,7 @@ export class AstToIr {
       pushedRegs.push(`arg${i}`);
     }
     const block = new IL.BasicBlock(this.label('funcptrcall'));
-    block.add(new IL.CallInstruction(indexResult.result, pushedRegs));
+    block.add(new IL.CallIndirectInstruction(indexResult.result, pushedRegs));
     block.add(new IL.LoadInstruction(dest, 'ret_val'));
     return { blocks: [...blocks, block], result: dest };
   }
@@ -1273,8 +1273,10 @@ export class AstToIr {
   translateLoadFunctionPointer(varName) {
     const dest = this.temp();
     const block = new IL.BasicBlock(this.label('load_func_ptr'));
-    // Load the address stored in the function pointer variable
-    block.add(new IL.LoadAddrInstruction(dest, varName));
+    // Load the function address stored in the function pointer variable
+    // First get the address of the variable, then dereference to get the stored address
+    block.add(new IL.LoadAddrInstruction('fp_addr', varName));
+    block.add(new IL.DerefLoadInstruction(dest, 'fp_addr'));
     return { blocks: [block], result: dest };
   }
 

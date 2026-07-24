@@ -52,16 +52,19 @@ I'm compiling findings about this process on FINDINGS.md.
 - **Function pointer declarator parsing** - Enhanced parser to support full function pointer declarators including array dimensions (`int (*fp[3])(int)`); Fixed parser issues causing test failures; Added proper handling for `(*name)(params)` pattern with optional array dimension in function pointer declarations; 7 out of 8 function pointer tests now passing
 - **Nested function pointer parsing** - Fixed parsing of pointer-to-function-returning-function-pointer declarations (`int (*(*fp)(int))(int)`); Implemented custom `FunctionPointerDeclaratorParser` class with recursive nested parsing, lookahead for nested vs simple function pointers, and proper token value extraction; All 8 function pointer tests passing
 - **Function pointer IR translation** - Implemented complete IR translation for function pointers: address-of function (`&func`) returns function pointer, storing function pointers to variables via `LOAD_ADDR` + `BINOP addr` pattern, loading function pointers from variables, calling through function pointers (both direct and through array elements `fp[i](args)`), function pointer parameters, and function pointer local variable declarations with initialization; Fixed parser bug where function pointer declaration names were not extracted correctly; 6 new IR translation tests + 13 existing type system tests passing
+- **Z80 code generation for function pointers** - Added `CallIndirectInstruction` IR class for function pointer calls, updated `translateLoadFunctionPointer` to use `DerefLoadInstruction` for proper loading, implemented `generateCallIndirect` in Z80 codegen that loads function address from register and calls through it, added register allocator support for `CallIndirectInstruction`, updated IR translation to use `CallIndirectInstruction` instead of `CallInstruction` for function pointer calls, fixed old `generateCall` to only handle regular (non-pointer) function calls; 2 new end-to-end tests for Z80 code generation
 
 #### 🧪 Test Results
-- 657 passing tests
+- 660 passing tests
 
 ### 🔄 In Progress
-- None
+- Implement linker definitions to add entry point `crt0` to default compiled/linked output
 
 ### 🔜 Next Steps
-1. Implement Z80 code generation for function pointer operations (store, load, call via pointer)
-2. Implement linker definitions to add entry point `crt0` to default compiled/linked output
+1. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
+2. Implement `unsigned:n` bit fields
+3. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)
+4. Implement symbol map exporting for debugging
 3. Implement minimal set of standard library functions (`setjmp`, `longjmp`, `alloca`, etc.)
 4. Implement `unsigned:n` bit fields
 5. Implement standard library functions (`printf`, `memset`, `memcpy`, etc.)

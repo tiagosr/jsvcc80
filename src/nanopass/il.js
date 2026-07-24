@@ -324,6 +324,21 @@ export class IndexedStoreInstruction extends Instruction {
 }
 
 /**
+ * Instruction for calling through a function pointer (indirect call)
+ */
+export class CallIndirectInstruction extends Instruction {
+  /**
+   * Creates a call indirect instruction
+   * @param {string} ptr - Address of the function pointer variable (holds pointer to function address)
+   * @param {string[]} args - Arguments (registers or immediates)
+   * @returns {CallIndirectInstruction}
+   */
+  constructor(ptr, args = []) {
+    super('CALL_INDIRECT', [ptr, ...args]);
+  }
+}
+
+/**
  * Intermediate representation for basic blocks and functions
  */
 export class BasicBlock {

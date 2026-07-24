@@ -7,7 +7,7 @@ import {
   CallInstruction, ReturnInstruction, JumpIfInstruction, JumpInstruction,
   LabelInstruction, AllocStackInstruction, FreeStackInstruction, PushInstruction, PopInstruction,
   IntrinsicInstruction, LoadAddrInstruction, DerefLoadInstruction, DerefStoreInstruction,
-  IndexedLoadInstruction, IndexedStoreInstruction
+  IndexedLoadInstruction, IndexedStoreInstruction, CallIndirectInstruction
 } from '../nanopass/il.js';
 
 /**
@@ -317,6 +317,10 @@ export class Z80Codegen {
         this.generateIndexedStore(instr);
         break;
 
+      case 'CALL_INDIRECT':
+        this.generateCallIndirect(instr);
+        break;
+
       default:
         console.warn(`Unknown instruction opcode: ${instr.opcode}`);
     }
@@ -579,17 +583,45 @@ export class Z80Codegen {
         this.codeLines.push('  push af');
       }
 
-      // Perform the call - func can be a label (regular function) or a register (function pointer)
-      if (this.isRegisterName(func)) {
-        this.codeLines.push('  ld hl, ' + func);
-        this.codeLines.push('  call hl');
-      } else {
-        this.codeLines.push(`  call ${func}`);
-      }
+      // Perform the call - func is always a label for regular (non-pointer) functions
+      // Function pointer calls use CallIndirectInstruction instead
+      this.codeLines.push(`  call ${func}`);
 
       // Clean up stack arguments (each argument pushed as AF = 2 bytes)
       // Variadic functions don't clean up - caller is responsible for cleanup
       if (args.length > 0 && !this.isVariadicFunction(func)) {
+        const bytes = args.length * 2;
+        this.codeLines.push(`  ld hl, sp`);
+        this.codeLines.push(`  ld de, ${bytes}`);
+        this.codeLines.push('  add hl, de');
+        this.codeLines.push('  ld sp, l');
+        this.codeLines.push('  ld sp, h');
+      }
+    }
+
+  /**
+    * Generates a CALL_INDIRECT instruction (call through function pointer)
+    * The ptr operand should be a register holding the function address
+    * (already loaded by LOAD_ADDR + DEREF_LOAD from translateLoadFunctionPointer)
+    * @param {CallIndirectInstruction} instr - Call indirect instruction
+    */
+    generateCallIndirect(instr) {
+      const [ptr, ...args] = instr.operands;
+
+      // Push arguments onto stack (right-to-left for Z80 convention)
+      for (const arg of args.reverse()) {
+        this.codeLines.push(`  ld a, ${arg}`);
+        this.codeLines.push('  push af');
+      }
+
+      // ptr is a register (e.g., t4) that already holds the function address
+      // (loaded by LOAD_ADDR + DEREF_LOAD in translateLoadFunctionPointer)
+      // Move the function address from ptr register to HL for the call
+      this.codeLines.push(`  ld hl, ${ptr}`);
+      this.codeLines.push('  call hl');
+
+      // Clean up stack arguments (each argument pushed as AF = 2 bytes)
+      if (args.length > 0) {
         const bytes = args.length * 2;
         this.codeLines.push(`  ld hl, sp`);
         this.codeLines.push(`  ld de, ${bytes}`);

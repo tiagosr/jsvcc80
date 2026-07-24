@@ -67,20 +67,15 @@ describe('Function Pointer - IR Translation', () => {
     const mainFunc = program.getFunction('main');
     assert.ok(mainFunc);
     
-    let foundCall = false;
-    let foundFuncPtrCall = false;
+    let foundCallIndirect = false;
     for (const block of mainFunc.blocks) {
       for (const instr of block.instructions) {
-        if (instr.opcode === 'CALL') {
-          foundCall = true;
-          // Check if callee is a register (function pointer call)
-          if (typeof instr.operands[0] === 'string' && !instr.operands[0].startsWith('myfunc') && !instr.operands[0].startsWith('main')) {
-            foundFuncPtrCall = true;
-          }
+        if (instr.opcode === 'CALL_INDIRECT') {
+          foundCallIndirect = true;
         }
       }
     }
-    assert.ok(foundCall, 'Should generate CALL instruction');
+    assert.ok(foundCallIndirect, 'Should generate CALL_INDIRECT instruction for function pointer call');
   });
 
   it('should translate storing function pointer to variable', () => {

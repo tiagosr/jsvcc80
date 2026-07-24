@@ -4,7 +4,7 @@
 import { OptimizationPass } from '../plugins/interfaces.js';
 import {
   Instruction, LoadInstruction, StoreInstruction, BinaryOpInstruction,
-  UnaryOpInstruction, CallInstruction, ReturnInstruction, JumpIfInstruction,
+  UnaryOpInstruction, CallInstruction, CallIndirectInstruction, ReturnInstruction, JumpIfInstruction,
   JumpInstruction, LabelInstruction, AllocStackInstruction, FreeStackInstruction,
   PushInstruction, PopInstruction, BasicBlock, FunctionIR, ProgramIR
 } from './il.js';
@@ -651,6 +651,8 @@ class BlockRegisterAllocator {
       this.allocateUnaryOp(instr);
     } else if (instr instanceof CallInstruction) {
       this.allocateCall(instr);
+    } else if (instr instanceof CallIndirectInstruction) {
+      this.allocateCallIndirect(instr);
     } else if (instr instanceof ReturnInstruction) {
       this.allocateReturn(instr);
     } else if (instr instanceof JumpIfInstruction) {
@@ -752,6 +754,37 @@ class BlockRegisterAllocator {
    * @param {CallInstruction} instr - Call instruction
    */
   allocateCall(instr) {
+    this.vregToPreg.clear();
+    this.pregToVreg.clear();
+    this.usedRegs = [];
+  }
+
+  /**
+   * Allocates registers for a call indirect instruction (function pointer call)
+   * @param {CallIndirectInstruction} instr - Call indirect instruction
+   */
+  allocateCallIndirect(instr) {
+    const [ptr, ...args] = instr.operands;
+    
+    // Allocate register for the function pointer value
+    if (this.isVreg(ptr)) {
+      const preg = this.allocateRegister(ptr);
+      if (preg) {
+        instr.operands[0] = preg;
+      }
+    }
+    
+    // Allocate registers for arguments
+    for (let i = 0; i < args.length; i++) {
+      if (this.isVreg(args[i])) {
+        const preg = this.allocateRegister(args[i]);
+        if (preg) {
+          args[i] = preg;
+        }
+      }
+    }
+    
+    // Clear tracking after call (callee-saved registers may be clobbered)
     this.vregToPreg.clear();
     this.pregToVreg.clear();
     this.usedRegs = [];

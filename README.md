@@ -5,7 +5,7 @@ A fully-local agent orchestration/process experiment "disguised" as an effort to
 
 The intention is to learn what are the processes that avoid "agent orchestration rot", where the process of prompting an implementation starts giving way to the degradation of software planning and architecture decisions (both on the model's and on the user/prompter's side). The threshold for this phenomenon seems more manageable (on both mental and financial terms) in the current crop of LLMs that can be run in a local setup, on either a 48GB Macbook Pro M4 or a 128GB AMD "Strix Halo" Ryzen AI MAX+.
 
-I'm compiling findings about this process on FINDINGS.md.
+I'm compiling findings about this process on [FINDINGS.md](FINDINGS.md).
 
 ## Current Implementation Status
 
@@ -62,11 +62,12 @@ I'm compiling findings about this process on FINDINGS.md.
 - Implement linker definitions to add entry point `crt0` to default compiled/linked output
 
 ### 🔜 Next Steps
-1. Add character string operations to the C standard library (`sprintf`, `sscanf`, `strlen`, `strtoi`, etc.)
-2. Add file stream abstractions to the C standard library (`FILE`, `putc`, `getc`, `fprintf`, `fscanf`, etc.)
+1. Implement a small proof-of-concept cycle-unaware Z80 simulator, with a standard flat memory setup, stepping and memory probes/watches, so that it can be used to test and verify codegen and the standard library
+2. Add character string operations to the C standard library (`sprintf`, `sscanf`, `strlen`, `strtoi`, etc.)
 3. Add file stream abstractions to the C standard library (`FILE`, `putc`, `getc`, `fprintf`, `fscanf`, etc.)
-4. Implement symbol map compiling and exporting for debugging
-5. Implement `unsigned:n` bit fields
+4. Add file stream abstractions to the C standard library (`FILE`, `putc`, `getc`, `fprintf`, `fscanf`, etc.)
+5. Implement symbol map compiling and exporting for debugging
+6. Implement `unsigned:n` bit fields
 
 #### 🧪 Test Results
 - 682 passing tests

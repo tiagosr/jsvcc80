@@ -11,8 +11,11 @@ A C compiler for Z80 CPU implemented in ES2025 Node.js. Compiles C source to Z80
 ## Architecture Patterns
 
 ### File Structure Rules
-- **1-7 functions per file** - Spread implementation across multiple small files
+- **1-7 functions per file** - Spread implementation across multiple small files, and modularization is strongly encouraged
+- **Small files strongly preferred** - Individual implementation files should be under 300 lines, or under 10000 tokens each
+- **Avoid Megazord classes** - Classes should preferrably keep single responsibilities; prefer functional composition over method aggregation; prefer free functions and context/state object passing over monolithic classes; adopt patterns that decrease the contact surface of classes
 - **JSDoc required** - All types and function signatures must be documented
+- **Prefer arrow functions** - If free functions are single-line, convert to arrow functions
 - **ES modules only** - Use `import`/`export`, no CommonJS
 
 ### Core Modules (Read in Order)

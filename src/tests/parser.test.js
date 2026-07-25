@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { Parser, LitParser, AltParser, SeqParser, ManyParser, SomeParser, OptParser, AnyParser, PredParser } from '../../src/parser/combinators.js';
+import { Parser, pred, lit, many, some, opt, any } from '../../src/parser/combinators.js';
 
 // Mock token for testing
 function makeToken(type, value = null) {
@@ -17,7 +17,7 @@ describe('Parser Combinators', () => {
   ];
 
   it('should match literal token types', () => {
-    const parser = new LitParser('INT');
+    const parser = lit('INT');
     const result = parser.parse(tokens, 0);
     
     assert.strictEqual(result.success, true);
@@ -26,7 +26,7 @@ describe('Parser Combinators', () => {
   });
 
   it('should match literal values', () => {
-    const parser = new LitParser('IDENT', 'x');
+    const parser = lit('IDENT', 'x');
     const result = parser.parse(tokens, 1);
     
     assert.strictEqual(result.success, true);
@@ -34,7 +34,7 @@ describe('Parser Combinators', () => {
   });
 
   it('should fail when token type does not match', () => {
-    const parser = new LitParser('INT');
+    const parser = lit('INT');
     const result = parser.parse(tokens, 1); // Expecting INT at position of IDENT
     
     assert.strictEqual(result.success, false);
@@ -42,8 +42,8 @@ describe('Parser Combinators', () => {
   });
 
   it('should handle zero or more repetitions', () => {
-    const intParser = new LitParser('INT');
-    const parser = new ManyParser(intParser);
+    const intParser = lit('INT');
+    const parser = many(intParser);
     
     const result = parser.parse(tokens, 0);
     
@@ -54,8 +54,8 @@ describe('Parser Combinators', () => {
   });
 
   it('should handle zero repetitions gracefully', () => {
-    const intParser = new LitParser('INT');
-    const parser = new ManyParser(intParser);
+    const intParser = lit('INT');
+    const parser = many(intParser);
     
     const result = parser.parse(tokens, 4); // Start at EOF
     
@@ -64,8 +64,8 @@ describe('Parser Combinators', () => {
   });
 
   it('should require one or more repetitions', () => {
-    const intParser = new LitParser('INT');
-    const parser = new SomeParser(intParser);
+    const intParser = lit('INT');
+    const parser = some(intParser);
     
     let result = parser.parse(tokens, 0);
     assert.strictEqual(result.success, true);
@@ -76,7 +76,7 @@ describe('Parser Combinators', () => {
   });
 
   it('should handle optional elements', () => {
-    const parser = new OptParser(new LitParser('STRING')); // Use STRING which doesn't exist in tokens
+    const parser = opt(lit('STRING')); // Use STRING which doesn't exist in tokens
     
     // Not present - should still succeed with null value
     let result = parser.parse(tokens, 0);
@@ -90,7 +90,7 @@ describe('Parser Combinators', () => {
   });
 
   it('should match any of specified token types', () => {
-    const parser = new AnyParser(['INT', 'IDENT']);
+    const parser = any('INT', 'IDENT');
     
     const result = parser.parse(tokens, 0);
     assert.strictEqual(result.success, true);
@@ -99,12 +99,12 @@ describe('Parser Combinators', () => {
     assert.strictEqual(result2.success, true);
 
     // Should fail on non-matching type
-    const result3 = new AnyParser(['INT', 'IDENT']).parse(tokens, 4);
+    const result3 = any('INT', 'IDENT').parse(tokens, 4);
     assert.strictEqual(result3.success, false);
   });
 
   it('should match based on predicate function', () => {
-    const parser = PredParser.pred((token) => token.type === 'INT');
+    const parser = pred((token) => token.type === 'INT');
     
     let result = parser.parse(tokens, 0);
     assert.strictEqual(result.success, true);
@@ -114,7 +114,7 @@ describe('Parser Combinators', () => {
   });
 
   it('should handle EOF correctly', () => {
-    const eofParser = new LitParser('EOF');
+    const eofParser = lit('EOF');
     const result = eofParser.parse(tokens, tokens.length - 1);
     
     assert.strictEqual(result.success, true);
@@ -124,9 +124,9 @@ describe('Parser Combinators', () => {
   /*
   it('should chain parsers with sequence', () => {
     const parser = Parser.seq(
-      new LitParser('INT'),
-      new LitParser('OP', '+'),
-      new LitParser('INT')
+      lit('INT'),
+      lit('OP', '+'),
+      lit('INT')
     );
     
     const result = parser.parse(tokens, 0);
@@ -139,8 +139,8 @@ describe('Parser Combinators', () => {
 
   it('should try alternatives and return first match', () => {
     const parser = new AltParser(
-      new LitParser('INT'),
-      new LitParser('IDENT')
+      lit('INT'),
+      lit('IDENT')
     );
     
     let result = parser.parse(tokens, 0);

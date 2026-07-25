@@ -95,6 +95,7 @@ export class Simulator {
   loadAndRun(addr, data) {
     this.load(addr, data);
     this.cpu.pc = addr;
+    this.cpu.halted = false;
     this.run();
   }
 

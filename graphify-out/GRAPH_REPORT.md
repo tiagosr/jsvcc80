@@ -1,16 +1,16 @@
 # Graph Report - jsvcc80  (2026-07-25)
 
 ## Corpus Check
-- 89 files · ~91,785 words
+- 89 files · ~92,296 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1014 nodes · 1731 edges · 88 communities (39 shown, 49 thin omitted)
+- 1020 nodes · 1737 edges · 83 communities (40 shown, 43 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3f49aac2`
+- Built from commit: `695882d0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -34,6 +34,7 @@
 - Archive (Static Lib)
 - IR to Object File
 - Object File & Relocations
+- BinaryOpNode
 - Object File Format
 - Binary Writer
 - Compiler Options & Loading
@@ -80,17 +81,11 @@
 - OptParser
 - PredParser
 - SomeParser
-- LiteralNode
-- OffsetOfNode
-- PreprocNode
 - ReturnNode
 - StructFieldNode
-- StructNode
-- TypeOfNode
 - Simulator
 - CPU
 - Lexer
-- lexer.js
 - MacroExpander
 - IOHandler
 - WatchManager
@@ -99,7 +94,7 @@
 ## God Nodes (most connected - your core abstractions)
 1. `Z80Codegen` - 40 edges
 2. `Simulator` - 34 edges
-3. `CPU` - 27 edges
+3. `CPU` - 33 edges
 4. `LexerCore` - 24 edges
 5. `PreprocessedSource` - 23 edges
 6. `Compiler` - 22 edges
@@ -123,11 +118,11 @@
 - **Compilation Pipeline Stages** — agents_preprocessor_lexer, agents_parser_cparser, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_backend_z80codegen [INFERRED]
 - **Core Modules Read Order** — agents_compiler_entry, agents_preprocessor_lexer, agents_parser_combinators, agents_parser_cparser, agents_nanopass_il, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_nanopass_register_passes, agents_backend_z80codegen [INFERRED]
 
-## Communities (88 total, 49 thin omitted)
+## Communities (83 total, 43 thin omitted)
 
 ### Community 0 - "AST Node Definitions"
 Cohesion: 0.05
-Nodes (18): AddressOfNode, AnnotatedDeclNode, BinaryOpNode, CaseClauseNode, DeclNode, ExprStmtNode, FunctionPointerCallNode, GotoNode (+10 more)
+Nodes (21): AnnotatedDeclNode, CaseClauseNode, DeclNode, DerefNode, EnumNode, EnumValueNode, ExprStmtNode, FunctionPointerCallNode (+13 more)
 
 ### Community 1 - "Parser Combinators"
 Cohesion: 0.05
@@ -154,8 +149,8 @@ Cohesion: 0.10
 Nodes (3): Compiler, CompilerOptions, PassManager
 
 ### Community 8 - "Z80 Code Generator"
-Cohesion: 0.08
-Nodes (7): Registers, Z80Codegen, AstToIr, compile(), compile(), compileToAssembly(), toIr()
+Cohesion: 0.09
+Nodes (6): Registers, Z80Codegen, compile(), compile(), compileToAssembly(), toIr()
 
 ### Community 11 - "Architecture Documentation"
 Cohesion: 0.09
@@ -196,6 +191,10 @@ Nodes (5): __dirname, __filename, main(), parseArgs(), processFile()
 ### Community 25 - "Object File Container"
 Cohesion: 0.15
 Nodes (3): createCrt0(), ObjectFile, ObjectSection
+
+### Community 26 - "Symbol Table"
+Cohesion: 0.08
+Nodes (3): ConstantEvaluator, LexerCore, PreprocessedSource
 
 ### Community 27 - "Linker Features Docs"
 Cohesion: 0.50
@@ -245,29 +244,29 @@ Nodes (3): compile(), parse(), translate()
 Cohesion: 0.32
 Nodes (3): computeFieldOffsets(), computeStructSize(), TypeRegistry
 
-### Community 82 - "CPU"
+### Community 81 - "Simulator"
 Cohesion: 0.06
-Nodes (3): CPU, Flags, Memory
+Nodes (3): Flags, Memory, Simulator
 
 ## Knowledge Gaps
 - **51 isolated node(s):** `Software design issues`, `Context scale issues`, `Tooling issues`, `✅ Completed`, `🔄 In Progress` (+46 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **49 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **43 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `ObjectFile` connect `Object File Container` to `Archive (Static Lib)`, `Object File & Relocations`, `Object File Format`, `CLI Entry & Compiler`?**
-  _High betweenness centrality (0.066) - this node is a cross-community bridge._
+  _High betweenness centrality (0.069) - this node is a cross-community bridge._
 - **Why does `Z80Codegen` connect `Z80 Code Generator` to `EnumValueNode`?**
-  _High betweenness centrality (0.054) - this node is a cross-community bridge._
-- **Why does `LexerCore` connect `Symbol Table` to `lexer.js`?**
-  _High betweenness centrality (0.051) - this node is a cross-community bridge._
+  _High betweenness centrality (0.059) - this node is a cross-community bridge._
 - **What connects `Software design issues`, `Context scale issues`, `Tooling issues` to the rest of the system?**
   _51 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AST Node Definitions` be split into smaller, more focused modules?**
-  _Cohesion score 0.05263157894736842 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.045454545454545456 - nodes in this community are weakly interconnected._
 - **Should `Parser Combinators` be split into smaller, more focused modules?**
   _Cohesion score 0.04846938775510204 - nodes in this community are weakly interconnected._
 - **Should `Z80 Codegen & IR Base` be split into smaller, more focused modules?**
   _Cohesion score 0.13666666666666666 - nodes in this community are weakly interconnected._
+- **Should `Plugin Interfaces` be split into smaller, more focused modules?**
+  _Cohesion score 0.058823529411764705 - nodes in this community are weakly interconnected._

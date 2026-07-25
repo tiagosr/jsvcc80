@@ -1,3 +1,5 @@
 node_modules/
 graphify-out/cost.json
 graphify-out/cache/
+coverage/
+.nyc_output/

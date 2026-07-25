@@ -67,6 +67,9 @@
   "65": "OptParser",
   "66": "PredParser",
   "67": "SomeParser",
+  "68": "Memory",
+  "69": "memory.js",
+  "70": ".setFlag",
   "71": "ReturnNode",
   "72": "StructFieldNode",
   "75": "memchr.c",
@@ -78,7 +81,6 @@
   "81": "Simulator",
   "82": "CPU",
   "83": "Lexer",
-  "87": "MacroExpander",
   "88": "IOHandler",
   "89": "WatchManager",
   "90": "DerefStoreInstruction"

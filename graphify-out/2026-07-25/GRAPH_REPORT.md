@@ -1,16 +1,16 @@
 # Graph Report - jsvcc80  (2026-07-25)
 
 ## Corpus Check
-- 89 files · ~92,296 words
+- 89 files · ~92,299 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1020 nodes · 1737 edges · 83 communities (40 shown, 43 thin omitted)
+- 1020 nodes · 1730 edges · 85 communities (40 shown, 45 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `695882d0`
+- Built from commit: `d6f3471e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -81,12 +81,13 @@
 - OptParser
 - PredParser
 - SomeParser
+- Memory
+- memory.js
 - ReturnNode
 - StructFieldNode
 - Simulator
 - CPU
 - Lexer
-- MacroExpander
 - IOHandler
 - WatchManager
 - DerefStoreInstruction
@@ -94,14 +95,14 @@
 ## God Nodes (most connected - your core abstractions)
 1. `Z80Codegen` - 40 edges
 2. `Simulator` - 34 edges
-3. `CPU` - 33 edges
+3. `CPU` - 32 edges
 4. `LexerCore` - 24 edges
 5. `PreprocessedSource` - 23 edges
 6. `Compiler` - 22 edges
 7. `PeepholeOptimizer` - 20 edges
 8. `BlockRegisterAllocator` - 19 edges
 9. `IrToObjectFile` - 18 edges
-10. `Memory` - 17 edges
+10. `Lexer` - 17 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `serializeArchive()` --calls--> `serializeObjectFile()`  [EXTRACTED]
@@ -118,7 +119,7 @@
 - **Compilation Pipeline Stages** — agents_preprocessor_lexer, agents_parser_cparser, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_backend_z80codegen [INFERRED]
 - **Core Modules Read Order** — agents_compiler_entry, agents_preprocessor_lexer, agents_parser_combinators, agents_parser_cparser, agents_nanopass_il, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_nanopass_register_passes, agents_backend_z80codegen [INFERRED]
 
-## Communities (83 total, 43 thin omitted)
+## Communities (85 total, 45 thin omitted)
 
 ### Community 0 - "AST Node Definitions"
 Cohesion: 0.05
@@ -193,8 +194,8 @@ Cohesion: 0.15
 Nodes (3): createCrt0(), ObjectFile, ObjectSection
 
 ### Community 26 - "Symbol Table"
-Cohesion: 0.08
-Nodes (3): ConstantEvaluator, LexerCore, PreprocessedSource
+Cohesion: 0.06
+Nodes (4): ConstantEvaluator, DirectiveHandler, MacroExpander, PreprocessedSource
 
 ### Community 27 - "Linker Features Docs"
 Cohesion: 0.50
@@ -244,14 +245,10 @@ Nodes (3): compile(), parse(), translate()
 Cohesion: 0.32
 Nodes (3): computeFieldOffsets(), computeStructSize(), TypeRegistry
 
-### Community 81 - "Simulator"
-Cohesion: 0.06
-Nodes (3): Flags, Memory, Simulator
-
 ## Knowledge Gaps
 - **51 isolated node(s):** `Software design issues`, `Context scale issues`, `Tooling issues`, `✅ Completed`, `🔄 In Progress` (+46 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **43 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **45 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -260,6 +257,8 @@ _Questions this graph is uniquely positioned to answer:_
   _High betweenness centrality (0.069) - this node is a cross-community bridge._
 - **Why does `Z80Codegen` connect `Z80 Code Generator` to `EnumValueNode`?**
   _High betweenness centrality (0.059) - this node is a cross-community bridge._
+- **Why does `LexerCore` connect `Link Result` to `Symbol Table`?**
+  _High betweenness centrality (0.050) - this node is a cross-community bridge._
 - **What connects `Software design issues`, `Context scale issues`, `Tooling issues` to the rest of the system?**
   _51 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AST Node Definitions` be split into smaller, more focused modules?**
@@ -268,5 +267,3 @@ _Questions this graph is uniquely positioned to answer:_
   _Cohesion score 0.04846938775510204 - nodes in this community are weakly interconnected._
 - **Should `Z80 Codegen & IR Base` be split into smaller, more focused modules?**
   _Cohesion score 0.13666666666666666 - nodes in this community are weakly interconnected._
-- **Should `Plugin Interfaces` be split into smaller, more focused modules?**
-  _Cohesion score 0.058823529411764705 - nodes in this community are weakly interconnected._

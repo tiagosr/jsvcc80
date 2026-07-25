@@ -5,8 +5,8 @@
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1784982752.9829404,
-    "ast_hash": "46e64c3afb3ead7a2195f32e84e4f5e7",
+    "mtime": 1784983700.8437657,
+    "ast_hash": "d2a40f4cf0be405e545cd5dc0a5e1be5",
     "semantic_hash": ""
   },
   "src/ast/nodes.js": {
@@ -442,6 +442,11 @@
   "src/linker/crt0.js": {
     "mtime": 1784968336.318376,
     "ast_hash": "1c3ffee2cb14caf9972afde2645fac03",
+    "semantic_hash": ""
+  },
+  ".mocharc.json": {
+    "mtime": 1784983560.638013,
+    "ast_hash": "9fbf14700215e3e4171777830fe69873",
     "semantic_hash": ""
   }
 }

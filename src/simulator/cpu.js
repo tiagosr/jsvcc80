@@ -19,6 +19,7 @@ export const Flags = {
   PARITY_OVERFLOW: 2,
   NEGATIVE: 3,
   ZERO: 6,
+  SIGN: 7,
 };
 
 /**
@@ -218,27 +219,35 @@ export class CPU {
    }
 
   /** Set flag bit.
-   * @param {number} flag - Flag constant.
-   * @param {boolean} value
-   */
-  setFlag(flag, value) {
-    this.f = (this.f & ~(1 << flag)) | ((value ? 1 : 0) << flag);
-  }
-
-  /** Get flag bit.
-    * @param {number} flag
-    * @returns {boolean}
+    * @param {number} flag - Flag constant.
+    * @param {boolean} value
     */
-   getFlag(flag) { return ((this.f >> flag) & 1) === 1; }
+   setFlag(flag, value) {
+     this.f = (this.f & ~(1 << flag)) | ((value ? 1 : 0) << flag);
+   }
+
+   /** Clear a specific flag bit.
+    * @param {number} flag - Flag constant.
+    */
+   clearFlag(flag) {
+     this.f &= ~(1 << flag);
+   }
+
+   /** Get flag bit.
+     * @param {number} flag
+     * @returns {boolean}
+     */
+    getFlag(flag) { return ((this.f >> flag) & 1) === 1; }
 
   /** Set Z and P/V flags based on an 8-bit result. Does not touch N, H, or C -
    * callers set those explicitly per the rules of their specific instruction.
    * @param {number} value
    */
-  setFlags8(value) {
-    this.setFlag(Flags.ZERO, (value & MASK_8) === 0);
-    this.setFlag(Flags.PARITY_OVERFLOW, this._parity(value));
-  }
+   setFlags8(value) {
+     this.setFlag(Flags.SIGN, (value & 0x80) !== 0);
+     this.setFlag(Flags.ZERO, (value & MASK_8) === 0);
+     this.setFlag(Flags.PARITY_OVERFLOW, this._parity(value));
+   }
 
   /** Set flags based on 16-bit result.
    * @param {number} _value - Not used for 16-bit flags.

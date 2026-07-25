@@ -316,6 +316,7 @@ export class Simulator {
       c.setFlag(Flags.ZERO, result === 0);
       c.setFlag(Flags.NEGATIVE, false);
       c.setFlag(Flags.PARITY_OVERFLOW, val === 0x7F);
+      c.setFlag(Flags.SIGN, (result & 0x80) !== 0);
       return 1;
     }
 
@@ -329,14 +330,15 @@ export class Simulator {
       c.setFlag(Flags.ZERO, result === 0);
       c.setFlag(Flags.NEGATIVE, true);
       c.setFlag(Flags.PARITY_OVERFLOW, val === 0x80);
+      c.setFlag(Flags.SIGN, (result & 0x80) !== 0);
       return 1;
     }
 
     // RLCA / RRCA / RLA / RRA
-    if (opcode === 0x07) { const a = c.a; const cy = (a >> 7) & 1; c.a = ((a << 1) & 0xFF) | cy; c.setFlag(Flags.CARRY, cy === 1); c.setFlag(Flags.HALF_CARRY, false); c.setFlag(Flags.NEGATIVE, false); return 1; }
-    if (opcode === 0x0F) { const a = c.a; const cy = a & 1; c.a = (a >> 1) | (cy << 7); c.setFlag(Flags.CARRY, cy === 1); c.setFlag(Flags.HALF_CARRY, false); c.setFlag(Flags.NEGATIVE, false); return 1; }
-    if (opcode === 0x17) { const a = c.a; const oldCy = c.getFlag(Flags.CARRY) ? 1 : 0; c.setFlag(Flags.CARRY, ((a >> 7) & 1) === 1); c.a = ((a << 1) & 0xFF) | oldCy; c.setFlag(Flags.HALF_CARRY, false); c.setFlag(Flags.NEGATIVE, false); return 1; }
-    if (opcode === 0x1F) { const a = c.a; const oldCy = c.getFlag(Flags.CARRY) ? 1 : 0; c.setFlag(Flags.CARRY, (a & 1) === 1); c.a = (a >> 1) | (oldCy << 7); c.setFlag(Flags.HALF_CARRY, false); c.setFlag(Flags.NEGATIVE, false); return 1; }
+    if (opcode === 0x07) { const a = c.a; const cy = (a >> 7) & 1; c.a = ((a << 1) & 0xFF) | cy; c.setFlag(Flags.CARRY, cy === 1); c.setFlag(Flags.HALF_CARRY, false); c.setFlag(Flags.NEGATIVE, false); c.setFlag(Flags.SIGN, ((c.a) & 0x80) !== 0); return 1; }
+    if (opcode === 0x0F) { const a = c.a; const cy = a & 1; c.a = (a >> 1) | (cy << 7); c.setFlag(Flags.CARRY, cy === 1); c.setFlag(Flags.HALF_CARRY, false); c.setFlag(Flags.NEGATIVE, false); c.setFlag(Flags.SIGN, ((c.a) & 0x80) !== 0); return 1; }
+    if (opcode === 0x17) { const a = c.a; const oldCy = c.getFlag(Flags.CARRY) ? 1 : 0; c.setFlag(Flags.CARRY, ((a >> 7) & 1) === 1); c.a = ((a << 1) & 0xFF) | oldCy; c.setFlag(Flags.HALF_CARRY, false); c.setFlag(Flags.NEGATIVE, false); c.setFlag(Flags.SIGN, ((c.a) & 0x80) !== 0); return 1; }
+    if (opcode === 0x1F) { const a = c.a; const oldCy = c.getFlag(Flags.CARRY) ? 1 : 0; c.setFlag(Flags.CARRY, (a & 1) === 1); c.a = (a >> 1) | (oldCy << 7); c.setFlag(Flags.HALF_CARRY, false); c.setFlag(Flags.NEGATIVE, false); c.setFlag(Flags.SIGN, ((c.a) & 0x80) !== 0); return 1; }
 
     // EX AF, AF'
     if (opcode === 0x08) { const sf = c.f; c.f = c.shadow.f; c.shadow.f = sf; return 1; }
@@ -375,31 +377,31 @@ export class Simulator {
 
     // JP nn / JP cc, nn
     if (opcode === 0xC3) { c.pc = m.readWord(pc + 1); return 0; }
-    if (opcode === 0xC2) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.ZERO)) { c.pc = a; return 0; } return 3; }
-    if (opcode === 0xCA) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.ZERO)) { c.pc = a; return 0; } return 3; }
-    if (opcode === 0xD2) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.CARRY)) { c.pc = a; return 0; } return 3; }
-    if (opcode === 0xDA) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.CARRY)) { c.pc = a; return 0; } return 3; }
-    if (opcode === 0xE2) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = a; return 0; } return 3; }
-    if (opcode === 0xEA) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = a; return 0; } return 3; }
+    if (opcode === 0xC2) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = a; return 0; } return 3; }
+    if (opcode === 0xCA) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.SIGN)) { c.pc = a; return 0; } return 3; }
+    if (opcode === 0xD2) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = a; return 0; } return 3; }
+    if (opcode === 0xDA) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = a; return 0; } return 3; }
+    if (opcode === 0xE2) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.ZERO)) { c.pc = a; return 0; } return 3; }
+    if (opcode === 0xEA) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.ZERO)) { c.pc = a; return 0; } return 3; }
     if (opcode === 0xE9) { c.pc = c.getPair('hl'); return 0; }
 
     // CALL nn / CALL cc, nn
     if (opcode === 0xCD) { c.push((pc + 3) & 0xFFFF); c.pc = m.readWord(pc + 1); return 0; }
-    if (opcode === 0xC4) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.ZERO)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
-    if (opcode === 0xCC) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.ZERO)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
-    if (opcode === 0xD4) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.CARRY)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
-    if (opcode === 0xDC) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.CARRY)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
-    if (opcode === 0xE4) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
-    if (opcode === 0xEC) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.PARITY_OVERFLOW)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
+    if (opcode === 0xC4) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.PARITY_OVERFLOW)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
+    if (opcode === 0xCC) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.SIGN)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
+    if (opcode === 0xD4) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
+    if (opcode === 0xDC) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
+    if (opcode === 0xE4) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.ZERO)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
+    if (opcode === 0xEC) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.ZERO)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
 
     // RET / RET cc
     if (opcode === 0xC9) { c.pc = c.pop(); return 0; }
-    if (opcode === 0xC0) { if (!c.getFlag(Flags.ZERO)) { c.pc = c.pop(); return 0; } return 1; }
-    if (opcode === 0xC8) { if (c.getFlag(Flags.ZERO)) { c.pc = c.pop(); return 0; } return 1; }
-    if (opcode === 0xD0) { if (!c.getFlag(Flags.CARRY)) { c.pc = c.pop(); return 0; } return 1; }
-    if (opcode === 0xD8) { if (c.getFlag(Flags.CARRY)) { c.pc = c.pop(); return 0; } return 1; }
-    if (opcode === 0xE0) { if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = c.pop(); return 0; } return 1; }
-    if (opcode === 0xE8) { if (c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = c.pop(); return 0; } return 1; }
+    if (opcode === 0xC0) { if (c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = c.pop(); return 0; } return 1; }
+    if (opcode === 0xC8) { if (c.getFlag(Flags.SIGN)) { c.pc = c.pop(); return 0; } return 1; }
+    if (opcode === 0xD0) { if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = c.pop(); return 0; } return 1; }
+    if (opcode === 0xD8) { if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = c.pop(); return 0; } return 1; }
+    if (opcode === 0xE0) { if (c.getFlag(Flags.ZERO)) { c.pc = c.pop(); return 0; } return 1; }
+    if (opcode === 0xE8) { if (!c.getFlag(Flags.ZERO)) { c.pc = c.pop(); return 0; } return 1; }
 
     // RST
     if (opcode === 0xC7) { c.push((pc + 1) & 0xFFFF); c.pc = 0x00; return 0; }
@@ -529,6 +531,7 @@ export class Simulator {
     c.setFlag(Flags.NEGATIVE, false);
     c.setFlag(Flags.HALF_CARRY, false);
     c.setFlag(Flags.PARITY_OVERFLOW, this._parity(result));
+    c.setFlag(Flags.SIGN, (result & 0x80) !== 0);
     return result;
   }
 

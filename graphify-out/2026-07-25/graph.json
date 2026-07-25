@@ -45,83 +45,6 @@
   },
   "nodes": [
     {
-      "label": "README.md",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "readme",
-      "community": 45,
-      "community_name": "Current Implementation Status",
-      "norm_label": "readme.md"
-    },
-    {
-      "label": "Current Implementation Status",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L10",
-      "_origin": "ast",
-      "id": "readme_current_implementation_status",
-      "community": 45,
-      "community_name": "Current Implementation Status",
-      "norm_label": "current implementation status"
-    },
-    {
-      "label": "\u2705 Completed",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L12",
-      "_origin": "ast",
-      "id": "readme_completed",
-      "community": 45,
-      "community_name": "Current Implementation Status",
-      "norm_label": "\u2705 completed"
-    },
-    {
-      "label": "\ud83d\udd04 In Progress",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L68",
-      "_origin": "ast",
-      "id": "readme_in_progress",
-      "community": 45,
-      "community_name": "Current Implementation Status",
-      "norm_label": "\ud83d\udd04 in progress"
-    },
-    {
-      "label": "\ud83d\udd1c Next Steps",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L71",
-      "_origin": "ast",
-      "id": "readme_next_steps",
-      "community": 45,
-      "community_name": "Current Implementation Status",
-      "norm_label": "\ud83d\udd1c next steps"
-    },
-    {
-      "label": "\ud83e\uddea Test Results",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L78",
-      "_origin": "ast",
-      "id": "readme_test_results",
-      "community": 45,
-      "community_name": "Current Implementation Status",
-      "norm_label": "\ud83e\uddea test results"
-    },
-    {
-      "label": "\ud83d\udcd4 Backlog (issues identified during implementation for later priorization)",
-      "file_type": "document",
-      "source_file": "README.md",
-      "source_location": "L81",
-      "_origin": "ast",
-      "id": "readme_backlog_issues_identified_during_implementation_for_later_priorization",
-      "community": 45,
-      "community_name": "Current Implementation Status",
-      "norm_label": "\ud83d\udcd4 backlog (issues identified during implementation for later priorization)"
-    },
-    {
       "label": "package.json",
       "file_type": "code",
       "source_file": "package.json",
@@ -243,10 +166,21 @@
       "norm_label": "test"
     },
     {
-      "label": "lint",
+      "label": "coverage",
       "file_type": "code",
       "source_file": "package.json",
       "source_location": "L13",
+      "_origin": "ast",
+      "id": "package_scripts_coverage",
+      "community": 13,
+      "community_name": "Package Configuration",
+      "norm_label": "coverage"
+    },
+    {
+      "label": "lint",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L14",
       "_origin": "ast",
       "id": "package_scripts_lint",
       "community": 13,
@@ -257,7 +191,7 @@
       "label": "keywords",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L15",
+      "source_location": "L16",
       "_origin": "ast",
       "id": "package_keywords",
       "community": 13,
@@ -268,7 +202,7 @@
       "label": "z80",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L15",
+      "source_location": "L16",
       "_origin": "ast",
       "id": "ref_z80",
       "community": 13,
@@ -279,7 +213,7 @@
       "label": "compiler",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L15",
+      "source_location": "L16",
       "_origin": "ast",
       "id": "ref_compiler",
       "community": 13,
@@ -290,7 +224,7 @@
       "label": "c",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L15",
+      "source_location": "L16",
       "_origin": "ast",
       "id": "ref_c",
       "community": 13,
@@ -301,7 +235,7 @@
       "label": "embedded",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L15",
+      "source_location": "L16",
       "_origin": "ast",
       "id": "ref_embedded",
       "community": 13,
@@ -312,7 +246,7 @@
       "label": "license",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L21",
+      "source_location": "L22",
       "_origin": "ast",
       "id": "package_license",
       "community": 13,
@@ -323,7 +257,7 @@
       "label": "dependencies",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L22",
+      "source_location": "L23",
       "_origin": "ast",
       "id": "package_dependencies",
       "community": 13,
@@ -334,7 +268,7 @@
       "label": "argparse",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L23",
+      "source_location": "L24",
       "_origin": "ast",
       "id": "package_dependencies_argparse",
       "community": 13,
@@ -345,7 +279,7 @@
       "label": "argparse",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L23",
+      "source_location": "L24",
       "_origin": "ast",
       "id": "argparse",
       "community": 13,
@@ -356,7 +290,7 @@
       "label": "devDependencies",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L25",
+      "source_location": "L26",
       "_origin": "ast",
       "id": "package_devdependencies",
       "community": 13,
@@ -367,7 +301,7 @@
       "label": "mocha",
       "file_type": "code",
       "source_file": "package.json",
-      "source_location": "L26",
+      "source_location": "L27",
       "_origin": "ast",
       "id": "package_devdependencies_mocha",
       "community": 13,
@@ -378,7 +312,7 @@
       "label": "mocha",
       "file_type": "concept",
       "source_file": "package.json",
-      "source_location": "L26",
+      "source_location": "L27",
       "_origin": "ast",
       "id": "mocha",
       "community": 13,
@@ -386,15 +320,114 @@
       "norm_label": "mocha"
     },
     {
+      "label": "nyc",
+      "file_type": "code",
+      "source_file": "package.json",
+      "source_location": "L28",
+      "_origin": "ast",
+      "id": "package_devdependencies_nyc",
+      "community": 13,
+      "community_name": "Package Configuration",
+      "norm_label": "nyc"
+    },
+    {
+      "label": "nyc",
+      "file_type": "concept",
+      "source_file": "package.json",
+      "source_location": "L28",
+      "_origin": "ast",
+      "id": "nyc",
+      "community": 13,
+      "community_name": "Package Configuration",
+      "norm_label": "nyc"
+    },
+    {
+      "label": "README.md",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 45,
+      "community_name": "Current Implementation Status",
+      "norm_label": "readme.md",
+      "id": "readme"
+    },
+    {
+      "label": "Current Implementation Status",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L10",
+      "_origin": "ast",
+      "community": 45,
+      "community_name": "Current Implementation Status",
+      "norm_label": "current implementation status",
+      "id": "readme_current_implementation_status"
+    },
+    {
+      "label": "\u2705 Completed",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L12",
+      "_origin": "ast",
+      "community": 45,
+      "community_name": "Current Implementation Status",
+      "norm_label": "\u2705 completed",
+      "id": "readme_completed"
+    },
+    {
+      "label": "\ud83d\udd04 In Progress",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L68",
+      "_origin": "ast",
+      "community": 45,
+      "community_name": "Current Implementation Status",
+      "norm_label": "\ud83d\udd04 in progress",
+      "id": "readme_in_progress"
+    },
+    {
+      "label": "\ud83d\udd1c Next Steps",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L71",
+      "_origin": "ast",
+      "community": 45,
+      "community_name": "Current Implementation Status",
+      "norm_label": "\ud83d\udd1c next steps",
+      "id": "readme_next_steps"
+    },
+    {
+      "label": "\ud83e\uddea Test Results",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L78",
+      "_origin": "ast",
+      "community": 45,
+      "community_name": "Current Implementation Status",
+      "norm_label": "\ud83e\uddea test results",
+      "id": "readme_test_results"
+    },
+    {
+      "label": "\ud83d\udcd4 Backlog (issues identified during implementation for later priorization)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L81",
+      "_origin": "ast",
+      "community": 45,
+      "community_name": "Current Implementation Status",
+      "norm_label": "\ud83d\udcd4 backlog (issues identified during implementation for later priorization)",
+      "id": "readme_backlog_issues_identified_during_implementation_for_later_priorization"
+    },
+    {
       "label": "archive.test.js",
       "file_type": "code",
       "source_file": "src/tests/archive.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_archive_test",
       "community": 98,
       "community_name": "archive.test.js",
-      "norm_label": "archive.test.js"
+      "norm_label": "archive.test.js",
+      "id": "src_tests_archive_test"
     },
     {
       "label": "ast_to_ir.test.js",
@@ -402,10 +435,10 @@
       "source_file": "src/tests/ast_to_ir.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_ast_to_ir_test",
       "community": 93,
       "community_name": "ast_to_ir.test.js",
-      "norm_label": "ast_to_ir.test.js"
+      "norm_label": "ast_to_ir.test.js",
+      "id": "src_tests_ast_to_ir_test"
     },
     {
       "label": "compile()",
@@ -413,10 +446,10 @@
       "source_file": "src/tests/ast_to_ir.test.js",
       "source_location": "L9",
       "_origin": "ast",
-      "id": "src_tests_ast_to_ir_test_compile",
       "community": 93,
       "community_name": "ast_to_ir.test.js",
-      "norm_label": "compile()"
+      "norm_label": "compile()",
+      "id": "src_tests_ast_to_ir_test_compile"
     },
     {
       "label": "compiler.test.js",
@@ -424,10 +457,10 @@
       "source_file": "src/tests/compiler.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_compiler_test",
       "community": 99,
       "community_name": "compiler.test.js",
-      "norm_label": "compiler.test.js"
+      "norm_label": "compiler.test.js",
+      "id": "src_tests_compiler_test"
     },
     {
       "label": "cparser.test.js",
@@ -435,10 +468,10 @@
       "source_file": "src/tests/cparser.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_cparser_test",
       "community": 100,
       "community_name": "cparser.test.js",
-      "norm_label": "cparser.test.js"
+      "norm_label": "cparser.test.js",
+      "id": "src_tests_cparser_test"
     },
     {
       "label": "function_pointer.test.js",
@@ -446,10 +479,10 @@
       "source_file": "src/tests/function_pointer.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_function_pointer_test",
       "community": 94,
       "community_name": "function_pointer.test.js",
-      "norm_label": "function_pointer.test.js"
+      "norm_label": "function_pointer.test.js",
+      "id": "src_tests_function_pointer_test"
     },
     {
       "label": "compile()",
@@ -457,10 +490,10 @@
       "source_file": "src/tests/function_pointer.test.js",
       "source_location": "L83",
       "_origin": "ast",
-      "id": "src_tests_function_pointer_test_compile",
       "community": 94,
       "community_name": "function_pointer.test.js",
-      "norm_label": "compile()"
+      "norm_label": "compile()",
+      "id": "src_tests_function_pointer_test_compile"
     },
     {
       "label": "function_pointer_ir.test.js",
@@ -468,10 +501,10 @@
       "source_file": "src/tests/function_pointer_ir.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_function_pointer_ir_test",
       "community": 101,
       "community_name": "function_pointer_ir.test.js",
-      "norm_label": "function_pointer_ir.test.js"
+      "norm_label": "function_pointer_ir.test.js",
+      "id": "src_tests_function_pointer_ir_test"
     },
     {
       "label": "function_pointers.test.js",
@@ -479,10 +512,10 @@
       "source_file": "src/tests/function_pointers.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_function_pointers_test",
       "community": 102,
       "community_name": "function_pointers.test.js",
-      "norm_label": "function_pointers.test.js"
+      "norm_label": "function_pointers.test.js",
+      "id": "src_tests_function_pointers_test"
     },
     {
       "label": "il.test.js",
@@ -490,10 +523,10 @@
       "source_file": "src/tests/il.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_il_test",
       "community": 103,
       "community_name": "il.test.js",
-      "norm_label": "il.test.js"
+      "norm_label": "il.test.js",
+      "id": "src_tests_il_test"
     },
     {
       "label": "intrinsics.test.js",
@@ -501,10 +534,10 @@
       "source_file": "src/tests/intrinsics.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_intrinsics_test",
       "community": 39,
       "community_name": "DerefLoadInstruction",
-      "norm_label": "intrinsics.test.js"
+      "norm_label": "intrinsics.test.js",
+      "id": "src_tests_intrinsics_test"
     },
     {
       "label": "compile()",
@@ -512,10 +545,10 @@
       "source_file": "src/tests/intrinsics.test.js",
       "source_location": "L10",
       "_origin": "ast",
-      "id": "src_tests_intrinsics_test_compile",
       "community": 39,
       "community_name": "DerefLoadInstruction",
-      "norm_label": "compile()"
+      "norm_label": "compile()",
+      "id": "src_tests_intrinsics_test_compile"
     },
     {
       "label": "findIntrinsic()",
@@ -523,10 +556,10 @@
       "source_file": "src/tests/intrinsics.test.js",
       "source_location": "L19",
       "_origin": "ast",
-      "id": "src_tests_intrinsics_test_findintrinsic",
       "community": 39,
       "community_name": "DerefLoadInstruction",
-      "norm_label": "findintrinsic()"
+      "norm_label": "findintrinsic()",
+      "id": "src_tests_intrinsics_test_findintrinsic"
     },
     {
       "label": "compileToAssembly()",
@@ -534,10 +567,10 @@
       "source_file": "src/tests/intrinsics.test.js",
       "source_location": "L228",
       "_origin": "ast",
-      "id": "src_tests_intrinsics_test_compiletoassembly",
       "community": 39,
       "community_name": "DerefLoadInstruction",
-      "norm_label": "compiletoassembly()"
+      "norm_label": "compiletoassembly()",
+      "id": "src_tests_intrinsics_test_compiletoassembly"
     },
     {
       "label": "linker.test.js",
@@ -545,10 +578,10 @@
       "source_file": "src/tests/linker.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_linker_test",
       "community": 104,
       "community_name": "linker.test.js",
-      "norm_label": "linker.test.js"
+      "norm_label": "linker.test.js",
+      "id": "src_tests_linker_test"
     },
     {
       "label": "optimizations.test.js",
@@ -556,10 +589,10 @@
       "source_file": "src/tests/optimizations.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_optimizations_test",
       "community": 105,
       "community_name": "optimizations.test.js",
-      "norm_label": "optimizations.test.js"
+      "norm_label": "optimizations.test.js",
+      "id": "src_tests_optimizations_test"
     },
     {
       "label": "parser.test.js",
@@ -567,10 +600,10 @@
       "source_file": "src/tests/parser.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_parser_test",
       "community": 95,
       "community_name": "parser.test.js",
-      "norm_label": "parser.test.js"
+      "norm_label": "parser.test.js",
+      "id": "src_tests_parser_test"
     },
     {
       "label": "makeToken()",
@@ -578,10 +611,10 @@
       "source_file": "src/tests/parser.test.js",
       "source_location": "L6",
       "_origin": "ast",
-      "id": "src_tests_parser_test_maketoken",
       "community": 95,
       "community_name": "parser.test.js",
-      "norm_label": "maketoken()"
+      "norm_label": "maketoken()",
+      "id": "src_tests_parser_test_maketoken"
     },
     {
       "label": "pointers.test.js",
@@ -589,10 +622,10 @@
       "source_file": "src/tests/pointers.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_pointers_test",
       "community": 53,
       "community_name": "LoadAddrInstruction",
-      "norm_label": "pointers.test.js"
+      "norm_label": "pointers.test.js",
+      "id": "src_tests_pointers_test"
     },
     {
       "label": "parse()",
@@ -600,10 +633,10 @@
       "source_file": "src/tests/pointers.test.js",
       "source_location": "L52",
       "_origin": "ast",
-      "id": "src_tests_pointers_test_parse",
       "community": 53,
       "community_name": "LoadAddrInstruction",
-      "norm_label": "parse()"
+      "norm_label": "parse()",
+      "id": "src_tests_pointers_test_parse"
     },
     {
       "label": "translate()",
@@ -611,10 +644,10 @@
       "source_file": "src/tests/pointers.test.js",
       "source_location": "L172",
       "_origin": "ast",
-      "id": "src_tests_pointers_test_translate",
       "community": 53,
       "community_name": "LoadAddrInstruction",
-      "norm_label": "translate()"
+      "norm_label": "translate()",
+      "id": "src_tests_pointers_test_translate"
     },
     {
       "label": "compile()",
@@ -622,10 +655,10 @@
       "source_file": "src/tests/pointers.test.js",
       "source_location": "L226",
       "_origin": "ast",
-      "id": "src_tests_pointers_test_compile",
       "community": 53,
       "community_name": "LoadAddrInstruction",
-      "norm_label": "compile()"
+      "norm_label": "compile()",
+      "id": "src_tests_pointers_test_compile"
     },
     {
       "label": "preprocessor.test.js",
@@ -633,10 +666,10 @@
       "source_file": "src/tests/preprocessor.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_preprocessor_test",
       "community": 96,
       "community_name": "preprocessor.test.js",
-      "norm_label": "preprocessor.test.js"
+      "norm_label": "preprocessor.test.js",
+      "id": "src_tests_preprocessor_test"
     },
     {
       "label": "writeTestFile()",
@@ -644,10 +677,10 @@
       "source_file": "src/tests/preprocessor.test.js",
       "source_location": "L681",
       "_origin": "ast",
-      "id": "src_tests_preprocessor_test_writetestfile",
       "community": 96,
       "community_name": "preprocessor.test.js",
-      "norm_label": "writetestfile()"
+      "norm_label": "writetestfile()",
+      "id": "src_tests_preprocessor_test_writetestfile"
     },
     {
       "label": "qualifiers.test.js",
@@ -655,10 +688,10 @@
       "source_file": "src/tests/qualifiers.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_qualifiers_test",
       "community": 97,
       "community_name": "qualifiers.test.js",
-      "norm_label": "qualifiers.test.js"
+      "norm_label": "qualifiers.test.js",
+      "id": "src_tests_qualifiers_test"
     },
     {
       "label": "parse()",
@@ -666,10 +699,10 @@
       "source_file": "src/tests/qualifiers.test.js",
       "source_location": "L9",
       "_origin": "ast",
-      "id": "src_tests_qualifiers_test_parse",
       "community": 97,
       "community_name": "qualifiers.test.js",
-      "norm_label": "parse()"
+      "norm_label": "parse()",
+      "id": "src_tests_qualifiers_test_parse"
     },
     {
       "label": "simulator.test.js",
@@ -677,10 +710,10 @@
       "source_file": "src/tests/simulator.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_simulator_test",
       "community": 69,
       "community_name": "memory.js",
-      "norm_label": "simulator.test.js"
+      "norm_label": "simulator.test.js",
+      "id": "src_tests_simulator_test"
     },
     {
       "label": "stdlib.test.js",
@@ -688,10 +721,10 @@
       "source_file": "src/tests/stdlib.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_stdlib_test",
       "community": 80,
       "community_name": "stdlib.test.js",
-      "norm_label": "stdlib.test.js"
+      "norm_label": "stdlib.test.js",
+      "id": "src_tests_stdlib_test"
     },
     {
       "label": "struct.test.js",
@@ -699,10 +732,10 @@
       "source_file": "src/tests/struct.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_struct_test",
       "community": 65,
       "community_name": "OptParser",
-      "norm_label": "struct.test.js"
+      "norm_label": "struct.test.js",
+      "id": "src_tests_struct_test"
     },
     {
       "label": "parse()",
@@ -710,10 +743,10 @@
       "source_file": "src/tests/struct.test.js",
       "source_location": "L12",
       "_origin": "ast",
-      "id": "src_tests_struct_test_parse",
       "community": 65,
       "community_name": "OptParser",
-      "norm_label": "parse()"
+      "norm_label": "parse()",
+      "id": "src_tests_struct_test_parse"
     },
     {
       "label": "toIr()",
@@ -721,10 +754,10 @@
       "source_file": "src/tests/struct.test.js",
       "source_location": "L22",
       "_origin": "ast",
-      "id": "src_tests_struct_test_toir",
       "community": 65,
       "community_name": "OptParser",
-      "norm_label": "toir()"
+      "norm_label": "toir()",
+      "id": "src_tests_struct_test_toir"
     },
     {
       "label": "simulator.js",
@@ -11440,72 +11473,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "README.md",
-      "source_location": "L10",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "readme",
-      "target": "readme_current_implementation_status",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "README.md",
-      "source_location": "L81",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "readme_current_implementation_status",
-      "target": "readme_backlog_issues_identified_during_implementation_for_later_priorization",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "README.md",
-      "source_location": "L12",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "readme_current_implementation_status",
-      "target": "readme_completed",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "README.md",
-      "source_location": "L68",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "readme_current_implementation_status",
-      "target": "readme_in_progress",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "README.md",
-      "source_location": "L71",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "readme_current_implementation_status",
-      "target": "readme_next_steps",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "README.md",
-      "source_location": "L78",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "readme_next_steps",
-      "target": "readme_test_results",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "package.json",
       "source_location": "L7",
       "weight": 1.0,
@@ -11518,7 +11485,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L22",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast",
       "source": "package",
@@ -11540,7 +11507,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L25",
+      "source_location": "L26",
       "weight": 1.0,
       "_origin": "ast",
       "source": "package",
@@ -11551,7 +11518,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L15",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast",
       "source": "package",
@@ -11562,7 +11529,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L21",
+      "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast",
       "source": "package",
@@ -11643,6 +11610,17 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "package_scripts",
+      "target": "package_scripts_coverage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "package_scripts",
       "target": "package_scripts_lint",
       "confidence_score": 1.0
     },
@@ -11672,7 +11650,7 @@
       "relation": "extends",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L15",
+      "source_location": "L16",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast",
@@ -11684,7 +11662,7 @@
       "relation": "extends",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L15",
+      "source_location": "L16",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast",
@@ -11696,7 +11674,7 @@
       "relation": "extends",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L15",
+      "source_location": "L16",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast",
@@ -11708,7 +11686,7 @@
       "relation": "extends",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L15",
+      "source_location": "L16",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast",
@@ -11720,7 +11698,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L23",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast",
       "source": "package_dependencies",
@@ -11731,7 +11709,7 @@
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L23",
+      "source_location": "L24",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast",
@@ -11743,7 +11721,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L26",
+      "source_location": "L27",
       "weight": 1.0,
       "_origin": "ast",
       "source": "package_devdependencies",
@@ -11751,10 +11729,21 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "package_devdependencies",
+      "target": "package_devdependencies_nyc",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "imports",
       "confidence": "EXTRACTED",
       "source_file": "package.json",
-      "source_location": "L26",
+      "source_location": "L27",
       "weight": 1.0,
       "context": "import",
       "_origin": "ast",
@@ -11763,15 +11752,93 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "package.json",
+      "source_location": "L28",
+      "weight": 1.0,
+      "context": "import",
+      "_origin": "ast",
+      "source": "package_devdependencies_nyc",
+      "target": "nyc",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "readme",
+      "target": "readme_current_implementation_status"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L81",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "readme_current_implementation_status",
+      "target": "readme_backlog_issues_identified_during_implementation_for_later_priorization"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "readme_current_implementation_status",
+      "target": "readme_completed"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L68",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "readme_current_implementation_status",
+      "target": "readme_in_progress"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L71",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "readme_current_implementation_status",
+      "target": "readme_next_steps"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L78",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "readme_next_steps",
+      "target": "readme_test_results"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/tests/ast_to_ir.test.js",
       "source_location": "L9",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_ast_to_ir_test",
-      "target": "src_tests_ast_to_ir_test_compile",
-      "confidence_score": 1.0
+      "target": "src_tests_ast_to_ir_test_compile"
     },
     {
       "relation": "contains",
@@ -11780,9 +11847,9 @@
       "source_location": "L83",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_function_pointer_test",
-      "target": "src_tests_function_pointer_test_compile",
-      "confidence_score": 1.0
+      "target": "src_tests_function_pointer_test_compile"
     },
     {
       "relation": "contains",
@@ -11791,9 +11858,9 @@
       "source_location": "L443",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_intrinsics_test",
-      "target": "src_tests_intrinsics_test_compile",
-      "confidence_score": 1.0
+      "target": "src_tests_intrinsics_test_compile"
     },
     {
       "relation": "contains",
@@ -11802,9 +11869,9 @@
       "source_location": "L506",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_intrinsics_test",
-      "target": "src_tests_intrinsics_test_compiletoassembly",
-      "confidence_score": 1.0
+      "target": "src_tests_intrinsics_test_compiletoassembly"
     },
     {
       "relation": "contains",
@@ -11813,9 +11880,9 @@
       "source_location": "L452",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_intrinsics_test",
-      "target": "src_tests_intrinsics_test_findintrinsic",
-      "confidence_score": 1.0
+      "target": "src_tests_intrinsics_test_findintrinsic"
     },
     {
       "relation": "contains",
@@ -11824,9 +11891,9 @@
       "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_parser_test",
-      "target": "src_tests_parser_test_maketoken",
-      "confidence_score": 1.0
+      "target": "src_tests_parser_test_maketoken"
     },
     {
       "relation": "contains",
@@ -11835,9 +11902,9 @@
       "source_location": "L266",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_pointers_test",
-      "target": "src_tests_pointers_test_compile",
-      "confidence_score": 1.0
+      "target": "src_tests_pointers_test_compile"
     },
     {
       "relation": "contains",
@@ -11846,9 +11913,9 @@
       "source_location": "L52",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_pointers_test",
-      "target": "src_tests_pointers_test_parse",
-      "confidence_score": 1.0
+      "target": "src_tests_pointers_test_parse"
     },
     {
       "relation": "contains",
@@ -11857,9 +11924,9 @@
       "source_location": "L172",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_pointers_test",
-      "target": "src_tests_pointers_test_translate",
-      "confidence_score": 1.0
+      "target": "src_tests_pointers_test_translate"
     },
     {
       "relation": "calls",
@@ -11869,9 +11936,9 @@
       "source_location": "L230",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_pointers_test_compile",
-      "target": "src_tests_pointers_test_parse",
-      "confidence_score": 1.0
+      "target": "src_tests_pointers_test_parse"
     },
     {
       "relation": "calls",
@@ -11881,9 +11948,9 @@
       "source_location": "L176",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_pointers_test_translate",
-      "target": "src_tests_pointers_test_parse",
-      "confidence_score": 1.0
+      "target": "src_tests_pointers_test_parse"
     },
     {
       "relation": "calls",
@@ -11893,9 +11960,9 @@
       "source_location": "L232",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_pointers_test_compile",
-      "target": "src_tests_pointers_test_translate",
-      "confidence_score": 1.0
+      "target": "src_tests_pointers_test_translate"
     },
     {
       "relation": "contains",
@@ -11904,9 +11971,9 @@
       "source_location": "L681",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_preprocessor_test",
-      "target": "src_tests_preprocessor_test_writetestfile",
-      "confidence_score": 1.0
+      "target": "src_tests_preprocessor_test_writetestfile"
     },
     {
       "relation": "contains",
@@ -11915,9 +11982,9 @@
       "source_location": "L245",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_qualifiers_test",
-      "target": "src_tests_qualifiers_test_parse",
-      "confidence_score": 1.0
+      "target": "src_tests_qualifiers_test_parse"
     },
     {
       "relation": "contains",
@@ -11926,9 +11993,9 @@
       "source_location": "L12",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_struct_test",
-      "target": "src_tests_struct_test_parse",
-      "confidence_score": 1.0
+      "target": "src_tests_struct_test_parse"
     },
     {
       "relation": "contains",
@@ -11937,9 +12004,9 @@
       "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_struct_test",
-      "target": "src_tests_struct_test_toir",
-      "confidence_score": 1.0
+      "target": "src_tests_struct_test_toir"
     },
     {
       "relation": "contains",
@@ -29721,5 +29788,5 @@
       ]
     }
   ],
-  "built_at_commit": "832e4c6e797a4726f60b45cef0a79fceab4d5f5a"
+  "built_at_commit": "6455ce1da3a8b85e003096b398aeb31d97641f4a"
 }

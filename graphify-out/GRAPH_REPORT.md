@@ -1,16 +1,16 @@
 # Graph Report - jsvcc80  (2026-07-25)
 
 ## Corpus Check
-- 90 files · ~92,317 words
+- 91 files · ~94,549 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1026 nodes · 1596 edges · 106 communities (55 shown, 51 thin omitted)
+- 1031 nodes · 1615 edges · 105 communities (54 shown, 51 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6455ce1d`
+- Built from commit: `bf2ff800`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -80,6 +80,7 @@
 - PredParser
 - SomeParser
 - Memory
+- memory.js
 - .setFlag
 - ReturnNode
 - StructFieldNode
@@ -87,7 +88,6 @@
 - EnumNode
 - Simulator
 - CPU
-- Lexer
 - ExprStmtNode
 - IndexNode
 - MemberNode
@@ -99,9 +99,9 @@
 - TypeOfNode
 
 ## God Nodes (most connected - your core abstractions)
-1. `Z80Codegen` - 38 edges
-2. `Simulator` - 33 edges
-3. `CPU` - 31 edges
+1. `Simulator` - 39 edges
+2. `Z80Codegen` - 38 edges
+3. `CPU` - 33 edges
 4. `LexerCore` - 24 edges
 5. `PreprocessedSource` - 23 edges
 6. `Compiler` - 21 edges
@@ -125,7 +125,7 @@
 - **Compilation Pipeline Stages** — agents_preprocessor_lexer, agents_parser_cparser, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_backend_z80codegen [INFERRED]
 - **Core Modules Read Order** — agents_compiler_entry, agents_preprocessor_lexer, agents_parser_combinators, agents_parser_cparser, agents_nanopass_il, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_nanopass_register_passes, agents_backend_z80codegen [INFERRED]
 
-## Communities (106 total, 51 thin omitted)
+## Communities (105 total, 51 thin omitted)
 
 ### Community 0 - "AST Node Definitions"
 Cohesion: 0.06
@@ -152,8 +152,8 @@ Cohesion: 0.20
 Nodes (3): IntrinsicHandler, IntrinsicMap, TranslationState
 
 ### Community 7 - "CLI Entry & Compiler"
-Cohesion: 0.10
-Nodes (3): Compiler, CompilerOptions, PassManager
+Cohesion: 0.07
+Nodes (4): Compiler, CompilerOptions, PassManager, Lexer
 
 ### Community 11 - "Architecture Documentation"
 Cohesion: 0.09
@@ -204,8 +204,8 @@ Cohesion: 0.15
 Nodes (3): createCrt0(), ObjectFile, ObjectSection
 
 ### Community 26 - "Symbol Table"
-Cohesion: 0.06
-Nodes (4): ConstantEvaluator, DirectiveHandler, MacroExpander, PreprocessedSource
+Cohesion: 0.09
+Nodes (3): ConstantEvaluator, MacroExpander, PreprocessedSource
 
 ### Community 27 - "Linker Features Docs"
 Cohesion: 0.50
@@ -252,7 +252,7 @@ Cohesion: 0.32
 Nodes (3): computeFieldOffsets(), computeStructSize(), TypeRegistry
 
 ## Knowledge Gaps
-- **55 isolated node(s):** `name`, `version`, `description`, `type`, `main` (+50 more)
+- **54 isolated node(s):** `✅ Completed`, `🔄 In Progress`, `🧪 Test Results`, `📔 Backlog (issues identified during implementation for later priorization)`, `name` (+49 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **51 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -260,13 +260,13 @@ Nodes (3): computeFieldOffsets(), computeStructSize(), TypeRegistry
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Z80Codegen` connect `Z80 Code Generator` to `EnumValueNode`?**
-  _High betweenness centrality (0.035) - this node is a cross-community bridge._
-- **Why does `BlockRegisterAllocator` connect `Register Allocator` to `Z80 Codegen & IR Base`?**
-  _High betweenness centrality (0.022) - this node is a cross-community bridge._
-- **Why does `PeepholeOptimizer` connect `Plugin Registry` to `PluginRegistry`, `Z80 Codegen & IR Base`?**
-  _High betweenness centrality (0.022) - this node is a cross-community bridge._
-- **What connects `name`, `version`, `description` to the rest of the system?**
-  _55 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _High betweenness centrality (0.039) - this node is a cross-community bridge._
+- **Why does `Lexer` connect `CLI Entry & Compiler` to `Symbol Table`, `EnumValueNode`?**
+  _High betweenness centrality (0.020) - this node is a cross-community bridge._
+- **Why does `Compiler` connect `CLI Entry & Compiler` to `EnumValueNode`?**
+  _High betweenness centrality (0.018) - this node is a cross-community bridge._
+- **What connects `✅ Completed`, `🔄 In Progress`, `🧪 Test Results` to the rest of the system?**
+  _54 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AST Node Definitions` be split into smaller, more focused modules?**
   _Cohesion score 0.06451612903225806 - nodes in this community are weakly interconnected._
 - **Should `Parser Combinators` be split into smaller, more focused modules?**

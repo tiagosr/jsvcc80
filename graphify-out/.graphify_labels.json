@@ -82,7 +82,6 @@
   "80": "stdlib.test.js",
   "81": "Simulator",
   "82": "CPU",
-  "83": "Lexer",
   "84": "ExprStmtNode",
   "85": "IndexNode",
   "86": "MemberNode",

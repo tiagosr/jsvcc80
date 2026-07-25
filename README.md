@@ -63,21 +63,21 @@ I'm compiling findings about this process on [FINDINGS.md](FINDINGS.md).
  - **Z80 simulator - EX AF, AF' (0x08)** - Implemented swapping `f` with `shadow.f`; added `shadow.f` field to CPU state reset.
  - **Z80 simulator - IM 2 (ED 7E)** - Implemented setting interrupt mode 2.
  - **Z80 simulator - Memory watch integration** - WatchManager now triggered on all data memory reads/writes (not just instruction fetches); fixed constructor ordering in Simulator (watcher created before memory.watcher assignment).
- - **Z80 simulator - RES/SET instructions (CB 80-FF)** - Implemented RES b,r (ED 80-BF) and SET b,r (ED C0-FF) for all registers and (HL) memory references;
- 
+  - **Z80 simulator - RES/SET instructions (CB 80-FF)** - Implemented RES b,r (ED 80-BF) and SET b,r (ED C0-FF) for all registers and (HL) memory references;
+  - **Z80 simulator - Sign flag (S) and conditional instructions** - Added `SIGN: 7` to Flags object, added `clearFlag()` method, fixed `setFlags8()` to set S flag, fixed all ALU operations (ADD/ADC/SUB/SBC/AND/XOR/OR/CP) to set S flag, fixed INC/DEC/RLCA/RRCA/RLA/RRA to set S flag, fixed shift/rotate CB-prefixed instructions to set S flag, corrected JP P/M (0xC2/0xEA) to check parity/sign flags respectively, corrected CALL P/M (0xC4/0xEC) and RET P/M (0xC0/0xE0) to check correct flags, fixed JR P/M (0xE2/0xE8) to check parity/sign flags; 11 new tests passing
+
 ### 🔄 In Progress
 - Nothing at the moment
 
 ### 🔜 Next Steps
-1. Expand simulator instruction coverage (sign flag, JP/CALL/RET P/M)
-2. Expand simulator instruction coverage (DD/FD (IX/IY) prefixes)
-3. Add character string operations to the C standard library (`sprintf`, `sscanf`, `strlen`, `strtoi`, etc.)
+1. Expand simulator instruction coverage (DD/FD (IX/IY) prefixes)
+2. Add character string operations to the C standard library (`sprintf`, `sscanf`, `strlen`, `strtoi`, etc.)
 4. Add file stream abstractions to the C standard library (`FILE`, `putc`, `getc`, `fprintf`, `fscanf`, etc.)
 5. Implement symbol map compiling and exporting for debugging
 6. Implement `unsigned:n` bit fields
 
 #### 🧪 Test Results
-- 763 passing tests
+- 774 passing tests
 
 ### 📔 Backlog (issues identified during implementation for later priorization)
 - Fix `typedef unsigned int newType` parsing

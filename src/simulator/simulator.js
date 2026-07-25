@@ -103,7 +103,6 @@ export class Simulator {
    */
   step() {
     if (this.cpu.halted) {
-      this.cpu.pc = (this.cpu.pc + 1) & 0xFFFF;
       return { pc: this.cpu.pc, bytes: 1, stopped: true };
     }
 
@@ -141,8 +140,9 @@ export class Simulator {
     if (stopPC !== undefined) this.stopPC = stopPC;
     this.running = true;
     this.stopped = false;
-    while (this.running && !this.cpu.halted) {
+    while (this.running) {
       this.step();
+      if (this.cpu.halted) break;
       if (this.stopped) break;
     }
     this.running = false;
@@ -329,7 +329,7 @@ export class Simulator {
 
     // CPL / CCF
     if (opcode === 0x2F) { c.a = ~c.a & 0xFF; c.setFlag(Flags.NEGATIVE, true); c.setFlag(Flags.HALF_CARRY, true); return 1; }
-    if (opcode === 0x3F) { c.setFlag(Flags.CARRY, !c.getFlag(Flags.CARRY)); c.setFlag(Flags.NEGATIVE, false); c.setFlag(Flags.HALF_CARRY, false); return 1; }
+    if (opcode === 0x3F) { c.setFlag(Flags.CARRY, !c.getFlag(Flags.CARRY)); c.setFlag(Flags.NEGATIVE, false); c.setFlag(Flags.HALF_CARRY, false); c.setFlag(Flags.ZERO, false); c.setFlag(Flags.PARITY_OVERFLOW, 0); return 1; }
 
     // DAA
     if (opcode === 0x27) { return this._daa(); }

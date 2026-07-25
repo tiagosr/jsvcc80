@@ -115,21 +115,21 @@ export class Memory {
     this.buffer[addr] = value;
   }
 
-  /** Read a 16-bit value from memory (little-endian).
-   * @param {number} addr
-   * @returns {number}
-   */
-  readWord(addr) {
-    return this.readByte(addr) | (this.readByte(addr + 1) << 8);
-  }
+   /** Read a 16-bit value from memory (little-endian).
+    * @param {number} addr
+    * @returns {number}
+    */
+   readWord(addr) {
+     return this.readByte(addr) | (this.readByte(addr + 1) << 8);
+   }
 
-  /** Write a 16-bit value to memory (little-endian).
-   * @param {number} addr
-   * @param {number} value
-   */
-  writeWord(addr, value) {
-    this.writeByte(addr, value & 0xFF);
-    this.writeByte(addr + 1, (value >> 8) & 0xFF);
+   /** Write a 16-bit value to memory (little-endian).
+    * @param {number} addr
+    * @param {number} value
+    */
+   writeWord(addr, value) {
+     this.writeByte(addr, value & 0xFF);
+     this.writeByte(addr + 1, (value >> 8) & 0xFF);
   }
 
   /** Get the raw buffer.

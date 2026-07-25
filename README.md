@@ -70,13 +70,13 @@ I'm compiling findings about this process on [FINDINGS.md](FINDINGS.md).
 
 ### 🔜 Next Steps
 1. Expand simulator instruction coverage (ADC/SBC 16-bit, block transfer INIR/OTIR, ED-prefix instructions)
-3. Add character string operations to the C standard library (`sprintf`, `sscanf`, `strlen`, `strtoi`, etc.)
-4. Add file stream abstractions to the C standard library (`FILE`, `putc`, `getc`, `fprintf`, `fscanf`, etc.)
-5. Implement symbol map compiling and exporting for debugging
-6. Implement `unsigned:n` bit fields
+2. Add character string operations to the C standard library (`sprintf`, `sscanf`, `strlen`, `strtoi`, etc.)
+3. Add file stream abstractions to the C standard library (`FILE`, `putc`, `getc`, `fprintf`, `fscanf`, etc.)
+4. Implement symbol map compiling and exporting for debugging
+5. Implement `unsigned:n` bit fields
 
 #### 🧪 Test Results
- - 744 passing tests (732 compiler + 11 linker + 41 simulator - 11 simulator pre-existing failures)
+- 744 passing tests (732 compiler + 11 linker + 41 simulator - 11 simulator pre-existing failures)
 
 ### 📔 Backlog (issues identified during implementation for later priorization)
 - Fix `typedef unsigned int newType` parsing

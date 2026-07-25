@@ -17,6 +17,7 @@ A C compiler for Z80 CPU implemented in ES2025 Node.js. Compiles C source to Z80
 - **JSDoc required** - All types and function signatures must be documented
 - **Prefer arrow functions** - If free functions are single-line, convert to arrow functions
 - **ES modules only** - Use `import`/`export`, no CommonJS
+- **Binary instruction streams in tests commented with mnemonics** - No "opaque" byte streams without their intention being clear; group instruction bytes together for proper readability
 
 ### Core Modules (Read in Order)
 1. `src/compiler.js` - Entry point, orchestrates all stages

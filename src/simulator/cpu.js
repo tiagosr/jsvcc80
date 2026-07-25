@@ -75,6 +75,36 @@ export class CPU {
   /** @param {number} v */
   set a(v) { this._registers.a = v & MASK_8; }
 
+  /** @returns {number} Register B. */
+  get b() { return this._registers.b; }
+  /** @param {number} v */
+  set b(v) { this._registers.b = v & MASK_8; }
+
+  /** @returns {number} Register C. */
+  get c() { return this._registers.c; }
+  /** @param {number} v */
+  set c(v) { this._registers.c = v & MASK_8; }
+
+  /** @returns {number} Register D. */
+  get d() { return this._registers.d; }
+  /** @param {number} v */
+  set d(v) { this._registers.d = v & MASK_8; }
+
+  /** @returns {number} Register E. */
+  get e() { return this._registers.e; }
+  /** @param {number} v */
+  set e(v) { this._registers.e = v & MASK_8; }
+
+  /** @returns {number} Register H. */
+  get h() { return this._registers.h; }
+  /** @param {number} v */
+  set h(v) { this._registers.h = v & MASK_8; }
+
+  /** @returns {number} Register L. */
+  get l() { return this._registers.l; }
+  /** @param {number} v */
+  set l(v) { this._registers.l = v & MASK_8; }
+
   /** @returns {number} Flags register (F). */
   get f() { return this._registers.f; }
   /** @param {number} v */
@@ -90,10 +120,20 @@ export class CPU {
   /** Restore from a snapshot.
    * @param {Record<string, unknown>} snap
    */
-  restoreSnapshot(snap) {
-    this._registers = { ...snap };
-    if (snap.shadow) this.shadow = { ...snap.shadow };
-  }
+   restoreSnapshot(snap) {
+     this._registers = {
+       a: snap.a, f: snap.f,
+       b: snap.b, c: snap.c,
+       d: snap.d, e: snap.e,
+       h: snap.h, l: snap.l,
+       ix: snap.ix, iy: snap.iy,
+       sp: snap.sp, pc: snap.pc,
+       r: snap.r, i: snap.i,
+       iff1: snap.iff1, iff2: snap.iff2,
+       im: snap.im, halted: snap.halted,
+     };
+     if (snap.shadow) this.shadow = { ...snap.shadow };
+   }
 
   /** Get 16-bit register pair value.
    * @param {'af'|'bc'|'de'|'hl'|'ix'|'iy'|'sp'} pair
@@ -163,15 +203,19 @@ export class CPU {
   /** Push 16-bit value onto stack.
    * @param {number} value
    */
-  push(value) {
-    this.sp = (this.sp - 2) & MASK_16;
-    this.writeWord(this.sp, value);
-  }
+   push(value) {
+     this.sp = ((this.sp - 2) & MASK_16);
+     this.writeWord(this.sp, value);
+   }
 
-  /** Pop 16-bit value from stack.
-   * @returns {number}
-   */
-  pop() { return this.readWord(this.sp); }
+   /** Pop 16-bit value from stack.
+    * @returns {number}
+    */
+   pop() {
+     const val = this.readWord(this.sp);
+     this.sp = (this.sp + 2) & MASK_16;
+     return val;
+   }
 
   /** Set flag bit.
    * @param {number} flag - Flag constant.
@@ -182,19 +226,19 @@ export class CPU {
   }
 
   /** Get flag bit.
-   * @param {number} flag
-   * @returns {boolean}
-   */
-  getFlag(flag) { return (this.f >> flag) & 1; }
+    * @param {number} flag
+    * @returns {boolean}
+    */
+   getFlag(flag) { return ((this.f >> flag) & 1) === 1; }
 
   /** Set flags based on 8-bit result.
    * @param {number} value
    */
   setFlags8(value) {
     this.setFlag(Flags.ZERO, (value & MASK_8) === 0);
-    this.setFlag(Flags.NEGATIVE, false);
+    this.setFlag(Flags.NEGATIVE, ((value & 0x80) !== 0) || (value < 0));
     this.setFlag(Flags.HALF_CARRY, false);
-    this.setFlag(Flags.CARRY, false);
+    this.setFlag(Flags.CARRY, (value & 0x100) !== 0);
     this.setFlag(Flags.PARITY_OVERFLOW, this._parity(value));
   }
 

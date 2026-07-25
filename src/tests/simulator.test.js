@@ -78,7 +78,7 @@ describe('Simulator - CPU', () => {
     assert.strictEqual(cpu.getFlag(Flags.ZERO), true);
     cpu.setFlags8(0xFF);
     assert.strictEqual(cpu.getFlag(Flags.ZERO), false);
-    assert.strictEqual(cpu.getFlag(Flags.PARITY_OVERFLOW), 1);
+    assert.strictEqual(cpu.getFlag(Flags.PARITY_OVERFLOW), true);
   });
 
   it('should push and pop from stack', () => {
@@ -322,39 +322,46 @@ describe('Simulator - Watch Manager', () => {
 describe('Simulator - Full Simulation', () => {
   it('should load and execute simple program', () => {
     const sim = new Simulator();
-    const program = [0x3E, 0x42, 0x06, 0x0D, 0x76];
+    const program = [
+      0x3E, 0x42, // LD A, 0x42
+      0x06, 0x0D, // LD B, 0x0D
+      0x76        // HALT
+    ];
     sim.load(0x1000, program);
     sim.cpu.pc = 0x1000;
     sim.step();
     assert.strictEqual(sim.cpu.a, 0x42);
-    assert.strictEqual(sim.cpu.pc, 0x1001);
+    assert.strictEqual(sim.cpu.pc, 0x1002);
     sim.step();
     assert.strictEqual(sim.cpu.b, 0x0D);
-    assert.strictEqual(sim.cpu.pc, 0x1003);
+    assert.strictEqual(sim.cpu.pc, 0x1004);
     sim.step();
     assert.strictEqual(sim.cpu.halted, true);
   });
 
-  it('should execute LD A,0x42; LD B,0x0D; ADD A,B; HALT', () => {
+  it('should execute LD A,5; LD B,3; ADD A,B; HALT - then A should be equal to 8, in 4 steps', () => {
     const sim = new Simulator();
-    const program = [0x3E, 0x05, 0x06, 0x03, 0x80, 0x76];
+    const program = [
+      0x3E, 0x05, 
+      0x06, 0x03,
+      0x80, 0x76];
     sim.loadAndRun(0x0000, program);
     const stats = sim.getStats();
     assert.strictEqual(stats.a, 8);
-    assert.strictEqual(stats.steps, 5);
+    assert.strictEqual(stats.steps, 4);
     assert.strictEqual(sim.cpu.halted, true);
   });
 
   it('should handle PUSH/POP correctly', () => {
     const sim = new Simulator();
-    const program = [0xC5, 0x01, 0x34, 0x12, 0xD1, 0x76];
+    const program = [0x01, 0x34, 0x12, 0xC5, 0xD1, 0x76];
     sim.loadAndRun(0x0000, program);
     assert.strictEqual(sim.cpu.getPair('bc'), 0x1234);
   });
 
   it('should handle memory read/write during execution', () => {
     const sim = new Simulator();
-    const program = [0x21, 0x00, 0x01, 0x3E, 0x42, 0x77, 0x3E, 0x00, 0x7A, 0x76];
+    const program = [0x21, 0x00, 0x01, 0x3E, 0x42, 0x77, 0x3E, 0x00, 0x7E, 0x76];
     sim.loadAndRun(0x0000, program);
     assert.strictEqual(sim.cpu.a, 0x42);
   });
@@ -439,8 +446,18 @@ describe('Simulator - Full Simulation', () => {
   it('should handle a stack-based program: push values and pop them', () => {
     const sim = new Simulator();
     const program = [
-      0x01, 0x12, 0x34, 0x11, 0x56, 0x78, 0x21, 0x9A, 0xBC,
-      0xC5, 0xD5, 0xE5, 0xF5, 0xF1, 0xE1, 0xD1, 0xC1, 0x76
+      0x01, 0x34, 0x12, // LD BC, 0x1234;
+      0x11, 0x78, 0x56, // LD DE, 0x5678;
+      0x21, 0xBC, 0x9A, // LD HL, 0x9ABC;
+      0xC5,             // PUSH BC;
+      0xD5,             // PUSH DE;
+      0xE5,             // PUSH HL;
+      0xF5,             // PUSH AF;
+      0xF1,             // POP AF
+      0xE1,             // POP HL;
+      0xD1,             // POP DE;
+      0xC1,             // POP BC;
+      0x76              // HALT
     ];
     sim.loadAndRun(0x0000, program);
     assert.strictEqual(sim.cpu.getPair('bc'), 0x1234);
@@ -450,7 +467,10 @@ describe('Simulator - Full Simulation', () => {
 
   it('should handle NOP instructions', () => {
     const sim = new Simulator();
-    const program = [0x00, 0x00, 0x00, 0x76];
+    const program = [
+      0x00, 0x00, 0x00, // NOP (3x)
+      0x76              // HALT
+    ];
     const result = sim.loadAndRun(0x0000, program);
     assert.strictEqual(sim.cpu.halted, true);
     assert.strictEqual(sim.getStats().steps, 4);
@@ -458,16 +478,23 @@ describe('Simulator - Full Simulation', () => {
 
   it('should handle RST instructions', () => {
     const sim = new Simulator();
-    const program = [0xC7, 0x76];
+    const program = [
+      0xC7, // RST
+      0x76  // HALT
+    ];
     sim.loadAndRun(0x100, program);
-    assert.strictEqual(sim.cpu.pc, 0);
+    assert.strictEqual(sim.cpu.pc, 0x102);
     const retAddr = sim.memory.readWord(sim.cpu.sp);
     assert.strictEqual(retAddr, 0x101);
   });
 
   it('should handle DI/EI interrupt instructions', () => {
     const sim = new Simulator();
-    const program = [0xF3, 0xFB, 0x76];
+    const program = [
+      0xF3, // DI
+      0xFB, // EI
+      0x76  // HALT
+    ];
     sim.loadAndRun(0x0000, program);
     assert.strictEqual(sim.cpu.iff1, 1);
     assert.strictEqual(sim.cpu.iff2, 1);
@@ -475,7 +502,11 @@ describe('Simulator - Full Simulation', () => {
 
   it('should handle CPL instruction', () => {
     const sim = new Simulator();
-    const program = [0x3E, 0xFF, 0x2F, 0x76];
+    const program = [
+      0x3E, 0xFF, // LD A, $FF
+      0x2F,       // CPL
+      0x76        // HALT
+    ];
     sim.loadAndRun(0x0000, program);
     assert.strictEqual(sim.cpu.a, 0x00);
   });
@@ -489,12 +520,20 @@ describe('Simulator - Full Simulation', () => {
 
   it('should handle RLCA/RRA instructions', () => {
     const sim = new Simulator();
-    const program1 = [0x3E, 0x01, 0x07, 0x76];
+    const program1 = [
+      0x3E, 0x01, // LD A, 1
+      0x07,       // RLCA
+      0x76        // HALT
+    ];
     sim.loadAndRun(0x0000, program1);
     assert.strictEqual(sim.cpu.a, 0x02);
     assert.strictEqual(sim.getFlag(Flags.CARRY), false);
 
-    const program2 = [0x3E, 0x80, 0x17, 0x76];
+    const program2 = [
+      0x3E, 0x80, // LD A, 80
+      0x17,       // RRA
+      0x76        // HALT
+    ];
     sim.loadAndRun(0x0000, program2);
     assert.strictEqual(sim.cpu.a, 0x40);
   });

@@ -1,16 +1,16 @@
 # Graph Report - jsvcc80  (2026-07-25)
 
 ## Corpus Check
-- 89 files · ~90,506 words
+- 89 files · ~91,785 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1013 nodes · 1731 edges · 91 communities (39 shown, 52 thin omitted)
+- 1014 nodes · 1731 edges · 88 communities (39 shown, 49 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `39c00344`
+- Built from commit: `3f49aac2`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -34,7 +34,6 @@
 - Archive (Static Lib)
 - IR to Object File
 - Object File & Relocations
-- IR Functions & Program
 - Object File Format
 - Binary Writer
 - Compiler Options & Loading
@@ -91,8 +90,6 @@
 - Simulator
 - CPU
 - Lexer
-- Memory
-- simulator.js
 - lexer.js
 - MacroExpander
 - IOHandler
@@ -101,7 +98,7 @@
 
 ## God Nodes (most connected - your core abstractions)
 1. `Z80Codegen` - 40 edges
-2. `Simulator` - 33 edges
+2. `Simulator` - 34 edges
 3. `CPU` - 27 edges
 4. `LexerCore` - 24 edges
 5. `PreprocessedSource` - 23 edges
@@ -126,7 +123,7 @@
 - **Compilation Pipeline Stages** — agents_preprocessor_lexer, agents_parser_cparser, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_backend_z80codegen [INFERRED]
 - **Core Modules Read Order** — agents_compiler_entry, agents_preprocessor_lexer, agents_parser_combinators, agents_parser_cparser, agents_nanopass_il, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_nanopass_register_passes, agents_backend_z80codegen [INFERRED]
 
-## Communities (91 total, 52 thin omitted)
+## Communities (88 total, 49 thin omitted)
 
 ### Community 0 - "AST Node Definitions"
 Cohesion: 0.05
@@ -175,10 +172,6 @@ Nodes (8): Archive, ArchiveMember, createArchive(), deserializeArchive(), isArch
 ### Community 18 - "Object File & Relocations"
 Cohesion: 0.25
 Nodes (10): getCrt0Size(), resolveCrt0Relocations(), link(), LinkerOptions, ObjectRelocation, ObjectSymbol, RelocationType, SectionType (+2 more)
-
-### Community 19 - "IR Functions & Program"
-Cohesion: 0.50
-Nodes (3): Context scale issues, Software design issues, Tooling issues
 
 ### Community 20 - "Object File Format"
 Cohesion: 0.20
@@ -237,8 +230,8 @@ Cohesion: 0.22
 Nodes (3): WlaDxCodegen, WlaDxSectionType, Z80Opcodes
 
 ### Community 45 - "Current Implementation Status"
-Cohesion: 0.29
-Nodes (6): 📔 Backlog (issues identified during implementation for later priorization), ✅ Completed, Current Implementation Status, 🔄 In Progress, 🔜 Next Steps, 🧪 Test Results
+Cohesion: 0.18
+Nodes (9): Context scale issues, Software design issues, Tooling issues, 📔 Backlog (issues identified during implementation for later priorization), ✅ Completed, Current Implementation Status, 🔄 In Progress, 🔜 Next Steps (+1 more)
 
 ### Community 51 - "function-pointers.js"
 Cohesion: 0.29
@@ -252,21 +245,25 @@ Nodes (3): compile(), parse(), translate()
 Cohesion: 0.32
 Nodes (3): computeFieldOffsets(), computeStructSize(), TypeRegistry
 
+### Community 82 - "CPU"
+Cohesion: 0.06
+Nodes (3): CPU, Flags, Memory
+
 ## Knowledge Gaps
-- **51 isolated node(s):** `✅ Completed`, `🔄 In Progress`, `🧪 Test Results`, `📔 Backlog (issues identified during implementation for later priorization)`, `__filename` (+46 more)
+- **51 isolated node(s):** `Software design issues`, `Context scale issues`, `Tooling issues`, `✅ Completed`, `🔄 In Progress` (+46 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **52 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **49 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `ObjectFile` connect `Object File Container` to `Archive (Static Lib)`, `Object File & Relocations`, `Object File Format`, `CLI Entry & Compiler`?**
-  _High betweenness centrality (0.072) - this node is a cross-community bridge._
+  _High betweenness centrality (0.066) - this node is a cross-community bridge._
 - **Why does `Z80Codegen` connect `Z80 Code Generator` to `EnumValueNode`?**
-  _High betweenness centrality (0.061) - this node is a cross-community bridge._
-- **Why does `Compiler` connect `CLI Entry & Compiler` to `EnumValueNode`?**
   _High betweenness centrality (0.054) - this node is a cross-community bridge._
-- **What connects `✅ Completed`, `🔄 In Progress`, `🧪 Test Results` to the rest of the system?**
+- **Why does `LexerCore` connect `Symbol Table` to `lexer.js`?**
+  _High betweenness centrality (0.051) - this node is a cross-community bridge._
+- **What connects `Software design issues`, `Context scale issues`, `Tooling issues` to the rest of the system?**
   _51 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AST Node Definitions` be split into smaller, more focused modules?**
   _Cohesion score 0.05263157894736842 - nodes in this community are weakly interconnected._

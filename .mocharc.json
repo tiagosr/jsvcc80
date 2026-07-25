@@ -4,8 +4,8 @@
     "spec": [
         "src/**/*.test.js"
     ],
-    "slow": "100",
-    "timeout": "5000",
+    "slow": "5",
+    "timeout": "50",
     "package": "./package.json",
     "watch_files": [
         "src/**/*.js",

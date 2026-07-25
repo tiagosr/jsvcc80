@@ -217,33 +217,55 @@ export class Simulator {
   _executeOpcode(opcode, pc) {
     const c = this.cpu;
     const m = c.memory;
+    const pairs = ['bc', 'de', 'hl', 'sp'];
 
-    // 8-bit LD r, n
-    if (opcode === 0x06) { c.b = m.readByte(pc + 1); c.setFlags8(c.b); return 2; }
-    if (opcode === 0x0E) { c.c = m.readByte(pc + 1); c.setFlags8(c.c); return 2; }
-    if (opcode === 0x16) { c.d = m.readByte(pc + 1); c.setFlags8(c.d); return 2; }
-    if (opcode === 0x1E) { c.e = m.readByte(pc + 1); c.setFlags8(c.e); return 2; }
-    if (opcode === 0x26) { c.h = m.readByte(pc + 1); c.setFlags8(c.h); return 2; }
-    if (opcode === 0x2E) { c.l = m.readByte(pc + 1); c.setFlags8(c.l); return 2; }
-    if (opcode === 0x3E) { c.a = m.readByte(pc + 1); c.setFlags8(c.a); return 2; }
+    // Prefixes
+    if (opcode === 0xCB) return 1 + this._executeCBPrefix(m.readByte(pc + 1));
+    if (opcode === 0xED) return 1 + this._executeEDPrefix(m.readByte(pc + 1), pc + 1);
 
-    // 16-bit LD (MUST be before (HL) handlers)
-    if (opcode === 0x01) { c.setPair('bc', m.readWord(pc + 1)); return 3; }
-    if (opcode === 0x11) { c.setPair('de', m.readWord(pc + 1)); return 3; }
-    if (opcode === 0x21) { c.setPair('hl', m.readWord(pc + 1)); return 3; }
-    if (opcode === 0x31) { c.sp = m.readWord(pc + 1); return 3; }
+    // NOP
+    if (opcode === 0x00) return 1;
+
+    // HALT (0x76) / LD r, r' / LD r, (HL) / LD (HL), r -- 01 ddd sss
+    if (opcode >= 0x40 && opcode <= 0x7F) {
+      if (opcode === 0x76) { c.halted = true; return 1; }
+      const dst = (opcode >> 3) & 0x07;
+      const src = opcode & 0x07;
+      this._writeReg8(dst, this._readReg8(src));
+      return 1;
+    }
+
+    // LD r, n / LD (HL), n -- 00 rrr 110
+    if ((opcode & 0xC7) === 0x06) {
+      const dst = (opcode >> 3) & 0x07;
+      this._writeReg8(dst, m.readByte(pc + 1));
+      return 2;
+    }
+
+    // LD dd, nn -- 00 dd0 001
+    if ((opcode & 0xCF) === 0x01) {
+      const dd = (opcode >> 4) & 0x03;
+      const val = m.readWord(pc + 1);
+      if (dd === 3) c.sp = val; else c.setPair(pairs[dd], val);
+      return 3;
+    }
+
+    // LD (nn), HL / LD HL, (nn)
     if (opcode === 0x22) { m.writeWord(m.readWord(pc + 1), c.getPair('hl')); return 3; }
     if (opcode === 0x2A) { c.setPair('hl', m.readWord(m.readWord(pc + 1))); return 3; }
 
     // LD A, (nn) / LD (nn), A
-    if (opcode === 0x3A) { c.a = m.readByte(m.readWord(pc + 1)); c.setFlags8(c.a); return 3; }
+    if (opcode === 0x3A) { c.a = m.readByte(m.readWord(pc + 1)); return 3; }
     if (opcode === 0x32) { m.writeByte(m.readWord(pc + 1), c.a); return 3; }
 
-    // LD (HL), n
-    if (opcode === 0x36) { m.writeByte(c.getPair('hl'), m.readByte(pc + 1)); return 2; }
+    // LD A, (BC) / LD A, (DE) / LD (BC), A / LD (DE), A
+    if (opcode === 0x0A) { c.a = m.readByte(c.getPair('bc')); return 1; }
+    if (opcode === 0x1A) { c.a = m.readByte(c.getPair('de')); return 1; }
+    if (opcode === 0x02) { m.writeByte(c.getPair('bc'), c.a); return 1; }
+    if (opcode === 0x12) { m.writeByte(c.getPair('de'), c.a); return 1; }
 
-    // EX DE, HL
-    if (opcode === 0x09) { const hl = c.getPair('hl'); const de = c.getPair('de'); c.setPair('hl', de); c.setPair('de', hl); return 1; }
+    // LD SP, HL
+    if (opcode === 0xF9) { c.sp = c.getPair('hl'); return 1; }
 
     // PUSH/POP
     if (opcode === 0xC5) { c.push(c.getPair('bc')); return 1; }
@@ -255,362 +277,544 @@ export class Simulator {
     if (opcode === 0xE1) { c.setPair('hl', c.pop()); return 1; }
     if (opcode === 0xF1) { c.setPair('af', c.pop()); return 1; }
 
-    // INC/DEC rr
-    if (opcode === 0x03) { c.setPair('bc', (c.getPair('bc') + 1) & 0xFFFF); return 1; }
-    if (opcode === 0x13) { c.setPair('de', (c.getPair('de') + 1) & 0xFFFF); return 1; }
-    if (opcode === 0x23) { c.setPair('hl', (c.getPair('hl') + 1) & 0xFFFF); return 1; }
-    if (opcode === 0x33) { c.sp = (c.sp + 1) & 0xFFFF; return 1; }
-    if (opcode === 0x0B) { c.setPair('bc', (c.getPair('bc') - 1) & 0xFFFF); return 1; }
-    if (opcode === 0x1B) { c.setPair('de', (c.getPair('de') - 1) & 0xFFFF); return 1; }
-    if (opcode === 0x2B) { c.setPair('hl', (c.getPair('hl') - 1) & 0xFFFF); return 1; }
-    if (opcode === 0x3B) { c.sp = (c.sp - 1) & 0xFFFF; return 1; }
-
-    // LD r, (HL) -- high3 = 6 or 7, low3 = 6
-    if (((opcode & 0x38) === 0x30 || (opcode & 0x38) === 0x38) && (opcode & 0x07) === 0x06) {
-      const val = m.readByte(c.getPair('hl'));
-      if ((opcode & 0x38) === 0x30) {
-        // 0x76 = HALT (high3=6, low3=6)
-        c.halted = true;
-        return 1;
-      }
-      // 0x7E = LD A, (HL) (high3=7, low3=6)
-      c.a = val;
-      c.setFlags8(val);
+    // INC ss -- 00 dd0 011 / DEC ss -- 00 dd1 011
+    if ((opcode & 0xCF) === 0x03) {
+      const dd = (opcode >> 4) & 0x03;
+      const v = dd === 3 ? c.sp : c.getPair(pairs[dd]);
+      const r = (v + 1) & 0xFFFF;
+      if (dd === 3) c.sp = r; else c.setPair(pairs[dd], r);
+      return 1;
+    }
+    if ((opcode & 0xCF) === 0x0B) {
+      const dd = (opcode >> 4) & 0x03;
+      const v = dd === 3 ? c.sp : c.getPair(pairs[dd]);
+      const r = (v - 1) & 0xFFFF;
+      if (dd === 3) c.sp = r; else c.setPair(pairs[dd], r);
       return 1;
     }
 
-    // LD r, (HL) -- high3 = 6, low3 = 0-5 (B,C,D,E,H,L)
-    if ((opcode & 0x38) === 0x30 && (opcode & 0x07) < 6) {
-      const r = opcode & 0x07;
-      const val = m.readByte(c.getPair('hl'));
-      const regs = [c.b, c.c, c.d, c.e, c.h, c.l];
-      this._setReg8(r, regs[r]);
-      c.setFlags8(regs[r]);
-      return 1;
-    }
-
-    // LD (HL), r -- high3 = 6 (0b110), but exclude 0x21(LD HL,nn), 0x22(LD (nn),HL), 0x23(INC HL), 0x27(DAA)
-    if ((opcode & 0x38) === 0x30 && (opcode & 0x07) !== 0x01 && (opcode & 0x07) !== 0x02 && (opcode & 0x07) !== 0x03) {
-      const r = opcode & 0x07;
-      if (r < 7) {
-        const regs = [c.b, c.c, c.d, c.e, c.h, c.l, 0, c.a];
-        m.writeByte(c.getPair('hl'), regs[r]);
-      } else {
-        m.writeByte(c.getPair('hl'), c.a);
-      }
-      return 1;
-    }
-
-    // INC/DEC r -- RRRR 001
-    if ((opcode & 0x07) === 0x01) {
-      const r = (opcode >> 3) & 0x07;
-      const isInc = (opcode & 0x08) === 0;
-      const regs = [c.b, c.c, c.d, c.e, c.h, c.l, m.readByte(c.getPair('hl')), c.a];
-      let val = regs[r];
-      if (isInc) {
-        val = (val + 1) & 0xFF;
-        c.setFlag(Flags.HALF_CARRY, (val & 0x0F) === 0x0F);
-      } else {
-        val = (val - 1) & 0xFF;
-        c.setFlag(Flags.HALF_CARRY, (val & 0x0F) === 0x0F);
-      }
-      c.setFlag(Flags.ZERO, val === 0);
-      c.setFlag(Flags.NEGATIVE, false);
-      c.setFlag(Flags.PARITY_OVERFLOW, this._parity(val));
-      if (r < 7) this._setReg8(r, val);
-      else c.a = val;
-      return 1;
-    }
-
-    // Rotations
-    if (opcode === 0x07) { const a = c.a; const cy = (a >> 7) & 1; c.a = ((a << 1) & 0xFF) | cy; c.setFlag(Flags.CARRY, cy === 1); c.setFlag(Flags.ZERO, false); c.setFlag(Flags.HALF_CARRY, false); c.setFlag(Flags.NEGATIVE, false); return 1; }
-    if (opcode === 0x1F) { const a = c.a; const cy = c.getFlag(Flags.CARRY); c.a = ((a << 1) & 0xFF) | cy; c.setFlag(Flags.CARRY, ((a >> 7) & 1) === 1); c.setFlag(Flags.ZERO, false); c.setFlag(Flags.HALF_CARRY, false); c.setFlag(Flags.NEGATIVE, false); return 1; }
-    if (opcode === 0x0F) { const a = c.a; const cy = a & 1; c.a = (a >> 1) | ((cy & 1) << 7); c.setFlag(Flags.CARRY, cy === 1); c.setFlag(Flags.ZERO, c.a === 0); c.setFlag(Flags.HALF_CARRY, false); c.setFlag(Flags.NEGATIVE, false); return 1; }
-    if (opcode === 0x17) { const a = c.a; const cy = c.getFlag(Flags.CARRY); c.a = (a >> 1) | ((cy & 1) << 7); c.setFlag(Flags.CARRY, (a & 1) === 1); c.setFlag(Flags.ZERO, c.a === 0); c.setFlag(Flags.HALF_CARRY, false); c.setFlag(Flags.NEGATIVE, false); return 1; }
-
-    // CPL / CCF
-    if (opcode === 0x2F) { c.a = ~c.a & 0xFF; c.setFlag(Flags.NEGATIVE, true); c.setFlag(Flags.HALF_CARRY, true); return 1; }
-    if (opcode === 0x3F) { c.setFlag(Flags.CARRY, !c.getFlag(Flags.CARRY)); c.setFlag(Flags.NEGATIVE, false); c.setFlag(Flags.HALF_CARRY, false); c.setFlag(Flags.ZERO, false); c.setFlag(Flags.PARITY_OVERFLOW, 0); return 1; }
-
-    // DAA
-    if (opcode === 0x27) { return this._daa(); }
-
-    // ADD HL, rr
-    if ((opcode & 0xF0) === 0x88) {
-      const pairs = ['bc', 'de', 'hl', 'sp'];
+    // ADD HL, ss -- 00 ss1 001
+    if ((opcode & 0xCF) === 0x09) {
+      const ss = (opcode >> 4) & 0x03;
       const hl = c.getPair('hl');
-      const rv = c.getPair(pairs[opcode & 0x03]);
+      const rv = ss === 3 ? c.sp : c.getPair(pairs[ss]);
       const result = (hl + rv) & 0xFFFF;
       c.setPair('hl', result);
-      c.setFlag(Flags.CARRY, result > 0xFFFF);
+      c.setFlag(Flags.CARRY, (hl + rv) > 0xFFFF);
       c.setFlag(Flags.HALF_CARRY, ((hl & 0x0FFF) + (rv & 0x0FFF)) > 0x0FFF);
       c.setFlag(Flags.NEGATIVE, false);
       return 1;
     }
 
-    // ADD HL, HL / ADD HL, SP
-    if (opcode === 0x29) { const hl = c.getPair('hl'); const r = (hl + hl) & 0xFFFF; c.setPair('hl', r); c.setFlag(Flags.CARRY, r > 0xFFFF); c.setFlag(Flags.HALF_CARRY, ((hl & 0x0FFF) + (hl & 0x0FFF)) > 0x0FFF); c.setFlag(Flags.NEGATIVE, false); return 1; }
-    if (opcode === 0x39) { const hl = c.getPair('hl'); const r = (hl + c.sp) & 0xFFFF; c.setPair('hl', r); c.setFlag(Flags.CARRY, r > 0xFFFF); c.setFlag(Flags.HALF_CARRY, ((hl & 0x0FFF) + (c.sp & 0x0FFF)) > 0x0FFF); c.setFlag(Flags.NEGATIVE, false); return 1; }
+    // INC r -- 00 rrr 100
+    if ((opcode & 0xC7) === 0x04) {
+      const r = (opcode >> 3) & 0x07;
+      const val = this._readReg8(r);
+      const result = (val + 1) & 0xFF;
+      this._writeReg8(r, result);
+      c.setFlag(Flags.HALF_CARRY, (val & 0x0F) === 0x0F);
+      c.setFlag(Flags.ZERO, result === 0);
+      c.setFlag(Flags.NEGATIVE, false);
+      c.setFlag(Flags.PARITY_OVERFLOW, val === 0x7F);
+      return 1;
+    }
 
-    // ALU: ADD A, r/(HL)/n
-    if (opcode === 0x80) return this._addA(c.b);
-    if (opcode === 0x81) return this._addA(c.c);
-    if (opcode === 0x82) return this._addA(c.d);
-    if (opcode === 0x83) return this._addA(c.e);
-    if (opcode === 0x84) return this._addA(c.h);
-    if (opcode === 0x85) return this._addA(c.l);
-    if (opcode === 0x86) return this._addA(m.readByte(c.getPair('hl')));
-    if (opcode === 0xC6) return this._addA(m.readByte(pc + 1));
+    // DEC r -- 00 rrr 101
+    if ((opcode & 0xC7) === 0x05) {
+      const r = (opcode >> 3) & 0x07;
+      const val = this._readReg8(r);
+      const result = (val - 1) & 0xFF;
+      this._writeReg8(r, result);
+      c.setFlag(Flags.HALF_CARRY, (val & 0x0F) === 0x00);
+      c.setFlag(Flags.ZERO, result === 0);
+      c.setFlag(Flags.NEGATIVE, true);
+      c.setFlag(Flags.PARITY_OVERFLOW, val === 0x80);
+      return 1;
+    }
 
-    // ADC A, r/(HL)/n
-    if (opcode === 0x88) return this._adcA(c.b);
-    if (opcode === 0x89) return this._adcA(c.c);
-    if (opcode === 0x8A) return this._adcA(c.d);
-    if (opcode === 0x8B) return this._adcA(c.e);
-    if (opcode === 0x8C) return this._adcA(c.h);
-    if (opcode === 0x8D) return this._adcA(c.l);
-    if (opcode === 0x8E) return this._adcA(m.readByte(c.getPair('hl')));
-    if (opcode === 0xCE) return this._adcA(m.readByte(pc + 1));
+    // RLCA / RRCA / RLA / RRA
+    if (opcode === 0x07) { const a = c.a; const cy = (a >> 7) & 1; c.a = ((a << 1) & 0xFF) | cy; c.setFlag(Flags.CARRY, cy === 1); c.setFlag(Flags.HALF_CARRY, false); c.setFlag(Flags.NEGATIVE, false); return 1; }
+    if (opcode === 0x0F) { const a = c.a; const cy = a & 1; c.a = (a >> 1) | (cy << 7); c.setFlag(Flags.CARRY, cy === 1); c.setFlag(Flags.HALF_CARRY, false); c.setFlag(Flags.NEGATIVE, false); return 1; }
+    if (opcode === 0x17) { const a = c.a; const oldCy = c.getFlag(Flags.CARRY) ? 1 : 0; c.setFlag(Flags.CARRY, ((a >> 7) & 1) === 1); c.a = ((a << 1) & 0xFF) | oldCy; c.setFlag(Flags.HALF_CARRY, false); c.setFlag(Flags.NEGATIVE, false); return 1; }
+    if (opcode === 0x1F) { const a = c.a; const oldCy = c.getFlag(Flags.CARRY) ? 1 : 0; c.setFlag(Flags.CARRY, (a & 1) === 1); c.a = (a >> 1) | (oldCy << 7); c.setFlag(Flags.HALF_CARRY, false); c.setFlag(Flags.NEGATIVE, false); return 1; }
 
-    // SUB A, r/(HL)/n
-    if (opcode === 0x90) return this._subA(c.b);
-    if (opcode === 0x91) return this._subA(c.c);
-    if (opcode === 0x92) return this._subA(c.d);
-    if (opcode === 0x93) return this._subA(c.e);
-    if (opcode === 0x94) return this._subA(c.h);
-    if (opcode === 0x95) return this._subA(c.l);
-    if (opcode === 0x96) return this._subA(m.readByte(c.getPair('hl')));
-    if (opcode === 0xD6) return this._subA(m.readByte(pc + 1));
+    // EX AF, AF'
+    if (opcode === 0x08) { const sf = c.f; c.f = c.shadow.f; c.shadow.f = sf; return 1; }
 
-    // SBC A, r/(HL)/n
-    if (opcode === 0x98) return this._sbcA(c.b);
-    if (opcode === 0x99) return this._sbcA(c.c);
-    if (opcode === 0x9A) return this._sbcA(c.d);
-    if (opcode === 0x9B) return this._sbcA(c.e);
-    if (opcode === 0x9C) return this._sbcA(c.h);
-    if (opcode === 0x9D) return this._sbcA(c.l);
-    if (opcode === 0x9E) return this._sbcA(m.readByte(c.getPair('hl')));
-    if (opcode === 0xDE) return this._sbcA(m.readByte(pc + 1));
+    // DJNZ e
+    if (opcode === 0x10) { const d = this._signedByte(m.readByte(pc + 1)); c.b = (c.b - 1) & 0xFF; if (c.b !== 0) { c.pc = (pc + 2 + d) & 0xFFFF; return 0; } return 2; }
 
-    // AND
-    if (opcode === 0xA0) return this._andA(c.b);
-    if (opcode === 0xA1) return this._andA(c.c);
-    if (opcode === 0xA2) return this._andA(c.d);
-    if (opcode === 0xA3) return this._andA(c.e);
-    if (opcode === 0xA4) return this._andA(c.h);
-    if (opcode === 0xA5) return this._andA(c.l);
-    if (opcode === 0xA6) return this._andA(m.readByte(c.getPair('hl')));
-    if (opcode === 0xE6) return this._andA(m.readByte(pc + 1));
+    // JR e / JR cc, e
+    if (opcode === 0x18) { const d = this._signedByte(m.readByte(pc + 1)); c.pc = (pc + 2 + d) & 0xFFFF; return 0; }
+    if (opcode === 0x20) { const d = this._signedByte(m.readByte(pc + 1)); if (!c.getFlag(Flags.ZERO)) { c.pc = (pc + 2 + d) & 0xFFFF; return 0; } return 2; }
+    if (opcode === 0x28) { const d = this._signedByte(m.readByte(pc + 1)); if (c.getFlag(Flags.ZERO)) { c.pc = (pc + 2 + d) & 0xFFFF; return 0; } return 2; }
+    if (opcode === 0x30) { const d = this._signedByte(m.readByte(pc + 1)); if (!c.getFlag(Flags.CARRY)) { c.pc = (pc + 2 + d) & 0xFFFF; return 0; } return 2; }
+    if (opcode === 0x38) { const d = this._signedByte(m.readByte(pc + 1)); if (c.getFlag(Flags.CARRY)) { c.pc = (pc + 2 + d) & 0xFFFF; return 0; } return 2; }
 
-    // OR
-    if (opcode === 0xB0) return this._orA(c.b);
-    if (opcode === 0xB1) return this._orA(c.c);
-    if (opcode === 0xB2) return this._orA(c.d);
-    if (opcode === 0xB3) return this._orA(c.e);
-    if (opcode === 0xB4) return this._orA(c.h);
-    if (opcode === 0xB5) return this._orA(c.l);
-    if (opcode === 0xB6) return this._orA(m.readByte(c.getPair('hl')));
-    if (opcode === 0xF6) return this._orA(m.readByte(pc + 1));
+    // CPL / SCF / CCF
+    if (opcode === 0x2F) { c.a = ~c.a & 0xFF; c.setFlag(Flags.NEGATIVE, true); c.setFlag(Flags.HALF_CARRY, true); return 1; }
+    if (opcode === 0x37) { c.setFlag(Flags.CARRY, true); c.setFlag(Flags.NEGATIVE, false); c.setFlag(Flags.HALF_CARRY, false); return 1; }
+    if (opcode === 0x3F) { const oldCy = c.getFlag(Flags.CARRY); c.setFlag(Flags.HALF_CARRY, oldCy); c.setFlag(Flags.CARRY, !oldCy); c.setFlag(Flags.NEGATIVE, false); return 1; }
 
-    // CP
-    if (opcode === 0xB8) return this._cpA(c.b);
-    if (opcode === 0xB9) return this._cpA(c.c);
-    if (opcode === 0xBA) return this._cpA(c.d);
-    if (opcode === 0xBB) return this._cpA(c.e);
-    if (opcode === 0xBC) return this._cpA(c.h);
-    if (opcode === 0xBD) return this._cpA(c.l);
-    if (opcode === 0xBE) return this._cpA(m.readByte(c.getPair('hl')));
-    if (opcode === 0xFE) return this._cpA(m.readByte(pc + 1));
+    // DAA
+    if (opcode === 0x27) { return this._daa(); }
 
-    // JP
-    if (opcode === 0xC3) return this._jp(m.readWord(pc + 1));
-    if (opcode === 0xC2) { const a = m.readWord(pc + 1); return c.getFlag(Flags.ZERO) ? 3 : this._jp(a); }
-    if (opcode === 0xEA) { const a = m.readWord(pc + 1); return c.getFlag(Flags.ZERO) ? this._jp(a) : 3; }
-    if (opcode === 0xC4) { const a = m.readWord(pc + 1); return c.getFlag(Flags.CARRY) ? 3 : this._jp(a); }
-    if (opcode === 0xE4) { const a = m.readWord(pc + 1); return c.getFlag(Flags.CARRY) ? this._jp(a) : 3; }
+    // ALU A, r -- 10 ooo rrr (0x80-0xBF)
+    if (opcode >= 0x80 && opcode <= 0xBF) {
+      const op = (opcode >> 3) & 0x07;
+      this._aluApply(op, this._readReg8(opcode & 0x07));
+      return 1;
+    }
 
-    // JR
-    if (opcode === 0x18) { const d = m.readByte(pc + 1); const s = d > 0x7F ? d - 256 : d; c.pc = (pc + 2 + s) & 0xFFFF; return 0; }
-    if (opcode === 0x10) { const d = m.readByte(pc + 1); const s = d > 0x7F ? d - 256 : d; c.b = (c.b - 1) & 0xFF; if (c.b !== 0) { c.pc = (pc + 2 + s) & 0xFFFF; return 0; } return 2; }
-    if (opcode === 0x20) { const d = m.readByte(pc + 1); const s = d > 0x7F ? d - 256 : d; if (!c.getFlag(Flags.ZERO)) { c.pc = (pc + 2 + s) & 0xFFFF; return 0; } return 2; }
-    if (opcode === 0x28) { const d = m.readByte(pc + 1); const s = d > 0x7F ? d - 256 : d; if (c.getFlag(Flags.ZERO)) { c.pc = (pc + 2 + s) & 0xFFFF; return 0; } return 2; }
-    if (opcode === 0x30) { const d = m.readByte(pc + 1); const s = d > 0x7F ? d - 256 : d; if (!c.getFlag(Flags.CARRY)) { c.pc = (pc + 2 + s) & 0xFFFF; return 0; } return 2; }
-    if (opcode === 0x38) { const d = m.readByte(pc + 1); const s = d > 0x7F ? d - 256 : d; if (c.getFlag(Flags.CARRY)) { c.pc = (pc + 2 + s) & 0xFFFF; return 0; } return 2; }
+    // ALU A, n -- 11 ooo 110
+    if ((opcode & 0xC7) === 0xC6) {
+      const op = (opcode >> 3) & 0x07;
+      this._aluApply(op, m.readByte(pc + 1));
+      return 2;
+    }
 
-    // CALL/RET
-    if (opcode === 0xCD) { c.push(c.pc + 3); return this._jp(m.readWord(pc + 1)); }
-    if (opcode === 0xC0) { if (!c.getFlag(Flags.ZERO)) { c.pc = c.pop(); return 1; } return 1; }
-    if (opcode === 0xC8) { if (c.getFlag(Flags.ZERO)) { c.pc = c.pop(); return 1; } return 1; }
-    if (opcode === 0xD0) { if (!c.getFlag(Flags.CARRY)) { c.pc = c.pop(); return 1; } return 1; }
-    if (opcode === 0xD8) { if (c.getFlag(Flags.CARRY)) { c.pc = c.pop(); return 1; } return 1; }
-    if (opcode === 0xC9) { c.pc = c.pop(); return 1; }
+    // JP nn / JP cc, nn
+    if (opcode === 0xC3) { c.pc = m.readWord(pc + 1); return 0; }
+    if (opcode === 0xC2) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.ZERO)) { c.pc = a; return 0; } return 3; }
+    if (opcode === 0xCA) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.ZERO)) { c.pc = a; return 0; } return 3; }
+    if (opcode === 0xD2) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.CARRY)) { c.pc = a; return 0; } return 3; }
+    if (opcode === 0xDA) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.CARRY)) { c.pc = a; return 0; } return 3; }
+    if (opcode === 0xE2) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = a; return 0; } return 3; }
+    if (opcode === 0xEA) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = a; return 0; } return 3; }
+    if (opcode === 0xE9) { c.pc = c.getPair('hl'); return 0; }
+
+    // CALL nn / CALL cc, nn
+    if (opcode === 0xCD) { c.push((pc + 3) & 0xFFFF); c.pc = m.readWord(pc + 1); return 0; }
+    if (opcode === 0xC4) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.ZERO)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
+    if (opcode === 0xCC) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.ZERO)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
+    if (opcode === 0xD4) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.CARRY)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
+    if (opcode === 0xDC) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.CARRY)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
+    if (opcode === 0xE4) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
+    if (opcode === 0xEC) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.PARITY_OVERFLOW)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
+
+    // RET / RET cc
+    if (opcode === 0xC9) { c.pc = c.pop(); return 0; }
+    if (opcode === 0xC0) { if (!c.getFlag(Flags.ZERO)) { c.pc = c.pop(); return 0; } return 1; }
+    if (opcode === 0xC8) { if (c.getFlag(Flags.ZERO)) { c.pc = c.pop(); return 0; } return 1; }
+    if (opcode === 0xD0) { if (!c.getFlag(Flags.CARRY)) { c.pc = c.pop(); return 0; } return 1; }
+    if (opcode === 0xD8) { if (c.getFlag(Flags.CARRY)) { c.pc = c.pop(); return 0; } return 1; }
+    if (opcode === 0xE0) { if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = c.pop(); return 0; } return 1; }
+    if (opcode === 0xE8) { if (c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = c.pop(); return 0; } return 1; }
 
     // RST
-    if (opcode === 0xC7) { c.push(c.pc + 1); c.pc = 0; return 1; }
-    if (opcode === 0xCF) { c.push(c.pc + 1); c.pc = 8; return 1; }
-    if (opcode === 0xD7) { c.push(c.pc + 1); c.pc = 0x10; return 1; }
-    if (opcode === 0xDF) { c.push(c.pc + 1); c.pc = 0x18; return 1; }
-    if (opcode === 0xE7) { c.push(c.pc + 1); c.pc = 0x20; return 1; }
-    if (opcode === 0xEF) { c.push(c.pc + 1); c.pc = 0x28; return 1; }
-    if (opcode === 0xF7) { c.push(c.pc + 1); c.pc = 0x30; return 1; }
-    if (opcode === 0xFF) { c.push(c.pc + 1); c.pc = 0x38; return 1; }
+    if (opcode === 0xC7) { c.push((pc + 1) & 0xFFFF); c.pc = 0x00; return 0; }
+    if (opcode === 0xCF) { c.push((pc + 1) & 0xFFFF); c.pc = 0x08; return 0; }
+    if (opcode === 0xD7) { c.push((pc + 1) & 0xFFFF); c.pc = 0x10; return 0; }
+    if (opcode === 0xDF) { c.push((pc + 1) & 0xFFFF); c.pc = 0x18; return 0; }
+    if (opcode === 0xE7) { c.push((pc + 1) & 0xFFFF); c.pc = 0x20; return 0; }
+    if (opcode === 0xEF) { c.push((pc + 1) & 0xFFFF); c.pc = 0x28; return 0; }
+    if (opcode === 0xF7) { c.push((pc + 1) & 0xFFFF); c.pc = 0x30; return 0; }
+    if (opcode === 0xFF) { c.push((pc + 1) & 0xFFFF); c.pc = 0x38; return 0; }
 
-    // IN/OUT
+    // IN A, (n) / OUT (n), A
     if (opcode === 0xDB) { c.a = this.io.handleIn(m.readByte(pc + 1)); return 2; }
     if (opcode === 0xD3) { this.io.handleOut(m.readByte(pc + 1), c.a); return 2; }
 
-    // ED prefix
-    if (opcode === 0xED) { return this._executeEDPrefix(m.readByte(pc + 1), pc + 1); }
-
-    // EI/DI
+    // EI / DI
     if (opcode === 0xFB) { c.iff1 = 1; c.iff2 = 1; return 1; }
     if (opcode === 0xF3) { c.iff1 = 0; c.iff2 = 0; return 1; }
 
     // EXX
     if (opcode === 0xD9) { const t = { b: c.b, c: c.c, d: c.d, e: c.e, h: c.h, l: c.l }; c.b = c.shadow.b; c.c = c.shadow.c; c.d = c.shadow.d; c.e = c.shadow.e; c.h = c.shadow.h; c.l = c.shadow.l; c.shadow = t; return 1; }
 
-    // EX AF, AF'
-    if (opcode === 0x08) { const sf = c.f; c.f = c.shadow.f; c.shadow.f = sf; return 1; }
+    // EX DE, HL
+    if (opcode === 0xEB) { const hl = c.getPair('hl'); const de = c.getPair('de'); c.setPair('hl', de); c.setPair('de', hl); return 1; }
 
     // EX (SP), HL
     if (opcode === 0xE3) { const hl = c.getPair('hl'); const sv = m.readWord(c.sp); m.writeWord(c.sp, hl); c.setPair('hl', sv); return 1; }
 
-    // NOP
-    if (opcode === 0x00) return 1;
+    // DD/FD prefixes (IX/IY) not implemented - treat as NOP + swallow prefix byte
+    if (opcode === 0xDD || opcode === 0xFD) return 1;
 
     // Unknown
     return 1;
   }
 
-  /** Execute ED-prefixed instruction.
+  /** Execute a CB-prefixed instruction (rotates/shifts, BIT/RES/SET).
    * @param {number} opcode
-   * @param {number} pc
-   * @returns {number}
+   * @returns {number} Bytes consumed by the operation byte (always 1).
    * @private
    */
+  _executeCBPrefix(opcode) {
+    const c = this.cpu;
+    const reg = opcode & 0x07;
+
+    if (opcode < 0x40) {
+      const op = (opcode >> 3) & 0x07;
+      const result = this._shiftRotate8(op, this._readReg8(reg));
+      this._writeReg8(reg, result);
+      return 1;
+    }
+
+    const bit = (opcode >> 3) & 0x07;
+
+    if (opcode < 0x80) {
+      // BIT b, r/(HL)
+      const val = this._readReg8(reg);
+      const z = ((val >> bit) & 1) === 0;
+      c.setFlag(Flags.ZERO, z);
+      c.setFlag(Flags.NEGATIVE, false);
+      c.setFlag(Flags.HALF_CARRY, true);
+      c.setFlag(Flags.PARITY_OVERFLOW, z);
+      return 1;
+    }
+
+    if (opcode < 0xC0) {
+      // RES b, r/(HL) -- no flags affected
+      const val = this._readReg8(reg);
+      this._writeReg8(reg, val & ~(1 << bit));
+      return 1;
+    }
+
+    // SET b, r/(HL) -- no flags affected
+    const val = this._readReg8(reg);
+    this._writeReg8(reg, val | (1 << bit));
+    return 1;
+  }
+
+  /** Apply a CB-prefixed rotate/shift operation.
+   * @param {number} op - 0=RLC,1=RRC,2=RL,3=RR,4=SLA,5=SRA,6=SLL(undoc),7=SRL
+   * @param {number} val
+   * @returns {number} Result byte.
+   * @private
+   */
+  _shiftRotate8(op, val) {
+    const c = this.cpu;
+    let result, carryOut;
+    switch (op) {
+      case 0: // RLC
+        carryOut = (val >> 7) & 1;
+        result = ((val << 1) & 0xFF) | carryOut;
+        break;
+      case 1: // RRC
+        carryOut = val & 1;
+        result = (val >> 1) | (carryOut << 7);
+        break;
+      case 2: { // RL
+        const oldCarry = c.getFlag(Flags.CARRY) ? 1 : 0;
+        carryOut = (val >> 7) & 1;
+        result = ((val << 1) & 0xFF) | oldCarry;
+        break;
+      }
+      case 3: { // RR
+        const oldCarry = c.getFlag(Flags.CARRY) ? 1 : 0;
+        carryOut = val & 1;
+        result = (val >> 1) | (oldCarry << 7);
+        break;
+      }
+      case 4: // SLA
+        carryOut = (val >> 7) & 1;
+        result = (val << 1) & 0xFF;
+        break;
+      case 5: // SRA
+        carryOut = val & 1;
+        result = (val >> 1) | (val & 0x80);
+        break;
+      case 6: // SLL (undocumented)
+        carryOut = (val >> 7) & 1;
+        result = ((val << 1) & 0xFF) | 1;
+        break;
+      default: // SRL
+        carryOut = val & 1;
+        result = val >> 1;
+        break;
+    }
+    c.setFlag(Flags.CARRY, carryOut === 1);
+    c.setFlag(Flags.ZERO, result === 0);
+    c.setFlag(Flags.NEGATIVE, false);
+    c.setFlag(Flags.HALF_CARRY, false);
+    c.setFlag(Flags.PARITY_OVERFLOW, this._parity(result));
+    return result;
+  }
+
+  /** Execute ED-prefixed instruction.
+    * @param {number} opcode
+    * @param {number} pc
+    * @returns {number}
+    * @private
+    */
   _executeEDPrefix(opcode, pc) {
     const c = this.cpu;
     const m = c.memory;
+    const pairs = ['bc', 'de', 'hl', 'sp'];
 
-    // SBC HL, rr
-    if ((opcode & 0xF8) === 0x48) {
-      const pairs = ['bc', 'de', 'hl', 'sp'];
-      const hl = c.getPair('hl');
-      const rv = c.getPair(pairs[opcode & 0x03]);
-      const cy = c.getFlag(Flags.CARRY) ? 1 : 0;
-      const r = (hl - rv - cy) & 0xFFFF;
-      c.setPair('hl', r);
-      c.setFlag(Flags.CARRY, r > 0xFFFF);
-      c.setFlag(Flags.HALF_CARRY, ((hl & 0x0FFF) - (rv & 0x0FFF) - cy) > 0x0FFF);
-      c.setFlag(Flags.NEGATIVE, true);
-      return 2;
-    }
-
-    // ADC HL, rr
-    if ((opcode & 0xF8) === 0x40) {
-      const pairs = ['bc', 'de', 'hl', 'sp'];
-      const hl = c.getPair('hl');
-      const rv = c.getPair(pairs[opcode & 0x03]);
-      const cy = c.getFlag(Flags.CARRY) ? 1 : 0;
-      const r = (hl + rv + cy) & 0xFFFF;
-      c.setPair('hl', r);
-      c.setFlag(Flags.CARRY, r > 0xFFFF);
-      c.setFlag(Flags.HALF_CARRY, ((hl & 0x0FFF) + (rv & 0x0FFF) + cy) > 0x0FFF);
-      c.setFlag(Flags.NEGATIVE, false);
-      return 2;
-    }
-
-    // INC/DEC rr
-    if ((opcode & 0xF0) === 0x00) {
-      const pairs = ['bc', 'de', 'hl', 'sp'];
-      const isInc = (opcode & 0x04) !== 0;
-      const v = c.getPair(pairs[(opcode >> 2) & 0x03]);
-      c.setPair(pairs[(opcode >> 2) & 0x03], isInc ? (v + 1) & 0xFFFF : (v - 1) & 0xFFFF);
-      return 2;
-    }
-
-    // LD rr, nn
-    if ((opcode & 0xF0) === 0x40) {
-      const pairs = ['bc', 'de', 'hl', 'sp'];
-      c.setPair(pairs[(opcode >> 4) & 0x03], m.readWord(pc + 1));
+    // LD (nn), dd -- ED 43,53,63,73
+    if ((opcode & 0xCF) === 0x43) {
+      const dd = (opcode >> 4) & 0x03;
+      const addr = m.readWord(pc + 1);
+      m.writeWord(addr, dd === 3 ? c.sp : c.getPair(pairs[dd]));
       return 3;
     }
 
-    // LD (nn), rr
-    if (opcode === 0x4B) { m.writeWord(m.readWord(pc + 1), c.getPair('bc')); return 3; }
-    if (opcode === 0x5B) { m.writeWord(m.readWord(pc + 1), c.getPair('de')); return 3; }
-    if (opcode === 0x6B) { m.writeWord(m.readWord(pc + 1), c.getPair('hl')); return 3; }
-    if (opcode === 0x7B) { m.writeWord(m.readWord(pc + 1), c.sp); return 3; }
-
-    // LD rr, (nn)
-    if (opcode === 0x4A) { c.setPair('bc', m.readWord(m.readWord(pc + 1))); return 3; }
-    if (opcode === 0x5A) { c.setPair('de', m.readWord(m.readWord(pc + 1))); return 3; }
-    if (opcode === 0x6A) { c.setPair('hl', m.readWord(m.readWord(pc + 1))); return 3; }
-    if (opcode === 0x7A) { c.sp = m.readWord(m.readWord(pc + 1)); return 3; }
-
-    // NEG
-    if (opcode === 0x44) { return this._neg(); }
-
-    // RRD / RLD
-    if (opcode === 0x6F) {
-      const hl = c.getPair('hl');
-      const val = m.readByte(hl);
-      const low = val & 0x0F;
-      const high = c.a & 0x0F;
-      m.writeByte(hl, (c.a >> 4) | (low << 4));
-      c.a = (c.a & 0xF0) | high;
-      c.setFlags8(c.a);
-      return 2;
+    // LD dd, (nn) -- ED 4B,5B,6B,7B
+    if ((opcode & 0xCF) === 0x4B) {
+      const dd = (opcode >> 4) & 0x03;
+      const addr = m.readWord(pc + 1);
+      const val = m.readWord(addr);
+      if (dd === 3) c.sp = val; else c.setPair(pairs[dd], val);
+      return 3;
     }
+
+    // ADC HL, ss -- ED 4A,5A,6A,7A
+    if ((opcode & 0xCF) === 0x4A) {
+      const ss = (opcode >> 4) & 0x03;
+      const hl = c.getPair('hl');
+      const rv = ss === 3 ? c.sp : c.getPair(pairs[ss]);
+      const cy = c.getFlag(Flags.CARRY) ? 1 : 0;
+      const result = (hl + rv + cy) & 0xFFFF;
+      c.setPair('hl', result);
+      c.setFlag(Flags.CARRY, (hl + rv + cy) > 0xFFFF);
+      c.setFlag(Flags.HALF_CARRY, ((hl & 0x0FFF) + (rv & 0x0FFF) + cy) > 0x0FFF);
+      c.setFlag(Flags.ZERO, result === 0);
+      c.setFlag(Flags.NEGATIVE, false);
+      return 1;
+    }
+
+    // SBC HL, ss -- ED 42,52,62,72
+    if ((opcode & 0xCF) === 0x42) {
+      const ss = (opcode >> 4) & 0x03;
+      const hl = c.getPair('hl');
+      const rv = ss === 3 ? c.sp : c.getPair(pairs[ss]);
+      const cy = c.getFlag(Flags.CARRY) ? 1 : 0;
+      const result = (hl - rv - cy) & 0xFFFF;
+      c.setPair('hl', result);
+      c.setFlag(Flags.CARRY, (hl - rv - cy) < 0);
+      c.setFlag(Flags.HALF_CARRY, ((hl & 0x0FFF) - (rv & 0x0FFF) - cy) < 0);
+      c.setFlag(Flags.ZERO, result === 0);
+      c.setFlag(Flags.NEGATIVE, true);
+      return 1;
+    }
+
+    // IN r, (C) -- ED 40,48,50,58,60,68,70,78
+    if ((opcode & 0xC7) === 0x40) {
+      const reg = (opcode >> 3) & 0x07;
+      const val = this.io.handleIn(c.c);
+      if (reg !== 6) this._writeReg8(reg, val);
+      c.setFlag(Flags.ZERO, val === 0);
+      c.setFlag(Flags.NEGATIVE, false);
+      c.setFlag(Flags.HALF_CARRY, false);
+      c.setFlag(Flags.PARITY_OVERFLOW, this._parity(val));
+      return 1;
+    }
+
+    // OUT (C), r -- ED 41,49,51,59,61,69,71,79
+    if ((opcode & 0xC7) === 0x41) {
+      const reg = (opcode >> 3) & 0x07;
+      this.io.handleOut(c.c, reg === 6 ? 0 : this._readReg8(reg));
+      return 1;
+    }
+
+    // NEG -- ED 44
+    if (opcode === 0x44) return this._neg();
+
+    // RETN -- ED 45
+    if (opcode === 0x45) { c.pc = c.pop(); c.iff1 = c.iff2; return 0; }
+
+    // RETI -- ED 4D
+    if (opcode === 0x4D) { c.pc = c.pop(); return 0; }
+
+    // IM 0 / IM 1 / IM 2
+    if (opcode === 0x46) { c.im = 0; return 1; }
+    if (opcode === 0x56) { c.im = 1; return 1; }
+    if (opcode === 0x5E) { c.im = 2; return 1; }
+
+    // LD I, A / LD R, A -- no flags affected
+    if (opcode === 0x47) { c.i = c.a; return 1; }
+    if (opcode === 0x4F) { c.r = c.a; return 1; }
+
+    // LD A, I / LD A, R
+    if (opcode === 0x57) {
+      c.a = c.i;
+      c.setFlag(Flags.ZERO, c.a === 0);
+      c.setFlag(Flags.NEGATIVE, false);
+      c.setFlag(Flags.HALF_CARRY, false);
+      c.setFlag(Flags.PARITY_OVERFLOW, c.iff2 === 1);
+      return 1;
+    }
+    if (opcode === 0x5F) {
+      c.a = c.r;
+      c.setFlag(Flags.ZERO, c.a === 0);
+      c.setFlag(Flags.NEGATIVE, false);
+      c.setFlag(Flags.HALF_CARRY, false);
+      c.setFlag(Flags.PARITY_OVERFLOW, c.iff2 === 1);
+      return 1;
+    }
+
+    // RRD -- ED 67
     if (opcode === 0x67) {
-      const hl = c.getPair('hl');
-      const val = m.readByte(hl);
-      const low = val & 0x0F;
-      const high = c.a & 0x0F;
-      m.writeByte(hl, (c.a >> 4) | (low << 4));
-      c.a = (c.a & 0xF0) | high;
+      const addr = c.getPair('hl');
+      const memv = m.readByte(addr);
+      const aLow = c.a & 0x0F;
+      const memHigh = (memv >> 4) & 0x0F;
+      const memLow = memv & 0x0F;
+      m.writeByte(addr, ((aLow << 4) | memHigh) & 0xFF);
+      c.a = (c.a & 0xF0) | memLow;
       c.setFlags8(c.a);
-      return 2;
+      c.setFlag(Flags.NEGATIVE, false);
+      c.setFlag(Flags.HALF_CARRY, false);
+      return 1;
     }
 
-    // IM modes
-    if (opcode === 0x56) { c.im = 1; return 2; }
-    if (opcode === 0x5E) { c.im = 0; return 2; }
-    if (opcode === 0x7E) { c.im = 2; return 2; }
-
-    // RES b, r (ED 80-BF)
-    if ((opcode & 0xC0) === 0x80) {
-      const bit = (opcode >> 3) & 0x07;
-      const reg = opcode & 0x07;
-      const mask = ~(1 << bit);
-      if (reg === 7) {
-        const val = m.readByte(c.getPair('hl'));
-        m.writeByte(c.getPair('hl'), val & mask);
-      } else {
-        const regs = [c.a, c.b, c.c, c.d, c.e, c.h, c.l, 0];
-        regs[reg] &= mask;
-        this._setReg8(reg, regs[reg]);
-      }
-      return 2;
+    // RLD -- ED 6F
+    if (opcode === 0x6F) {
+      const addr = c.getPair('hl');
+      const memv = m.readByte(addr);
+      const aLow = c.a & 0x0F;
+      const memHigh = (memv >> 4) & 0x0F;
+      const memLow = memv & 0x0F;
+      m.writeByte(addr, ((memLow << 4) | aLow) & 0xFF);
+      c.a = (c.a & 0xF0) | memHigh;
+      c.setFlags8(c.a);
+      c.setFlag(Flags.NEGATIVE, false);
+      c.setFlag(Flags.HALF_CARRY, false);
+      return 1;
     }
 
-    // SET b, r (ED C0-FF)
-    if ((opcode & 0xC0) === 0xC0) {
-      const bit = (opcode >> 3) & 0x07;
-      const reg = opcode & 0x07;
-      const mask = 1 << bit;
-      if (reg === 7) {
-        const val = m.readByte(c.getPair('hl'));
-        m.writeByte(c.getPair('hl'), val | mask);
-      } else {
-        const regs = [c.a, c.b, c.c, c.d, c.e, c.h, c.l, 0];
-        regs[reg] |= mask;
-        this._setReg8(reg, regs[reg]);
-      }
-      return 2;
+    // LDI / LDIR -- ED A0 / B0
+    if (opcode === 0xA0 || opcode === 0xB0) {
+      let hl = c.getPair('hl'), de = c.getPair('de'), bc = c.getPair('bc');
+      do {
+        m.writeByte(de, m.readByte(hl));
+        hl = (hl + 1) & 0xFFFF; de = (de + 1) & 0xFFFF; bc = (bc - 1) & 0xFFFF;
+      } while (opcode === 0xB0 && bc !== 0);
+      c.setPair('hl', hl); c.setPair('de', de); c.setPair('bc', bc);
+      c.setFlag(Flags.NEGATIVE, false);
+      c.setFlag(Flags.HALF_CARRY, false);
+      c.setFlag(Flags.PARITY_OVERFLOW, bc !== 0);
+      return 1;
     }
 
-    return 2;
+    // LDD / LDDR -- ED A8 / B8
+    if (opcode === 0xA8 || opcode === 0xB8) {
+      let hl = c.getPair('hl'), de = c.getPair('de'), bc = c.getPair('bc');
+      do {
+        m.writeByte(de, m.readByte(hl));
+        hl = (hl - 1) & 0xFFFF; de = (de - 1) & 0xFFFF; bc = (bc - 1) & 0xFFFF;
+      } while (opcode === 0xB8 && bc !== 0);
+      c.setPair('hl', hl); c.setPair('de', de); c.setPair('bc', bc);
+      c.setFlag(Flags.NEGATIVE, false);
+      c.setFlag(Flags.HALF_CARRY, false);
+      c.setFlag(Flags.PARITY_OVERFLOW, bc !== 0);
+      return 1;
+    }
+
+    // CPI / CPIR -- ED A1 / B1
+    if (opcode === 0xA1 || opcode === 0xB1) {
+      let hl = c.getPair('hl'), bc = c.getPair('bc');
+      let result = 0, halfCarry = false;
+      do {
+        const val = m.readByte(hl);
+        result = (c.a - val) & 0xFF;
+        halfCarry = (c.a & 0x0F) < (val & 0x0F);
+        hl = (hl + 1) & 0xFFFF; bc = (bc - 1) & 0xFFFF;
+      } while (opcode === 0xB1 && bc !== 0 && result !== 0);
+      c.setPair('hl', hl); c.setPair('bc', bc);
+      c.setFlag(Flags.ZERO, result === 0);
+      c.setFlag(Flags.NEGATIVE, true);
+      c.setFlag(Flags.HALF_CARRY, halfCarry);
+      c.setFlag(Flags.PARITY_OVERFLOW, bc !== 0);
+      return 1;
+    }
+
+    // CPD / CPDR -- ED A9 / B9
+    if (opcode === 0xA9 || opcode === 0xB9) {
+      let hl = c.getPair('hl'), bc = c.getPair('bc');
+      let result = 0, halfCarry = false;
+      do {
+        const val = m.readByte(hl);
+        result = (c.a - val) & 0xFF;
+        halfCarry = (c.a & 0x0F) < (val & 0x0F);
+        hl = (hl - 1) & 0xFFFF; bc = (bc - 1) & 0xFFFF;
+      } while (opcode === 0xB9 && bc !== 0 && result !== 0);
+      c.setPair('hl', hl); c.setPair('bc', bc);
+      c.setFlag(Flags.ZERO, result === 0);
+      c.setFlag(Flags.NEGATIVE, true);
+      c.setFlag(Flags.HALF_CARRY, halfCarry);
+      c.setFlag(Flags.PARITY_OVERFLOW, bc !== 0);
+      return 1;
+    }
+
+    // INI / INIR -- ED A2 / B2
+    if (opcode === 0xA2 || opcode === 0xB2) {
+      let hl = c.getPair('hl');
+      do {
+        m.writeByte(hl, this.io.handleIn(c.c));
+        hl = (hl + 1) & 0xFFFF;
+        c.b = (c.b - 1) & 0xFF;
+      } while (opcode === 0xB2 && c.b !== 0);
+      c.setPair('hl', hl);
+      c.setFlag(Flags.ZERO, c.b === 0);
+      c.setFlag(Flags.NEGATIVE, true);
+      return 1;
+    }
+
+    // IND / INDR -- ED AA / BA
+    if (opcode === 0xAA || opcode === 0xBA) {
+      let hl = c.getPair('hl');
+      do {
+        m.writeByte(hl, this.io.handleIn(c.c));
+        hl = (hl - 1) & 0xFFFF;
+        c.b = (c.b - 1) & 0xFF;
+      } while (opcode === 0xBA && c.b !== 0);
+      c.setPair('hl', hl);
+      c.setFlag(Flags.ZERO, c.b === 0);
+      c.setFlag(Flags.NEGATIVE, true);
+      return 1;
+    }
+
+    // OUTI / OTIR -- ED A3 / B3
+    if (opcode === 0xA3 || opcode === 0xB3) {
+      let hl = c.getPair('hl');
+      do {
+        this.io.handleOut(c.c, m.readByte(hl));
+        hl = (hl + 1) & 0xFFFF;
+        c.b = (c.b - 1) & 0xFF;
+      } while (opcode === 0xB3 && c.b !== 0);
+      c.setPair('hl', hl);
+      c.setFlag(Flags.ZERO, c.b === 0);
+      c.setFlag(Flags.NEGATIVE, true);
+      return 1;
+    }
+
+    // OUTD / OTDR -- ED AB / BB
+    if (opcode === 0xAB || opcode === 0xBB) {
+      let hl = c.getPair('hl');
+      do {
+        this.io.handleOut(c.c, m.readByte(hl));
+        hl = (hl - 1) & 0xFFFF;
+        c.b = (c.b - 1) & 0xFF;
+      } while (opcode === 0xBB && c.b !== 0);
+      c.setPair('hl', hl);
+      c.setFlag(Flags.ZERO, c.b === 0);
+      c.setFlag(Flags.NEGATIVE, true);
+      return 1;
+    }
+
+    // Unimplemented/undocumented ED opcode
+    return 1;
+  }
+
+  /** Apply an ALU operation (as encoded in the "ooo" field of ADD/ADC/SUB/SBC/AND/XOR/OR/CP) to A.
+   * @param {number} op - 0=ADD,1=ADC,2=SUB,3=SBC,4=AND,5=XOR,6=OR,7=CP
+   * @param {number} value
+   * @private
+   */
+  _aluApply(op, value) {
+    switch (op) {
+      case 0: this._addA(value); break;
+      case 1: this._adcA(value); break;
+      case 2: this._subA(value); break;
+      case 3: this._sbcA(value); break;
+      case 4: this._andA(value); break;
+      case 5: this._xorA(value); break;
+      case 6: this._orA(value); break;
+      default: this._cpA(value); break;
+    }
   }
 
   /** Execute ADD A, r.
@@ -620,10 +824,11 @@ export class Simulator {
    */
   _addA(r) {
     const c = this.cpu;
-    const result = (c.a + r) & 0xFF;
+    const a = c.a;
+    const result = (a + r) & 0xFF;
     c.a = result;
-    c.setAddFlags8(c.a, r);
     c.setFlags8(result);
+    c.setAddFlags8(a, r);
     c.setFlag(Flags.NEGATIVE, false);
     return 1;
   }
@@ -636,10 +841,11 @@ export class Simulator {
   _adcA(r) {
     const c = this.cpu;
     const cy = c.getFlag(Flags.CARRY) ? 1 : 0;
-    const result = (c.a + r + cy) & 0xFF;
+    const a = c.a;
+    const result = (a + r + cy) & 0xFF;
     c.a = result;
-    c.setAddFlags8(c.a, r, cy === 1);
     c.setFlags8(result);
+    c.setAddFlags8(a, r, cy === 1);
     c.setFlag(Flags.NEGATIVE, false);
     return 1;
   }
@@ -651,11 +857,12 @@ export class Simulator {
    */
   _subA(r) {
     const c = this.cpu;
-    const result = (c.a - r) & 0xFF;
+    const a = c.a;
+    const result = (a - r) & 0xFF;
     c.a = result;
-    c.setFlag(Flags.CARRY, c.a > r);
-    c.setFlag(Flags.HALF_CARRY, (c.a & 0x0F) > (r & 0x0F));
     c.setFlags8(result);
+    c.setFlag(Flags.CARRY, a < r);
+    c.setFlag(Flags.HALF_CARRY, (a & 0x0F) < (r & 0x0F));
     c.setFlag(Flags.NEGATIVE, true);
     return 1;
   }
@@ -668,11 +875,13 @@ export class Simulator {
   _sbcA(r) {
     const c = this.cpu;
     const cy = c.getFlag(Flags.CARRY) ? 1 : 0;
-    const result = (c.a - r - cy) & 0xFF;
+    const a = c.a;
+    const rc = r + cy;
+    const result = (a - rc) & 0xFF;
     c.a = result;
-    c.setFlag(Flags.CARRY, c.a > (r + cy));
-    c.setFlag(Flags.HALF_CARRY, (c.a & 0x0F) > ((r + cy) & 0x0F));
     c.setFlags8(result);
+    c.setFlag(Flags.CARRY, a < rc);
+    c.setFlag(Flags.HALF_CARRY, (a & 0x0F) < (r & 0x0F) + cy);
     c.setFlag(Flags.NEGATIVE, true);
     return 1;
   }
@@ -686,7 +895,7 @@ export class Simulator {
     const c = this.cpu;
     c.a &= r;
     c.setFlags8(c.a);
-    c.setFlag(Flags.PARITY_OVERFLOW, this._parity(c.a));
+    c.setFlag(Flags.NEGATIVE, false);
     c.setFlag(Flags.HALF_CARRY, true);
     c.setFlag(Flags.CARRY, false);
     return 1;
@@ -701,7 +910,22 @@ export class Simulator {
     const c = this.cpu;
     c.a |= r;
     c.setFlags8(c.a);
-    c.setFlag(Flags.PARITY_OVERFLOW, this._parity(c.a));
+    c.setFlag(Flags.NEGATIVE, false);
+    c.setFlag(Flags.HALF_CARRY, false);
+    c.setFlag(Flags.CARRY, false);
+    return 1;
+  }
+
+  /** Execute XOR A, r.
+   * @param {number} r
+   * @returns {number}
+   * @private
+   */
+  _xorA(r) {
+    const c = this.cpu;
+    c.a ^= r;
+    c.setFlags8(c.a);
+    c.setFlag(Flags.NEGATIVE, false);
     c.setFlag(Flags.HALF_CARRY, false);
     c.setFlag(Flags.CARRY, false);
     return 1;
@@ -715,9 +939,9 @@ export class Simulator {
   _cpA(r) {
     const c = this.cpu;
     const result = (c.a - r) & 0xFF;
+    c.setFlags8(result);
     c.setFlag(Flags.CARRY, c.a < r);
     c.setFlag(Flags.HALF_CARRY, (c.a & 0x0F) < (r & 0x0F));
-    c.setFlags8(result);
     c.setFlag(Flags.NEGATIVE, true);
     return 1;
   }
@@ -753,38 +977,60 @@ export class Simulator {
    */
   _neg() {
     const c = this.cpu;
-    const result = (0 - c.a) & 0xFF;
+    const a = c.a;
+    const result = (0 - a) & 0xFF;
     c.a = result;
-    c.setFlag(Flags.CARRY, c.a !== 0);
-    c.setFlag(Flags.HALF_CARRY, (c.a & 0x0F) > 0);
     c.setFlags8(result);
+    c.setFlag(Flags.CARRY, a !== 0);
+    c.setFlag(Flags.HALF_CARRY, (a & 0x0F) !== 0);
     c.setFlag(Flags.NEGATIVE, true);
-    c.setFlag(Flags.PARITY_OVERFLOW, this._parity(c.a));
-    return 2;
+    c.setFlag(Flags.PARITY_OVERFLOW, this._parity(result));
+    return 1;
   }
 
-  /** Jump to address.
-   * @param {number} addr
+  /** Sign-extend an 8-bit byte to a JS number.
+   * @param {number} b
    * @returns {number}
    * @private
    */
-  _jp(addr) { this.cpu.pc = addr; return 0; }
+  _signedByte(b) { return b > 0x7F ? b - 256 : b; }
 
-  /** Set an 8-bit register by index.
+  /** Read an 8-bit register by standard Z80 r-field index (0=B,1=C,2=D,3=E,4=H,5=L,6=(HL),7=A).
+   * @param {number} reg
+   * @returns {number}
+   * @private
+   */
+  _readReg8(reg) {
+    const c = this.cpu;
+    switch (reg) {
+      case 0: return c.b;
+      case 1: return c.c;
+      case 2: return c.d;
+      case 3: return c.e;
+      case 4: return c.h;
+      case 5: return c.l;
+      case 6: return c.memory.readByte(c.getPair('hl'));
+      default: return c.a;
+    }
+  }
+
+  /** Write an 8-bit register by standard Z80 r-field index (0=B,1=C,2=D,3=E,4=H,5=L,6=(HL),7=A).
    * @param {number} reg
    * @param {number} value
    * @private
    */
-  _setReg8(reg, value) {
+  _writeReg8(reg, value) {
+    const c = this.cpu;
     const v = value & 0xFF;
     switch (reg) {
-      case 0: this.cpu.a = v; break;
-      case 1: this.cpu.b = v; break;
-      case 2: this.cpu.c = v; break;
-      case 3: this.cpu.d = v; break;
-      case 4: this.cpu.e = v; break;
-      case 5: this.cpu.h = v; break;
-      case 6: this.cpu.l = v; break;
+      case 0: c.b = v; break;
+      case 1: c.c = v; break;
+      case 2: c.d = v; break;
+      case 3: c.e = v; break;
+      case 4: c.h = v; break;
+      case 5: c.l = v; break;
+      case 6: c.memory.writeByte(c.getPair('hl'), v); break;
+      default: c.a = v; break;
     }
   }
 

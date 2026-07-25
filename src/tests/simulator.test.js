@@ -342,9 +342,11 @@ describe('Simulator - Full Simulation', () => {
   it('should execute LD A,5; LD B,3; ADD A,B; HALT - then A should be equal to 8, in 4 steps', () => {
     const sim = new Simulator();
     const program = [
-      0x3E, 0x05, 
-      0x06, 0x03,
-      0x80, 0x76];
+      0x3E, 0x05, // LD A, 5
+      0x06, 0x03, // LD B, 3
+      0x80,       // ADD A, B
+      0x76        // HALT
+    ];
     sim.loadAndRun(0x0000, program);
     const stats = sim.getStats();
     assert.strictEqual(stats.a, 8);
@@ -354,7 +356,12 @@ describe('Simulator - Full Simulation', () => {
 
   it('should handle PUSH/POP correctly', () => {
     const sim = new Simulator();
-    const program = [0x01, 0x34, 0x12, 0xC5, 0xD1, 0x76];
+    const program = [
+      0x01, 0x34, 0x12, // LD BC, 0x1234
+      0xC5,             // PUSH BC
+      0xD1,             // POP BC
+      0x76              // HALT
+    ];
     sim.loadAndRun(0x0000, program);
     assert.strictEqual(sim.cpu.getPair('bc'), 0x1234);
   });
@@ -478,14 +485,14 @@ describe('Simulator - Full Simulation', () => {
 
   it('should handle RST instructions', () => {
     const sim = new Simulator();
+    sim.memory.writeByte(0x0000, 0x76); // HALT at the RST 0 target
     const program = [
-      0xC7, // RST
-      0x76  // HALT
+      0xC7 // RST 0
     ];
     sim.loadAndRun(0x100, program);
-    assert.strictEqual(sim.cpu.pc, 0x102);
+    assert.strictEqual(sim.cpu.pc, 0x0001, 'PC should be 1 after HALT executes at address 0');
     const retAddr = sim.memory.readWord(sim.cpu.sp);
-    assert.strictEqual(retAddr, 0x101);
+    assert.strictEqual(retAddr, 0x101, 'RST should push the address of the instruction after it');
   });
 
   it('should handle DI/EI interrupt instructions', () => {
@@ -531,7 +538,7 @@ describe('Simulator - Full Simulation', () => {
 
     const program2 = [
       0x3E, 0x80, // LD A, 80
-      0x17,       // RRA
+      0x1F,       // RRA
       0x76        // HALT
     ];
     sim.loadAndRun(0x0000, program2);
@@ -599,61 +606,298 @@ describe('Simulator - Full Simulation', () => {
     assert.strictEqual(sim.cpu.a, 0x42);
   });
 
-  it('should handle IM 2 interrupt mode (ED 7E)', () => {
+  it('should handle INIR (block input to RAM)', () => {
     const sim = new Simulator();
-    const program = [0xED, 0x7E, 0x76];
-    sim.loadAndRun(0x0000, program);
-    assert.strictEqual(sim.cpu.im, 2);
-  });
-
-  it('should handle IM 0/1/2 sequence', () => {
-    const sim = new Simulator();
+    sim.io.register(0x60, () => 0xAA);
+    // Real Z80: INIR uses B (not BC) as the down-counter and C as the port.
     const program = [
-      0xED, 0x5E, // IM 0
-      0xED, 0x56, // IM 1
-      0xED, 0x7E, // IM 2
-      0x76 // HALT
+      0x21, 0x00, 0x02, // LD HL, 0x0200
+      0x06, 0x03,       // LD B, 3
+      0x0E, 0x60,       // LD C, 0x60
+      0xED, 0xB2,       // INIR (repeats 3 times, writing 0xAA to 0x0200-0x0202)
+      0x76              // HALT
     ];
     sim.loadAndRun(0x0000, program);
-    assert.strictEqual(sim.cpu.im, 2);
+    assert.strictEqual(sim.cpu.b, 0, 'B should be decremented to 0');
+    assert.strictEqual(sim.memory.readByte(0x0200), 0xAA);
+    assert.strictEqual(sim.memory.readByte(0x0201), 0xAA);
+    assert.strictEqual(sim.memory.readByte(0x0202), 0xAA);
   });
 
-  it('should handle RES b, r instructions (ED 80-BF)', () => {
+  it('should handle OUTIR (block output from RAM)', () => {
+    const sim2 = new Simulator();
+    sim2.memory.writeByte(0x0400, 0x11);
+    sim2.memory.writeByte(0x0401, 0x22);
+    sim2.memory.writeByte(0x0402, 0x33);
+    let receivedValues2 = [];
+    sim2.io.register(0x03, (_port, value) => { receivedValues2.push(value); });
+    const program2 = [
+      0x21, 0x00, 0x04, // LD HL, 0x0400
+      0x06, 0x03,       // LD B, 3
+      0x0E, 0x03,       // LD C, 0x03 (port)
+      0xED, 0xB3,       // OTIR (repeats 3 times)
+      0x76              // HALT
+    ];
+    sim2.loadAndRun(0x0000, program2);
+    assert.strictEqual(sim2.cpu.b, 0, 'B should be decremented to 0');
+    assert.strictEqual(receivedValues2.length, 3);
+    assert.strictEqual(receivedValues2[0], 0x11);
+    assert.strictEqual(receivedValues2[1], 0x22);
+    assert.strictEqual(receivedValues2[2], 0x33);
+  });
+
+  it('should handle INDR (block input with HL update)', () => {
     const sim = new Simulator();
-    // Test RES 0, A: ED 80
-    const prog1 = [0x3E, 0xFF, 0xED, 0x80, 0x76];
+    sim.io.register(0x02, () => 0xBB);
+    // INDR decrements HL after each byte (unlike INIR which increments).
+    // Start HL at the top of the block so writes land on 0x0501, then 0x0500.
+    const program = [
+      0x21, 0x01, 0x05, // LD HL, 0x0501
+      0x06, 0x02,       // LD B, 2
+      0x0E, 0x02,       // LD C, 2 (port for handler)
+      0xED, 0xBA,       // INDR
+      0x76              // HALT
+    ];
+    sim.loadAndRun(0x0000, program);
+    assert.strictEqual(sim.cpu.b, 0, 'B should be 0');
+    assert.strictEqual(sim.cpu.getPair('hl'), 0x04FF, 'HL should be decremented twice');
+    assert.strictEqual(sim.memory.readByte(0x0500), 0xBB);
+    assert.strictEqual(sim.memory.readByte(0x0501), 0xBB);
+  });
+
+  it('should handle OTDR (block output with HL update)', () => {
+    const sim = new Simulator();
+    sim.memory.writeByte(0x0600, 0xCC);
+    sim.memory.writeByte(0x0601, 0xDD);
+    let receivedValues = [];
+    sim.io.register(0x02, (_port, value) => { receivedValues.push(value); });
+    // OTDR decrements HL, so starting at the top of the block outputs 0x0601 first, then 0x0600.
+    const program = [
+      0x21, 0x01, 0x06, // LD HL, 0x0601
+      0x06, 0x02,       // LD B, 2
+      0x0E, 0x02,       // LD C, 2 (port for handler)
+      0xED, 0xBB,       // OTDR
+      0x76              // HALT
+    ];
+    sim.loadAndRun(0x0000, program);
+    assert.strictEqual(sim.cpu.b, 0, 'B should be 0');
+    assert.strictEqual(sim.cpu.getPair('hl'), 0x05FF, 'HL should be decremented twice');
+    assert.strictEqual(receivedValues.length, 2);
+    assert.strictEqual(receivedValues[0], 0xDD);
+    assert.strictEqual(receivedValues[1], 0xCC);
+  });
+
+  it('should handle INIR with B=0 (256 iterations, real Z80 wraparound behavior)', () => {
+    const sim = new Simulator();
+    let count = 0;
+    sim.io.register(0xA0, () => { count++; return 0xFF; });
+    // Real INIR always runs at least once and loops on B; starting at B=0 wraps
+    // to 0xFF and repeats 256 times rather than "no transfer".
+    const program = [
+      0x21, 0x00, 0x07, // LD HL, 0x0700
+      0x06, 0x00,       // LD B, 0
+      0x0E, 0xA0,       // LD C, 0xA0
+      0xED, 0xB2,       // INIR
+      0x76              // HALT
+    ];
+    sim.loadAndRun(0x0000, program);
+    assert.strictEqual(sim.cpu.b, 0, 'B wraps back to 0 after 256 iterations');
+    assert.strictEqual(count, 256, 'INIR from B=0 performs 256 transfers');
+  });
+
+  it('should handle BIT instructions for registers', () => {
+    const sim = new Simulator();
+    // BIT 3, B: ED 91 - test bit 3 of B (B=0x08, bit 3 is set)
+    const prog1 = [
+      0x06, 0x08, // LD B, 8
+      0xCB, 0x58, // BIT 3, B
+      0x76        // HALT
+    ];
+    sim.loadAndRun(0x0000, prog1);
+    assert.strictEqual(sim.getFlag(Flags.ZERO), false, 'BIT 3 of 0x08 should be set');
+
+    const sim2 = new Simulator();
+    // BIT 3, B with B=0x07: ED 91 (bit 3 of 0x07 is 0)
+    const prog2 = [
+      0x06, 0x07, // LD B, 7
+      0xCB, 0x58, // BIT 3, B
+      0x76        // HALT
+    ];
+    sim2.loadAndRun(0x0000, prog2);
+    assert.strictEqual(sim2.getFlag(Flags.ZERO), true, 'BIT 3 of 0x07 should be zero');
+
+    const sim3 = new Simulator();
+    // BIT 7, (HL): CB 7E - test bit 7 of memory at (HL) where (HL)=0x80
+    const prog3 = [0x21, 0x00, 0x0A, 0x3E, 0x80, 0x77, 0xCB, 0x7E, 0x76];
+    sim3.loadAndRun(0x0000, prog3);
+    assert.strictEqual(sim3.getFlag(Flags.ZERO), false, 'BIT 7 of 0x80 should be set');
+
+    const sim4 = new Simulator();
+    // BIT 0, A: CB 47
+    const prog4 = [0x3E, 0x01, 0xCB, 0x47, 0x76];
+    sim4.loadAndRun(0x0000, prog4);
+    assert.strictEqual(sim4.getFlag(Flags.ZERO), false, 'BIT 0 of 0x01 should be set');
+  });
+
+  it('should handle BIT instruction on (HL) memory', () => {
+    const sim = new Simulator();
+    sim.memory.writeByte(0x0800, 0x42);
+    // BIT 6, (HL): CB 76 -- 0x42 = 0b01000010, bit 6 is set (bit 5 is not)
+    const program = [
+      0x21, 0x00, 0x08, // LD HL, 0x0800
+      0xCB, 0x76,       // BIT 6, (HL)
+      0x76              // HALT
+    ];
+    sim.loadAndRun(0x0000, program);
+    assert.strictEqual(sim.getFlag(Flags.ZERO), false, 'BIT 6 of 0x42 (01000010) should be set');
+
+    const sim2 = new Simulator();
+    sim2.memory.writeByte(0x0900, 0x10);
+    const program2 = [
+      0x21, 0x00, 0x09, // LD HL, 0x0900
+      0xCB, 0x66,       // BIT 4, (HL) - 0x10 has bit 4 set
+      0x76              // HALT
+    ];
+    sim2.loadAndRun(0x0000, program2);
+    assert.strictEqual(sim2.getFlag(Flags.ZERO), false, 'BIT 4 of 0x10 should be set');
+  });
+
+  it('should handle BIT instruction flags (Z, N, H, P)', () => {
+    const sim = new Simulator();
+    // BIT 2, A with A=0x04: CB 57
+    const program = [
+      0x3E, 0x04, // LD A, 0x04
+      0xCB, 0x57, // BIT 2, A
+      0x76        // HALT
+    ];
+    sim.loadAndRun(0x0000, program);
+    assert.strictEqual(sim.getFlag(Flags.ZERO), false, 'BIT 2 of 0x04 is set');
+    assert.strictEqual(sim.getFlag(Flags.NEGATIVE), false, 'BIT clears N flag');
+    assert.strictEqual(sim.getFlag(Flags.HALF_CARRY), true, 'BIT sets H flag');
+    assert.strictEqual(sim.getFlag(Flags.PARITY_OVERFLOW), false, 'BIT sets P/V equal to Z (undocumented behavior); bit is set so Z is false');
+  });
+
+  it('should handle LD A,I (copy I to A)', () => {
+    const sim = new Simulator();
+    const program = [
+      0x3E, 0x55, // LD A, 0x55 (doesn't affect I)
+      0xED, 0x57, // LD A,I
+      0x76        // HALT
+    ];
+    sim.loadAndRun(0x0000, program);
+    assert.strictEqual(sim.cpu.a, 0x00, 'I starts at 0');
+    assert.strictEqual(sim.getFlag(Flags.ZERO), true, 'A=0 sets Z flag');
+
+    const sim2 = new Simulator();
+    sim2.cpu.i = 0xAB;
+    const program2 = [
+      0xED, 0x57, // LD A,I
+      0x76        // HALT
+    ];
+    sim2.loadAndRun(0x0000, program2);
+    assert.strictEqual(sim2.cpu.a, 0xAB, 'A should equal I');
+    assert.strictEqual(sim2.getFlag(Flags.ZERO), false, 'A!=0 clears Z flag');
+  });
+
+  it('should handle LD A,R (copy R to A)', () => {
+    const sim = new Simulator();
+    sim.cpu.r = 0xCD;
+    const program = [
+      0xED, 0x5F, // LD A,R
+      0x76        // HALT
+    ];
+    sim.loadAndRun(0x0000, program);
+    assert.strictEqual(sim.cpu.a, 0xCD, 'A should equal R');
+  });
+
+  it('should handle LD I,A (copy A to I)', () => {
+    const sim = new Simulator();
+    const program = [
+      0x3E, 0x60, // LD A, 0x60
+      0xED, 0x47, // LD I,A
+      0x76        // HALT
+    ];
+    sim.loadAndRun(0x0000, program);
+    assert.strictEqual(sim.cpu.i, 0x60, 'I should equal A');
+  });
+
+  it('should handle EXX (swap register sets)', () => {
+    const sim = new Simulator();
+    // Set main registers
+    sim.cpu.b = 0x11;
+    sim.cpu.c = 0x22;
+    sim.cpu.d = 0x33;
+    sim.cpu.e = 0x44;
+    sim.cpu.h = 0x55;
+    sim.cpu.l = 0x66;
+    // Set shadow registers
+    sim.cpu.shadow.b = 0xA1;
+    sim.cpu.shadow.c = 0xA2;
+    sim.cpu.shadow.d = 0xA3;
+    sim.cpu.shadow.e = 0xA4;
+    sim.cpu.shadow.h = 0xA5;
+    sim.cpu.shadow.l = 0xA6;
+    // Execute EXX: D9
+    const program = [0xD9, 0x76];
+    sim.loadAndRun(0x0000, program);
+    assert.strictEqual(sim.cpu.b, 0xA1, 'B should be from shadow');
+    assert.strictEqual(sim.cpu.c, 0xA2, 'C should be from shadow');
+    assert.strictEqual(sim.cpu.d, 0xA3, 'D should be from shadow');
+    assert.strictEqual(sim.cpu.e, 0xA4, 'E should be from shadow');
+    assert.strictEqual(sim.cpu.h, 0xA5, 'H should be from shadow');
+    assert.strictEqual(sim.cpu.l, 0xA6, 'L should be from shadow');
+    const snap = sim.getSnapshot();
+    assert.strictEqual(snap.shadow.b, 0x11, 'Shadow B should be original B');
+    assert.strictEqual(snap.shadow.c, 0x22, 'Shadow C should be original C');
+  });
+
+  it('should handle LD SP,HL', () => {
+    const sim = new Simulator();
+    const program = [
+      0x21, 0x34, 0x12, // LD HL, 0x1234 (little-endian: low=0x34, high=0x12)
+      0xF9,             // LD SP,HL
+      0x76              // HALT
+    ];
+    sim.loadAndRun(0x0000, program);
+    assert.strictEqual(sim.cpu.sp, 0x1234, 'SP should equal HL');
+  });
+
+  it('should handle RES b, r instructions (CB 80-BF)', () => {
+    const sim = new Simulator();
+    // Test RES 0, A: CB 87
+    const prog1 = [0x3E, 0xFF, 0xCB, 0x87, 0x76];
     sim.loadAndRun(0x0000, prog1);
     assert.strictEqual(sim.cpu.a, 0xFE, 'RES 0, A should clear bit 0');
 
-    // Test RES 3, B: ED 99
+    // Test RES 3, B: CB 98
     const sim2 = new Simulator();
-    const prog2 = [0x06, 0xFF, 0xED, 0x99, 0x76];
+    const prog2 = [0x06, 0xFF, 0xCB, 0x98, 0x76];
     sim2.loadAndRun(0x0000, prog2);
     assert.strictEqual(sim2.cpu.b, 0xF7, 'RES 3, B should clear bit 3');
 
-    // Test RES 7, (HL): ED BF
+    // Test RES 7, (HL): CB BE
     const sim3 = new Simulator();
-    const prog3 = [0x21, 0x00, 0x03, 0x3E, 0x80, 0x77, 0xED, 0xBF, 0x7E, 0x76];
+    const prog3 = [0x21, 0x00, 0x03, 0x3E, 0x80, 0x77, 0xCB, 0xBE, 0x7E, 0x76];
     sim3.loadAndRun(0x0000, prog3);
     assert.strictEqual(sim3.memory.readByte(0x0300), 0x00, 'RES 7, (HL) should clear bit 7 of memory');
   });
 
-  it('should handle SET b, r instructions (ED C0-FF)', () => {
+  it('should handle SET b, r instructions (CB C0-FF)', () => {
     const sim = new Simulator();
-    // SET 0, A: Set bit 0 of A (ED C0)
-    // SET 3, B: Set bit 3 of B (ED D9)
-    // SET 4, (HL): Set bit 4 of memory at (HL) (ED E7)
-    // SET 7, (HL): Set bit 7 of memory at (HL) (ED FF)
+    // SET 0, A: Set bit 0 of A (CB C7)
+    // SET 3, B: Set bit 3 of B (CB D8)
+    // SET 4, (HL): Set bit 4 of memory at (HL) (CB E6)
+    // SET 7, (HL): Set bit 7 of memory at (HL) (CB FE)
     const program = [
       0x3E, 0x00, // LD A, 0x00 (all bits clear)
-      0xED, 0xC0, // SET 0, A -> A = 0x01
+      0xCB, 0xC7, // SET 0, A -> A = 0x01
       0x06, 0x00, // LD B, 0x00
-      0xED, 0xD9, // SET 3, B -> B = 0x08
+      0xCB, 0xD8, // SET 3, B -> B = 0x08
       0x21, 0x00, 0x03, // LD HL, 0x0300
       0x3E, 0x00, // LD A, 0x00
       0x77, // LD (HL), A -> memory[0x0300] = 0x00
-      0xED, 0xE7, // SET 4, (HL) -> memory[0x0300] = 0x10
-      0xED, 0xFF, // SET 7, (HL) -> memory[0x0300] = 0x80
+      0xCB, 0xE6, // SET 4, (HL) -> memory[0x0300] = 0x10
+      0xCB, 0xFE, // SET 7, (HL) -> memory[0x0300] = 0x80
       0x7E, // LD A, (HL)
       0x76 // HALT
     ];
@@ -663,9 +907,9 @@ describe('Simulator - Full Simulation', () => {
     const sim2 = new Simulator();
     const prog2 = [
       0x3E, 0x00, // LD A, 0x00
-      0xED, 0xC0, // SET 0, A -> A = 0x01
+      0xCB, 0xC7, // SET 0, A -> A = 0x01
       0x06, 0x00, // LD B, 0x00
-      0xED, 0xD9, // SET 3, B -> B = 0x08
+      0xCB, 0xD8, // SET 3, B -> B = 0x08
       0x76 // HALT
     ];
     sim2.loadAndRun(0x0000, prog2);
@@ -680,8 +924,8 @@ describe('Simulator - Full Simulation', () => {
       0x21, 0x00, 0x03, // LD HL, 0x0300
       0x3E, 0xFF, // LD A, 0xFF
       0x77, // LD (HL), A -> memory[0x0300] = 0xFF
-      0xED, 0xE7, // SET 4, (HL) -> memory[0x0300] = 0xFF (bit 4 already set)
-      0xED, 0x97, // RES 2, (HL) -> memory[0x0300] = 0xFF & ~0x04 = 0xFB
+      0xCB, 0xE6, // SET 4, (HL) -> memory[0x0300] = 0xFF (bit 4 already set)
+      0xCB, 0x96, // RES 2, (HL) -> memory[0x0300] = 0xFF & ~0x04 = 0xFB
       0x7E, // LD A, (HL)
       0x76 // HALT
     ];

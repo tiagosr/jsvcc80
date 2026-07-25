@@ -231,14 +231,12 @@ export class CPU {
     */
    getFlag(flag) { return ((this.f >> flag) & 1) === 1; }
 
-  /** Set flags based on 8-bit result.
+  /** Set Z and P/V flags based on an 8-bit result. Does not touch N, H, or C -
+   * callers set those explicitly per the rules of their specific instruction.
    * @param {number} value
    */
   setFlags8(value) {
     this.setFlag(Flags.ZERO, (value & MASK_8) === 0);
-    this.setFlag(Flags.NEGATIVE, ((value & 0x80) !== 0) || (value < 0));
-    this.setFlag(Flags.HALF_CARRY, false);
-    this.setFlag(Flags.CARRY, (value & 0x100) !== 0);
     this.setFlag(Flags.PARITY_OVERFLOW, this._parity(value));
   }
 

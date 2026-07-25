@@ -1,16 +1,16 @@
 # Graph Report - jsvcc80  (2026-07-25)
 
 ## Corpus Check
-- 89 files · ~92,290 words
+- 90 files · ~92,317 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1023 nodes · 1593 edges · 106 communities (55 shown, 51 thin omitted)
+- 1026 nodes · 1596 edges · 106 communities (55 shown, 51 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `832e4c6e`
+- Built from commit: `6455ce1d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -160,8 +160,8 @@ Cohesion: 0.09
 Nodes (25): AST to JSON, src/backend/z80codegen.js, src/compiler.js, End-to-End Pipeline, Extensibility Points, File Structure Rules, src/nanopass/ast_to_ir.js, src/nanopass/il.js (+17 more)
 
 ### Community 13 - "Package Configuration"
-Cohesion: 0.08
-Nodes (23): argparse, mocha, bin, vcc80, dependencies, argparse, description, devDependencies (+15 more)
+Cohesion: 0.07
+Nodes (26): argparse, mocha, nyc, bin, vcc80, dependencies, argparse, description (+18 more)
 
 ### Community 14 - "Linker Core"
 Cohesion: 0.15
@@ -252,7 +252,7 @@ Cohesion: 0.32
 Nodes (3): computeFieldOffsets(), computeStructSize(), TypeRegistry
 
 ## Knowledge Gaps
-- **53 isolated node(s):** `✅ Completed`, `🔄 In Progress`, `🧪 Test Results`, `📔 Backlog (issues identified during implementation for later priorization)`, `name` (+48 more)
+- **55 isolated node(s):** `name`, `version`, `description`, `type`, `main` (+50 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **51 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -260,13 +260,13 @@ Nodes (3): computeFieldOffsets(), computeStructSize(), TypeRegistry
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Z80Codegen` connect `Z80 Code Generator` to `EnumValueNode`?**
-  _High betweenness centrality (0.029) - this node is a cross-community bridge._
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._
+- **Why does `BlockRegisterAllocator` connect `Register Allocator` to `Z80 Codegen & IR Base`?**
+  _High betweenness centrality (0.022) - this node is a cross-community bridge._
 - **Why does `PeepholeOptimizer` connect `Plugin Registry` to `PluginRegistry`, `Z80 Codegen & IR Base`?**
   _High betweenness centrality (0.022) - this node is a cross-community bridge._
-- **Why does `LexerCore` connect `Link Result` to `Symbol Table`?**
-  _High betweenness centrality (0.019) - this node is a cross-community bridge._
-- **What connects `✅ Completed`, `🔄 In Progress`, `🧪 Test Results` to the rest of the system?**
-  _53 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **What connects `name`, `version`, `description` to the rest of the system?**
+  _55 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AST Node Definitions` be split into smaller, more focused modules?**
   _Cohesion score 0.06451612903225806 - nodes in this community are weakly interconnected._
 - **Should `Parser Combinators` be split into smaller, more focused modules?**

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --input-type=module -e ' *)",
+      "Bash(grep -n \"_executeEDPrefix\\(opcode, pc\\) {\\\\|_aluApply\\(op, value\\) {\" /Users/tiago/Projects/jsvcc80/src/simulator/simulator.js)"
+    ]
+  }
+}

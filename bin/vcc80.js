@@ -68,6 +68,17 @@ function parseArgs() {
     help: 'Add directory to include search path'
   });
 
+  parser.add_argument('--no-crt0', {
+    action: 'store_false',
+    dest: 'enableCrt0',
+    help: 'Disable crt0 startup code generation'
+  });
+
+  parser.add_argument('--stack-top', {
+    dest: 'stackTop',
+    help: 'Stack pointer top address (default: 0xFFFF)'
+  });
+
   parser.add_argument('-v', '--version', {
     action: 'version',
     version: 'vcc80 Z80 C Compiler v0.1.0',
@@ -81,6 +92,10 @@ function parseArgs() {
 
   const parsed = parser.parse_args();
 
+  const stackTop = parsed.stackTop
+    ? (parsed.stackTop.startsWith('$') ? parseInt(parsed.stackTop, 16) : parseInt(parsed.stackTop, 10))
+    : null;
+
   return {
     files: parsed.files,
     output: parsed.output,
@@ -91,7 +106,9 @@ function parseArgs() {
     version: false,
     compileOnly: parsed.compileOnly,
     map: parsed.map,
-    format: parsed.format
+    format: parsed.format,
+    enableCrt0: parsed.enableCrt0,
+    stackTop: stackTop
   };
 }
 
@@ -170,7 +187,12 @@ async function main() {
         emitIr: options.emitIr,
         compileOnly: options.compileOnly,
         outputFormat: options.format,
-        includePaths: options.includePaths
+        includePaths: options.includePaths,
+        linkerOptions: {
+          enableCrt0: options.enableCrt0,
+          stackTop: options.stackTop,
+          entryPoint: 'main'
+        }
       });
 
       const compiler = new Compiler(compilerOptions);
@@ -243,7 +265,12 @@ async function main() {
       source: options.files[0],
       opt: options.opt,
       outputFormat: options.format,
-      includePaths: options.includePaths
+      includePaths: options.includePaths,
+      linkerOptions: {
+        enableCrt0: options.enableCrt0,
+        stackTop: options.stackTop,
+        entryPoint: 'main'
+      }
     });
     const linkerCompiler = new Compiler(compilerOptions);
     const linkResult = linkerCompiler.link(objResults);

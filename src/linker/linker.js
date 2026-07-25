@@ -3,6 +3,7 @@
  */
 import { ObjectFile, ObjectSection, ObjectSymbol, SymbolType, SymbolVisibility, SectionType } from './objectfile.js';
 import { WlaDxCodegen } from './wladxcodegen.js';
+import { createCrt0, resolveCrt0Relocations } from './crt0.js';
 
 /**
  * Linker options and configuration
@@ -21,6 +22,8 @@ export class LinkerOptions {
     this.rodataAddress = options.rodataAddress || 0x10000;
     this.resolveExternals = !!options.resolveExternals;
     this.verbose = !!options.verbose;
+    this.enableCrt0 = options.enableCrt0 !== false;
+    this.stackTop = options.stackTop ?? 0xFFFF;
   }
 }
 
@@ -180,6 +183,7 @@ export class Linker {
     try {
       this.collectSymbols();
       this.collectSections();
+      this.resolveCrt0();
       this.resolveRelocations();
       this.buildSymbolTable();
 
@@ -219,13 +223,33 @@ export class Linker {
   }
 
   /**
-   * Collects sections from all object files and assigns addresses
-   */
+    * Collects sections from all object files and assigns addresses
+    */
   collectSections() {
     let codeAddress = this.options.baseAddress;
     let dataAddress = this.options.dataAddress;
     let bssAddress = this.options.bssAddress;
     let rodataAddress = this.options.rodataAddress;
+
+    if (this.options.enableCrt0) {
+      const crt0 = createCrt0({
+        stackTop: this.options.stackTop,
+        entryPoint: this.options.entryPoint
+      });
+      const crt0Section = crt0.getSection('.crt0');
+      const crt0Size = crt0Section.size();
+
+      this.sections.set('.crt0', {
+        type: SectionType.CODE,
+        address: codeAddress,
+        contents: new Uint8Array(crt0Section.contents),
+        relocations: crt0Section.relocations.map(r => ({ ...r })),
+        isCrt0: true,
+        crt0Object: crt0
+      });
+
+      codeAddress += crt0Size;
+    }
 
     for (const objFile of this.objectFiles) {
       for (const section of objFile.sections) {
@@ -266,8 +290,49 @@ export class Linker {
   }
 
   /**
-   * Resolves relocation entries
-   */
+    * Resolves crt0 relocations with addresses from linked sections
+    */
+  resolveCrt0() {
+    const crt0Data = this.sections.get('.crt0');
+    if (!crt0Data || !crt0Data.isCrt0) return;
+
+    const crt0Obj = crt0Data.crt0Object;
+    const crt0Address = crt0Data.address;
+
+    const symbolAddresses = new Map();
+
+    const bssSection = this.sections.get('.bss');
+    if (bssSection) {
+      symbolAddresses.set('_bss_start', bssSection.address);
+      symbolAddresses.set('_bss_end', bssSection.endAddress());
+      symbolAddresses.set('_bss_size', bssSection.contents.length);
+    } else {
+      symbolAddresses.set('_bss_start', this.options.bssAddress);
+      symbolAddresses.set('_bss_end', this.options.bssAddress);
+      symbolAddresses.set('_bss_size', 0);
+    }
+
+    const entryPoint = this.options.entryPoint;
+    for (const [name, symbol] of this.symbolTable) {
+      if (symbol.type === 'function' && name === entryPoint) {
+        const section = this.sections.get(symbol.section);
+        if (section) {
+          symbolAddresses.set(name, section.address + symbol.value);
+        }
+      }
+    }
+
+    resolveCrt0Relocations(crt0Obj, symbolAddresses, crt0Address);
+
+    const codeSection = crt0Obj.getSection('.crt0');
+    if (codeSection) {
+      crt0Data.contents = new Uint8Array(codeSection.contents);
+    }
+  }
+
+  /**
+    * Resolves relocation entries
+    */
   resolveRelocations() {
     for (const [sectionName, sectionData] of this.sections) {
       if (!sectionData.relocations || sectionData.relocations.length === 0) {

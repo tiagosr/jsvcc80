@@ -6,6 +6,7 @@ import {
 } from '../../src/linker/objectfile.js';
 import { WlaDxCodegen, WlaDxSectionType } from '../../src/linker/wladxcodegen.js';
 import { Linker, LinkerOptions, link } from '../../src/linker/linker.js';
+import { createCrt0, getCrt0Size, resolveCrt0Relocations, DEFAULT_STACK_TOP } from '../../src/linker/crt0.js';
 import {
   serializeObjectFile, deserializeObjectFile, isObjectFile
 } from '../../src/linker/objectfile_loader.js';
@@ -898,5 +899,246 @@ describe('ObjectFile Binary Serialization', () => {
     const loaded = deserializeObjectFile(bytes);
 
     assert.strictEqual(loaded.sections[0].relocations[0].addend, 42);
+  });
+});
+
+describe('Crt0 - Z80 Startup Code', () => {
+  it('should create crt0 object file', () => {
+    const crt0 = createCrt0();
+
+    assert.ok(crt0);
+    assert.strictEqual(crt0.name, 'crt0');
+    assert.strictEqual(crt0.sections.length, 1);
+    assert.strictEqual(crt0.sections[0].name, '.crt0');
+  });
+
+  it('should generate correct crt0 size (26 bytes)', () => {
+    const crt0 = createCrt0();
+
+    assert.strictEqual(getCrt0Size(), 26);
+    assert.strictEqual(crt0.sections[0].size(), 26);
+  });
+
+  it('should set stack pointer to 0xFFFF by default', () => {
+    const crt0 = createCrt0();
+    const section = crt0.sections[0];
+
+    // ld sp, $FFFF = 0x31, 0xFF, 0xFF
+    assert.strictEqual(section.contents[0], 0x31);
+    assert.strictEqual(section.contents[1], 0xFF);
+    assert.strictEqual(section.contents[2], 0xFF);
+  });
+
+  it('should accept custom stack top address', () => {
+    const crt0 = createCrt0({ stackTop: 0x9988 });
+    const section = crt0.sections[0];
+
+    // ld sp, $9988 = 0x31, 0x88, 0x99
+    assert.strictEqual(section.contents[0], 0x31);
+    assert.strictEqual(section.contents[1], 0x88);
+    assert.strictEqual(section.contents[2], 0x99);
+  });
+
+  it('should generate ld hl, _bss_start with relocation', () => {
+    const crt0 = createCrt0();
+    const section = crt0.sections[0];
+
+    // ld hl, # = 0x21, low, high
+    assert.strictEqual(section.contents[3], 0x21);
+    assert.strictEqual(section.relocations.length, 5);
+    assert.strictEqual(section.relocations[0].symbolName, '_bss_start');
+    assert.strictEqual(section.relocations[0].type, 'abs16');
+  });
+
+  it('should generate ld de, _bss_start with relocation', () => {
+    const crt0 = createCrt0();
+    const section = crt0.sections[0];
+
+    // ld de, # = 0x11, low, high
+    assert.strictEqual(section.contents[6], 0x11);
+    assert.strictEqual(section.relocations[1].symbolName, '_bss_start');
+  });
+
+  it('should generate ld bc, _bss_size with relocation', () => {
+    const crt0 = createCrt0();
+    const section = crt0.sections[0];
+
+    // ld bc, # = 0x01 at offset 9, low=10, high=11
+    assert.strictEqual(section.contents[9], 0x01);
+    assert.strictEqual(section.relocations[2].symbolName, '_bss_size');
+  });
+
+  it('should generate zero loop with relative jump', () => {
+    const crt0 = createCrt0();
+    const section = crt0.sections[0];
+
+    // Zero loop starts at offset 12:
+    // ld (hl), a = 0x77 at offset 12
+    assert.strictEqual(section.contents[12], 0x77);
+    // inc hl = 0x23 at offset 13
+    assert.strictEqual(section.contents[13], 0x23);
+    // dec bc = 0x0B at offset 14
+    assert.strictEqual(section.contents[14], 0x0B);
+    // ld a, b = 0x40 at offset 15
+    assert.strictEqual(section.contents[15], 0x40);
+    // or c = 0xB7 at offset 16
+    assert.strictEqual(section.contents[16], 0xB7);
+    // jr nz, # = 0x20, offset at offset 17-18
+    assert.strictEqual(section.contents[17], 0x20);
+  });
+
+  it('should generate call main with relocation', () => {
+    const crt0 = createCrt0();
+    const section = crt0.sections[0];
+
+    // call # = 0xCD at offset 19, low=20, high=21
+    assert.strictEqual(section.contents[19], 0xCD);
+    assert.strictEqual(section.relocations[3].symbolName, 'main');
+    assert.strictEqual(section.relocations[3].type, 'call');
+  });
+
+  it('should generate halt after main returns', () => {
+    const crt0 = createCrt0();
+    const section = crt0.sections[0];
+
+    // halt = 0x76 at offset 22
+    assert.strictEqual(section.contents[22], 0x76);
+  });
+
+  it('should generate jp crt0 loop with relocation', () => {
+    const crt0 = createCrt0();
+    const section = crt0.sections[0];
+
+    // jp # = 0xC3 at offset 23, low=24, high=25
+    assert.strictEqual(section.contents[23], 0xC3);
+    assert.strictEqual(section.relocations[4].type, 'jp');
+  });
+
+  it('should create proper symbols', () => {
+    const crt0 = createCrt0();
+
+    const symbolNames = crt0.symbols.map(s => s.name);
+    assert.ok(symbolNames.includes('crt0'));
+    assert.ok(symbolNames.includes('_bss_start'));
+    assert.ok(symbolNames.includes('_bss_end'));
+    assert.ok(symbolNames.includes('_bss_size'));
+    assert.strictEqual(crt0.symbols.length, 4);
+  });
+
+  it('should use custom entry point name', () => {
+    const crt0 = createCrt0({ entryPoint: 'start' });
+    const section = crt0.sections[0];
+
+    // call # relocation should reference 'start'
+    assert.strictEqual(section.relocations[3].symbolName, 'start');
+  });
+
+  it('should create crt0 symbols with correct types', () => {
+    const crt0 = createCrt0();
+
+    const crt0Symbol = crt0.symbols.find(s => s.name === 'crt0');
+    assert.strictEqual(crt0Symbol.type, SymbolType.FUNCTION);
+    assert.strictEqual(crt0Symbol.visibility, SymbolVisibility.GLOBAL);
+
+    const bssStartSymbol = crt0.symbols.find(s => s.name === '_bss_start');
+    assert.strictEqual(bssStartSymbol.type, SymbolType.ABSOLUTE);
+    assert.strictEqual(bssStartSymbol.visibility, SymbolVisibility.LOCAL);
+  });
+});
+
+describe('Linker crt0 integration', () => {
+  it('should include crt0 section by default', () => {
+    const objFile = new ObjectFile('test.o');
+    const section = new ObjectSection('.text', SectionType.CODE);
+    section.appendByte(0xC9);
+    objFile.addSection(section);
+    objFile.addSymbol(new ObjectSymbol('main', SymbolType.FUNCTION, SymbolVisibility.GLOBAL, 0, '.text'));
+
+    const linker = new Linker();
+    linker.addObjectFile(objFile);
+    const result = linker.link();
+
+    const sectionNames = Array.from(result.sections.map ? result.sections : []);
+    const hasCrt0 = result.sections.some(s => s.name === '.crt0');
+    assert.ok(hasCrt0, 'Link result should include .crt0 section');
+  });
+
+  it('should place crt0 at base address', () => {
+    const objFile = new ObjectFile('test.o');
+    const section = new ObjectSection('.text', SectionType.CODE);
+    section.appendByte(0xC9);
+    objFile.addSection(section);
+    objFile.addSymbol(new ObjectSymbol('main', SymbolType.FUNCTION, SymbolVisibility.GLOBAL, 0, '.text'));
+
+    const linker = new Linker(new LinkerOptions({ baseAddress: 0x8000 }));
+    linker.addObjectFile(objFile);
+    const result = linker.link();
+
+    const crt0Section = result.sections.find(s => s.name === '.crt0');
+    assert.ok(crt0Section);
+    assert.strictEqual(crt0Section.baseAddress, 0x8000);
+  });
+
+  it('should disable crt0 with enableCrt0: false', () => {
+    const objFile = new ObjectFile('test.o');
+    const section = new ObjectSection('.text', SectionType.CODE);
+    section.appendByte(0xC9);
+    objFile.addSection(section);
+    objFile.addSymbol(new ObjectSymbol('main', SymbolType.FUNCTION, SymbolVisibility.GLOBAL, 0, '.text'));
+
+    const linker = new Linker(new LinkerOptions({ enableCrt0: false }));
+    linker.addObjectFile(objFile);
+    const result = linker.link();
+
+    const hasCrt0 = result.sections.some(s => s.name === '.crt0');
+    assert.ok(!hasCrt0, 'Crt0 section should not be present when disabled');
+  });
+
+  it('should accept custom stack top through linker options', () => {
+    const objFile = new ObjectFile('test.o');
+    const section = new ObjectSection('.text', SectionType.CODE);
+    section.appendByte(0xC9);
+    objFile.addSection(section);
+    objFile.addSymbol(new ObjectSymbol('main', SymbolType.FUNCTION, SymbolVisibility.GLOBAL, 0, '.text'));
+
+    const linker = new Linker(new LinkerOptions({ stackTop: 0x9900 }));
+    linker.addObjectFile(objFile);
+    const result = linker.link();
+
+    const crt0Section = result.sections.find(s => s.name === '.crt0');
+    assert.ok(crt0Section);
+    // ld sp, $9900 = 0x31, 0x00, 0x99
+    assert.strictEqual(crt0Section.contents[0], 0x31);
+    assert.strictEqual(crt0Section.contents[1], 0x00);
+    assert.strictEqual(crt0Section.contents[2], 0x99);
+  });
+
+  it('should place user code after crt0', () => {
+    const objFile = new ObjectFile('test.o');
+    const section = new ObjectSection('.text', SectionType.CODE);
+    section.appendByte(0xC9);
+    objFile.addSection(section);
+    objFile.addSymbol(new ObjectSymbol('main', SymbolType.FUNCTION, SymbolVisibility.GLOBAL, 0, '.text'));
+
+    const linker = new Linker(new LinkerOptions({ baseAddress: 0x8000 }));
+    linker.addObjectFile(objFile);
+    const result = linker.link();
+
+    const crt0Section = result.sections.find(s => s.name === '.crt0');
+    const textSection = result.sections.find(s => s.name === '.text');
+
+    assert.ok(crt0Section);
+    assert.ok(textSection);
+    assert.ok(textSection.baseAddress >= crt0Section.endAddress(), 'User code should be placed after crt0');
+  });
+
+  it('should have LinkerOptions with enableCrt0 defaulting to true', () => {
+    const options = new LinkerOptions();
+    assert.strictEqual(options.enableCrt0, true);
+  });
+
+  it('should have LinkerOptions with stackTop defaulting to 0xFFFF', () => {
+    const options = new LinkerOptions();
+    assert.strictEqual(options.stackTop, 0xFFFF);
   });
 });

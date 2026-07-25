@@ -173,9 +173,9 @@ export class ObjectSection {
   }
 
   /**
-   * Returns the size of the section in bytes
-   * @returns {number} Size in bytes
-   */
+    * Returns the size of the section in bytes
+    * @returns {number} Size in bytes
+    */
   size() {
     return this.contents.length;
   }

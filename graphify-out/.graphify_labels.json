@@ -79,5 +79,19 @@
   "77": "memcpy.c",
   "78": "memmove.c",
   "79": "memset.c",
-  "80": "stdlib.test.js"
+  "80": "stdlib.test.js",
+  "81": "Simulator",
+  "82": "CPU",
+  "83": "Lexer",
+  "84": "Memory",
+  "85": "simulator.js",
+  "86": "lexer.js",
+  "87": "MacroExpander",
+  "88": "IOHandler",
+  "89": "WatchManager",
+  "90": "DerefStoreInstruction",
+  "91": "IndexedLoadInstruction",
+  "92": "IndexedStoreInstruction",
+  "93": "IntrinsicInstruction",
+  "94": "LoadAddrInstruction"
 }

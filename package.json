@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node bin/vcc80.js",
-    "test": "node --test src/**/*.test.js",
+    "test": "mocha 'src/**/*.test.js'",
     "lint": "eslint src/"
   },
   "keywords": [
@@ -21,5 +21,8 @@
   "license": "MIT",
   "dependencies": {
     "argparse": "^3.0.0"
+  },
+  "devDependencies": {
+    "mocha": "^11.7.6"
   }
 }

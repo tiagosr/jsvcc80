@@ -76,7 +76,7 @@ I'm compiling findings about this process on [FINDINGS.md](FINDINGS.md).
 5. Implement `unsigned:n` bit fields
 
 #### 🧪 Test Results
-- 744 passing tests (732 compiler + 11 linker + 41 simulator - 11 simulator pre-existing failures)
+- 763 passing tests
 
 ### 📔 Backlog (issues identified during implementation for later priorization)
 - Fix `typedef unsigned int newType` parsing

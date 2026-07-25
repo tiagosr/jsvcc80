@@ -3,8 +3,8 @@
  * Covers CPU state, memory, I/O, watchers, and full simulation.
  */
 
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
+import { describe, it } from 'mocha';
+import assert from 'assert';
 import { CPU, Flags } from '../simulator/cpu.js';
 import { Memory } from '../simulator/memory.js';
 import { IOHandler } from '../simulator/io.js';

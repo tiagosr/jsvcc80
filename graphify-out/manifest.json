@@ -425,8 +425,8 @@
     "semantic_hash": ""
   },
   "src/simulator/simulator.js": {
-    "mtime": 1784979038.6707072,
-    "ast_hash": "1805070e7f5135e04f86463a0678c631",
+    "mtime": 1784981813.066938,
+    "ast_hash": "675d0fc6345f0e2acded2dd5c04c6718",
     "semantic_hash": ""
   },
   "src/simulator/watcher.js": {

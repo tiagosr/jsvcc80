@@ -1,5 +1,5 @@
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
+import { describe, it } from 'mocha';
+import assert from 'assert';
 import {
   ObjectFile, ObjectSection, ObjectSymbol, ObjectRelocation,
   IrToObjectFile, SymbolType, SymbolVisibility, SectionType, RelocationType

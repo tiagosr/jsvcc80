@@ -1,5 +1,5 @@
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
+import { describe, it } from 'mocha';
+import assert from 'assert';
 import { Parser, pred, lit, many, some, opt, any } from '../../src/parser/combinators.js';
 
 // Mock token for testing

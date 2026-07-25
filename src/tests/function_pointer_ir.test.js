@@ -1,5 +1,5 @@
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
+import { describe, it } from 'mocha';
+import assert from 'assert';
 import { AstToIr } from '../../src/nanopass/ast_to_ir.js';
 import * as AST from '../../src/ast/nodes.js';
 import { CPegParser } from '../../src/parser/cparser.js';

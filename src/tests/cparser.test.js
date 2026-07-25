@@ -1,5 +1,5 @@
-import { describe, it } from 'node:test';
-import assert from 'node:assert';
+import { describe, it } from 'mocha';
+import assert from 'assert';
 import { CPegParser } from '../../src/parser/cparser.js';
 import { Lexer } from '../../src/preprocessor/lexer.js';
 import * as AST from '../../src/ast/nodes.js';

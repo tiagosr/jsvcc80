@@ -51,7 +51,7 @@ export class CPU {
       halted: false,
     };
     // Shadow registers for EXX
-    this.shadow = { b: 0, c: 0, d: 0, e: 0, h: 0, l: 0 };
+    this.shadow = { f: 0, b: 0, c: 0, d: 0, e: 0, h: 0, l: 0 };
     this._nextInstruction = null;
   }
 

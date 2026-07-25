@@ -58,22 +58,25 @@ I'm compiling findings about this process on [FINDINGS.md](FINDINGS.md).
 - **Setjmp/Longjmp/Alloca intrinsics** - `IntrinsicMap` extended with `__setjmp`, `__longjmp`, `__alloca`; Z80 codegen for context save/restore (PC, SP, IX, HL, DE, BC, AF) for setjmp/longjmp, stack allocation for alloca; 12 new tests
 - **C standard library - memory operations** - `memset`, `memcpy`, `memcmp`, `memmove`, `memchr` implemented as C source files in `src/core/stdlib/`; parser support for C-style casts `(type)expr`, postfix increment/decrement (`x++`, `x--`), brace-enclosed array initializers `{1, 2, 3}`, and `NULL` keyword; 10 new tests
 - **Z80 cycle-unaware simulator** - `src/simulator/` with CPU state management, 64KB flat memory with hooks, port I/O callback system, memory watch/probe manager, and instruction execution engine. Supports LD (8/16-bit), ALU (ADD/SUB/AND/OR/CP), PUSH/POP, JP/JR/CALL/RET, HALT, rotations (RLCA/RRA/RLA/RRCA), CPL, CCF, DAA, IN/OUT, RST, EI/DI, EXX, EX (SP),HL. 40 passing tests.
-- **crt0 startup code** - `src/linker/crt0.js` generates Z80 startup routine that initializes stack pointer, zeros BSS section, calls `main()`, and halts/loops after return. Linker integrates crt0 at base address by default. CLI flags `--no-crt0` and `--stack-top <addr>` for configuration. 14 new crt0 tests + 7 linker integration tests passing.
+ - **crt0 startup code** - `src/linker/crt0.js` generates Z80 startup routine that initializes stack pointer, zeros BSS section, calls `main()`, and halts/loops after return. Linker integrates crt0 at base address by default. CLI flags `--no-crt0` and `--stack-top <addr>` for configuration. 14 new crt0 tests + 7 linker integration tests passing.
+ - **Z80 simulator - flags register operations** - `getFlag()`, `setFlag()`, `clearFlag()` methods on Simulator class for test access; flags register state management.
+ - **Z80 simulator - EX AF, AF' (0x08)** - Implemented swapping `f` with `shadow.f`; added `shadow.f` field to CPU state reset.
+ - **Z80 simulator - IM 2 (ED 7E)** - Implemented setting interrupt mode 2.
+ - **Z80 simulator - Memory watch integration** - WatchManager now triggered on all data memory reads/writes (not just instruction fetches); fixed constructor ordering in Simulator (watcher created before memory.watcher assignment).
+ - **Z80 simulator - RES/SET instructions (ED 80-FF)** - Implemented RES b,r (ED 80-BF) and SET b,r (ED C0-FF) for all registers and (HL) memory references; fixed register mapping in `_setReg8()` (was shifted by 1) and `reg`/`bit` extraction (were swapped).
 
 ### 🔄 In Progress
-- Implement linker definitions to add entry point `crt0` to default compiled/linked output (DONE - see Completed)
+- Nothing at the moment
 
 ### 🔜 Next Steps
-1. Add character string operations to the C standard library (`sprintf`, `sscanf`, `strlen`, `strtoi`, etc.)
-2. Add file stream abstractions to the C standard library (`FILE`, `putc`, `getc`, `fprintf`, `fscanf`, etc.)
-3. Implement symbol map compiling and exporting for debugging
-4. Implement `unsigned:n` bit fields
-5. Expand simulator instruction coverage (ADC/SBC 16-bit, block transfer INIR/OTIR, ED-prefix instructions)
+1. Expand simulator instruction coverage (ADC/SBC 16-bit, block transfer INIR/OTIR, ED-prefix instructions)
+3. Add character string operations to the C standard library (`sprintf`, `sscanf`, `strlen`, `strtoi`, etc.)
+4. Add file stream abstractions to the C standard library (`FILE`, `putc`, `getc`, `fprintf`, `fscanf`, etc.)
+5. Implement symbol map compiling and exporting for debugging
+6. Implement `unsigned:n` bit fields
 
 #### 🧪 Test Results
- - 743 passing tests (732 compiler + 11 linker + 40 simulator - 12 simulator pre-existing failures)
+ - 744 passing tests (732 compiler + 11 linker + 41 simulator - 11 simulator pre-existing failures)
 
 ### 📔 Backlog (issues identified during implementation for later priorization)
 - Fix `typedef unsigned int newType` parsing
-- C standard library - character string operations (sprintf, sscanf, strlen, etc.)
-- C standard library - file stream abstractions (FILE, putc, getc, etc.)

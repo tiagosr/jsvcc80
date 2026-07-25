@@ -89,9 +89,5 @@
   "87": "MacroExpander",
   "88": "IOHandler",
   "89": "WatchManager",
-  "90": "DerefStoreInstruction",
-  "91": "IndexedLoadInstruction",
-  "92": "IndexedStoreInstruction",
-  "93": "IntrinsicInstruction",
-  "94": "LoadAddrInstruction"
+  "90": "DerefStoreInstruction"
 }

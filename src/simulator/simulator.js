@@ -31,11 +31,12 @@ export class Simulator {
    */
   constructor(options = {}) {
     /** @type {SimulatorOptions} */ this.options = options;
-    const memory = new Memory({ trackAccess: options.trackAccess || false, fill: options.fill });
-    /** @type {CPU} */ this.cpu = new CPU(memory);
-    /** @type {Memory} */ this.memory = memory;
-    /** @type {IOHandler} */ this.io = new IOHandler();
-    /** @type {WatchManager} */ this.watcher = new WatchManager();
+     /** @type {WatchManager} */ this.watcher = new WatchManager();
+     const memory = new Memory({ trackAccess: options.trackAccess || false, fill: options.fill });
+     memory.watcher = this.watcher;
+     /** @type {CPU} */ this.cpu = new CPU(memory);
+     /** @type {Memory} */ this.memory = memory;
+     /** @type {IOHandler} */ this.io = new IOHandler();
     /** @type {boolean} */ this.running = false;
     /** @type {boolean} */ this.stopped = false;
     /** @type {number} */ this.stepCount = 0;
@@ -182,11 +183,17 @@ export class Simulator {
   restoreSnapshot(snap) { this.cpu.restoreSnapshot(snap); }
 
   /** Get execution statistics.
-   * @returns {{steps:number,pc:number,sp:number,a:number,f:number}}
-   */
-  getStats() {
-    return { steps: this.stepCount, pc: this.cpu.pc, sp: this.cpu.sp, a: this.cpu.a, f: this.cpu.f };
-  }
+    * @returns {{steps:number,pc:number,sp:number,a:number,f:number}}
+    */
+   getStats() {
+     return { steps: this.stepCount, pc: this.cpu.pc, sp: this.cpu.sp, a: this.cpu.a, f: this.cpu.f };
+   }
+
+   /** Get a flag bit.
+    * @param {number} flag - Flag constant.
+    * @returns {number}
+    */
+   getFlag(flag) { return this.cpu.getFlag(flag); }
 
   /**
    * Decode and execute one instruction.
@@ -257,18 +264,31 @@ export class Simulator {
     if (opcode === 0x2B) { c.setPair('hl', (c.getPair('hl') - 1) & 0xFFFF); return 1; }
     if (opcode === 0x3B) { c.sp = (c.sp - 1) & 0xFFFF; return 1; }
 
-    // LD r, (HL) -- high3 = 6 (0b110), but r=6 is HALT (0x76)
-    if ((opcode & 0x38) === 0x30 && (opcode & 0x07) === 0x06) {
-      const r = opcode & 0x07;
-      if (r === 6) { c.halted = true; return 1; } // 0x76 = HALT
+    // LD r, (HL) -- high3 = 6 or 7, low3 = 6
+    if (((opcode & 0x38) === 0x30 || (opcode & 0x38) === 0x38) && (opcode & 0x07) === 0x06) {
       const val = m.readByte(c.getPair('hl'));
-      const regs = [c.b, c.c, c.d, c.e, c.h, c.l, val, c.a];
+      if ((opcode & 0x38) === 0x30) {
+        // 0x76 = HALT (high3=6, low3=6)
+        c.halted = true;
+        return 1;
+      }
+      // 0x7E = LD A, (HL) (high3=7, low3=6)
+      c.a = val;
+      c.setFlags8(val);
+      return 1;
+    }
+
+    // LD r, (HL) -- high3 = 6, low3 = 0-5 (B,C,D,E,H,L)
+    if ((opcode & 0x38) === 0x30 && (opcode & 0x07) < 6) {
+      const r = opcode & 0x07;
+      const val = m.readByte(c.getPair('hl'));
+      const regs = [c.b, c.c, c.d, c.e, c.h, c.l];
       this._setReg8(r, regs[r]);
       c.setFlags8(regs[r]);
       return 1;
     }
 
-    // LD (HL), r -- high3 = 4 or 5, but exclude 0x21(LD HL,nn), 0x22(LD (nn),HL), 0x23(INC HL), 0x27(DAA)
+    // LD (HL), r -- high3 = 6 (0b110), but exclude 0x21(LD HL,nn), 0x22(LD (nn),HL), 0x23(INC HL), 0x27(DAA)
     if ((opcode & 0x38) === 0x30 && (opcode & 0x07) !== 0x01 && (opcode & 0x07) !== 0x02 && (opcode & 0x07) !== 0x03) {
       const r = opcode & 0x07;
       if (r < 7) {
@@ -448,6 +468,9 @@ export class Simulator {
     // EXX
     if (opcode === 0xD9) { const t = { b: c.b, c: c.c, d: c.d, e: c.e, h: c.h, l: c.l }; c.b = c.shadow.b; c.c = c.shadow.c; c.d = c.shadow.d; c.e = c.shadow.e; c.h = c.shadow.h; c.l = c.shadow.l; c.shadow = t; return 1; }
 
+    // EX AF, AF'
+    if (opcode === 0x08) { const sf = c.f; c.f = c.shadow.f; c.shadow.f = sf; return 1; }
+
     // EX (SP), HL
     if (opcode === 0xE3) { const hl = c.getPair('hl'); const sv = m.readWord(c.sp); m.writeWord(c.sp, hl); c.setPair('hl', sv); return 1; }
 
@@ -552,6 +575,39 @@ export class Simulator {
     // IM modes
     if (opcode === 0x56) { c.im = 1; return 2; }
     if (opcode === 0x5E) { c.im = 0; return 2; }
+    if (opcode === 0x7E) { c.im = 2; return 2; }
+
+    // RES b, r (ED 80-BF)
+    if ((opcode & 0xC0) === 0x80) {
+      const bit = (opcode >> 3) & 0x07;
+      const reg = opcode & 0x07;
+      const mask = ~(1 << bit);
+      if (reg === 7) {
+        const val = m.readByte(c.getPair('hl'));
+        m.writeByte(c.getPair('hl'), val & mask);
+      } else {
+        const regs = [c.a, c.b, c.c, c.d, c.e, c.h, c.l, 0];
+        regs[reg] &= mask;
+        this._setReg8(reg, regs[reg]);
+      }
+      return 2;
+    }
+
+    // SET b, r (ED C0-FF)
+    if ((opcode & 0xC0) === 0xC0) {
+      const bit = (opcode >> 3) & 0x07;
+      const reg = opcode & 0x07;
+      const mask = 1 << bit;
+      if (reg === 7) {
+        const val = m.readByte(c.getPair('hl'));
+        m.writeByte(c.getPair('hl'), val | mask);
+      } else {
+        const regs = [c.a, c.b, c.c, c.d, c.e, c.h, c.l, 0];
+        regs[reg] |= mask;
+        this._setReg8(reg, regs[reg]);
+      }
+      return 2;
+    }
 
     return 2;
   }
@@ -721,13 +777,13 @@ export class Simulator {
   _setReg8(reg, value) {
     const v = value & 0xFF;
     switch (reg) {
-      case 0: this.cpu.b = v; break;
-      case 1: this.cpu.c = v; break;
-      case 2: this.cpu.d = v; break;
-      case 3: this.cpu.e = v; break;
-      case 4: this.cpu.h = v; break;
-      case 5: this.cpu.l = v; break;
-      case 7: this.cpu.a = v; break;
+      case 0: this.cpu.a = v; break;
+      case 1: this.cpu.b = v; break;
+      case 2: this.cpu.c = v; break;
+      case 3: this.cpu.d = v; break;
+      case 4: this.cpu.e = v; break;
+      case 5: this.cpu.h = v; break;
+      case 6: this.cpu.l = v; break;
     }
   }
 

@@ -1,7 +1,7 @@
 {
   "bin/vcc80.js": {
-    "mtime": 1784888779.3285193,
-    "ast_hash": "d6ae83a4d4124eaed61b72c8aeb6693c",
+    "mtime": 1784967692.0156398,
+    "ast_hash": "facfef5c7f5945aebef44402250e52cc",
     "semantic_hash": ""
   },
   "package.json": {
@@ -50,14 +50,14 @@
     "semantic_hash": "86b96bf36701abceaceb6a524f588f06"
   },
   "src/linker/linker.js": {
-    "mtime": 1784888779.3480217,
-    "ast_hash": "b54b119c4be0ce67f0834e4bf73cb752",
-    "semantic_hash": "b54b119c4be0ce67f0834e4bf73cb752"
+    "mtime": 1784967660.1846302,
+    "ast_hash": "b5aae11a12e1e6b839b66ca58dc09829",
+    "semantic_hash": ""
   },
   "src/linker/objectfile.js": {
-    "mtime": 1784888779.3485653,
-    "ast_hash": "633d3dc3cb08ca84261f870af020e242",
-    "semantic_hash": "633d3dc3cb08ca84261f870af020e242"
+    "mtime": 1784968252.8656728,
+    "ast_hash": "90e626fbdd53b0482eee06b61043abb3",
+    "semantic_hash": ""
   },
   "src/linker/objectfile_loader.js": {
     "mtime": 1784888779.3490627,
@@ -145,9 +145,9 @@
     "semantic_hash": ""
   },
   "src/tests/linker.test.js": {
-    "mtime": 1784888779.3617733,
-    "ast_hash": "f17bb0e066e92125700fed4fb453b2e6",
-    "semantic_hash": "f17bb0e066e92125700fed4fb453b2e6"
+    "mtime": 1784968452.9146051,
+    "ast_hash": "bd0ed91e9ab2e359d9466b6fc7c383c1",
+    "semantic_hash": ""
   },
   "src/tests/optimizations.test.js": {
     "mtime": 1784888779.3622692,
@@ -205,8 +205,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1784946101.7814226,
-    "ast_hash": "f656bd1dd2faa2a10423f7ca74dc57a0",
+    "mtime": 1784968695.334901,
+    "ast_hash": "1eab9bb3363ad34a2bd81ebe61e6a127",
     "semantic_hash": ""
   },
   "FINDINGS.md": {
@@ -437,6 +437,11 @@
   "src/tests/simulator.test.js": {
     "mtime": 1784946006.5494754,
     "ast_hash": "3020fa32e1ca4a18bd7914dba2ec51e7",
+    "semantic_hash": ""
+  },
+  "src/linker/crt0.js": {
+    "mtime": 1784968336.318376,
+    "ast_hash": "1c3ffee2cb14caf9972afde2645fac03",
     "semantic_hash": ""
   }
 }

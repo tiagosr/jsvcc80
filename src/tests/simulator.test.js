@@ -498,4 +498,155 @@ describe('Simulator - Full Simulation', () => {
     sim.loadAndRun(0x0000, program2);
     assert.strictEqual(sim.cpu.a, 0x40);
   });
+
+  it('should handle EX AF, AF\' instruction (0x08)', () => {
+    const sim = new Simulator();
+    // Set AF to 0x1234 (A=0x12, F=0x34)
+    // Set AF' (shadow) to 0x5678 (A=0x56, F=0x56)
+    const program = [
+      0xF5, // PUSH AF (saves 0x1234 to stack)
+      0x3E, 0x56, // LD A, 0x56
+      0xF3, // DI (set F=0x04, Z=0, N=0, H=0, C=0 -> F=0x04... actually DI doesn't change F)
+      // Let me use a simpler approach: manually set up state
+    ];
+    // Simpler test: manually manipulate state
+    sim.cpu.a = 0x34;
+    sim.cpu.f = 0x00; // Clear all flags
+    sim.cpu.shadow.f = 0x80; // Set CARRY flag in shadow
+    // Execute EX AF, AF'
+    sim.cpu.pc = 0x0000;
+    sim.memory.writeByte(0x0000, 0x08); // EX AF, AF'
+    sim.step();
+    // After EX AF, AF': f should be 0x80 (from shadow), shadow.f should be 0x00
+    assert.strictEqual(sim.cpu.f, 0x80);
+    const snap = sim.getSnapshot();
+    assert.strictEqual(snap.shadow.f, 0x00);
+    assert.strictEqual(snap.a, 0x34); // A should be unchanged
+  });
+
+  it('should support memory watches on data memory access', () => {
+    const sim = new Simulator();
+    let readHit = false;
+    let writeHit = false;
+    sim.watcher.addWatch(0x0100, () => { readHit = true; }, 'read');
+    sim.watcher.addWatch(0x0100, () => { writeHit = true; }, 'write');
+    // LD HL, 0x0100; LD A, (HL); LD (HL), A; HALT
+    const program = [
+      0x21, 0x00, 0x01, // LD HL, 0x0100
+      0x7E, // LD A, (HL) - reads from 0x0100
+      0x3E, 0x42, // LD A, 0x42
+      0x77, // LD (HL), A - writes to 0x0100
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, program);
+    assert.strictEqual(readHit, true, 'read watch on data memory should fire');
+    assert.strictEqual(writeHit, true, 'write watch on data memory should fire');
+  });
+
+  it('should support memory watches on data memory during arithmetic', () => {
+    const sim = new Simulator();
+    let watchHit = false;
+    sim.watcher.addWatch(0x0200, () => { watchHit = true; }, 'write');
+    // Store a value at 0x0200, then read/write via (HL)
+    const program = [
+      0x21, 0x00, 0x02, // LD HL, 0x0200
+      0x3E, 0x42, // LD A, 0x42
+      0x77, // LD (HL), A (writes 0x42 to 0x0200)
+      0x7E, // LD A, (HL) (reads from 0x0200)
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, program);
+    assert.strictEqual(watchHit, true);
+    assert.strictEqual(sim.cpu.a, 0x42);
+  });
+
+  it('should handle IM 2 interrupt mode (ED 7E)', () => {
+    const sim = new Simulator();
+    const program = [0xED, 0x7E, 0x76];
+    sim.loadAndRun(0x0000, program);
+    assert.strictEqual(sim.cpu.im, 2);
+  });
+
+  it('should handle IM 0/1/2 sequence', () => {
+    const sim = new Simulator();
+    const program = [
+      0xED, 0x5E, // IM 0
+      0xED, 0x56, // IM 1
+      0xED, 0x7E, // IM 2
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, program);
+    assert.strictEqual(sim.cpu.im, 2);
+  });
+
+  it('should handle RES b, r instructions (ED 80-BF)', () => {
+    const sim = new Simulator();
+    // Test RES 0, A: ED 80
+    const prog1 = [0x3E, 0xFF, 0xED, 0x80, 0x76];
+    sim.loadAndRun(0x0000, prog1);
+    assert.strictEqual(sim.cpu.a, 0xFE, 'RES 0, A should clear bit 0');
+
+    // Test RES 3, B: ED 99
+    const sim2 = new Simulator();
+    const prog2 = [0x06, 0xFF, 0xED, 0x99, 0x76];
+    sim2.loadAndRun(0x0000, prog2);
+    assert.strictEqual(sim2.cpu.b, 0xF7, 'RES 3, B should clear bit 3');
+
+    // Test RES 7, (HL): ED BF
+    const sim3 = new Simulator();
+    const prog3 = [0x21, 0x00, 0x03, 0x3E, 0x80, 0x77, 0xED, 0xBF, 0x7E, 0x76];
+    sim3.loadAndRun(0x0000, prog3);
+    assert.strictEqual(sim3.memory.readByte(0x0300), 0x00, 'RES 7, (HL) should clear bit 7 of memory');
+  });
+
+  it('should handle SET b, r instructions (ED C0-FF)', () => {
+    const sim = new Simulator();
+    // SET 0, A: Set bit 0 of A (ED C0)
+    // SET 3, B: Set bit 3 of B (ED D9)
+    // SET 4, (HL): Set bit 4 of memory at (HL) (ED E7)
+    // SET 7, (HL): Set bit 7 of memory at (HL) (ED FF)
+    const program = [
+      0x3E, 0x00, // LD A, 0x00 (all bits clear)
+      0xED, 0xC0, // SET 0, A -> A = 0x01
+      0x06, 0x00, // LD B, 0x00
+      0xED, 0xD9, // SET 3, B -> B = 0x08
+      0x21, 0x00, 0x03, // LD HL, 0x0300
+      0x3E, 0x00, // LD A, 0x00
+      0x77, // LD (HL), A -> memory[0x0300] = 0x00
+      0xED, 0xE7, // SET 4, (HL) -> memory[0x0300] = 0x10
+      0xED, 0xFF, // SET 7, (HL) -> memory[0x0300] = 0x80
+      0x7E, // LD A, (HL)
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, program);
+    assert.strictEqual(sim.cpu.a, 0x90, 'SET 4 and 7 on 0x00 = 0x90');
+    // Need separate test for SET on registers since A was overwritten
+    const sim2 = new Simulator();
+    const prog2 = [
+      0x3E, 0x00, // LD A, 0x00
+      0xED, 0xC0, // SET 0, A -> A = 0x01
+      0x06, 0x00, // LD B, 0x00
+      0xED, 0xD9, // SET 3, B -> B = 0x08
+      0x76 // HALT
+    ];
+    sim2.loadAndRun(0x0000, prog2);
+    assert.strictEqual(sim2.cpu.a, 0x01, 'SET 0, A should set bit 0');
+    assert.strictEqual(sim2.cpu.b, 0x08, 'SET 3, B should set bit 3');
+  });
+
+  it('should handle SET/RES on (HL) via memory read-modify-write', () => {
+    const sim = new Simulator();
+    // Store 0xFF at 0x0300, then SET 4, (HL) and RES 2, (HL)
+    const program = [
+      0x21, 0x00, 0x03, // LD HL, 0x0300
+      0x3E, 0xFF, // LD A, 0xFF
+      0x77, // LD (HL), A -> memory[0x0300] = 0xFF
+      0xED, 0xE7, // SET 4, (HL) -> memory[0x0300] = 0xFF (bit 4 already set)
+      0xED, 0x97, // RES 2, (HL) -> memory[0x0300] = 0xFF & ~0x04 = 0xFB
+      0x7E, // LD A, (HL)
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, program);
+    assert.strictEqual(sim.cpu.a, 0xFB, 'SET 4 then RES 2 on 0xFF = 0xFB');
+  });
 });

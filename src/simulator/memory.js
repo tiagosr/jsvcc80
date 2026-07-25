@@ -52,14 +52,15 @@ export class Memory {
    * @param {boolean} [options.trackAccess] - Track read/write access history.
    * @param {number} [options.fill] - Value to fill memory with (default 0xFF).
    */
-  constructor(options = {}) {
-    /** @type {boolean} */ this.trackAccess = options.trackAccess || false;
-    /** @type {Uint8Array} */ this.buffer = new Uint8Array(MEMORY_SIZE);
-    const fill = options.fill || 0xFF;
-    this.buffer.fill(fill);
-    /** @type {{read:number[],write:number[]}|null} */ this.accessLog = this.trackAccess ? { read: [], write: [] } : null;
-    /** @type {MemoryRegion[]} */ this.regions = [];
-  }
+   constructor(options = {}) {
+     /** @type {boolean} */ this.trackAccess = options.trackAccess || false;
+     /** @type {Uint8Array} */ this.buffer = new Uint8Array(MEMORY_SIZE);
+     const fill = options.fill || 0xFF;
+     this.buffer.fill(fill);
+     /** @type {{read:number[],write:number[]}|null} */ this.accessLog = this.trackAccess ? { read: [], write: [] } : null;
+     /** @type {MemoryRegion[]} */ this.regions = [];
+     /** @type {import('./watcher.js').WatchManager|null} */ this.watcher = null;
+   }
 
   /** Fill memory with a value.
    * @param {number} value
@@ -84,6 +85,7 @@ export class Memory {
   readByte(addr) {
     addr = addr & 0xFFFF;
     if (this.trackAccess) this.accessLog.read.push(addr);
+    if (this.watcher) this.watcher.notify(addr, undefined, 'read');
     for (const region of this.regions) {
       if (addr >= region.start && addr <= region.end) {
         let value = this.buffer[addr];
@@ -102,6 +104,7 @@ export class Memory {
     addr = addr & 0xFFFF;
     value = value & 0xFF;
     if (this.trackAccess) this.accessLog.write.push(addr);
+    if (this.watcher) this.watcher.notify(addr, value, 'write');
     for (const region of this.regions) {
       if (addr >= region.start && addr <= region.end) {
         if (region.mask !== undefined) value &= region.mask;
@@ -151,7 +154,7 @@ export class Memory {
   }
 
   /** Get memory size.
-   * @returns {number}
-   */
+    * @returns {number}
+    */
   getSize() { return MEMORY_SIZE; }
 }

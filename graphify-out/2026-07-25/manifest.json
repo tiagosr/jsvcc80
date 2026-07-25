@@ -15,7 +15,7 @@
     "semantic_hash": ""
   },
   "src/backend/z80codegen.js": {
-    "mtime": 1784933911.7346065,
+    "mtime": 1784917806.8348236,
     "ast_hash": "23a86d9a1431a4d8c57ad1bc13c0773f",
     "semantic_hash": ""
   },
@@ -70,8 +70,8 @@
     "semantic_hash": "f94c974f60479ab3790cf66a3aee9b0d"
   },
   "src/nanopass/ast_to_ir.js": {
-    "mtime": 1784941595.862178,
-    "ast_hash": "830e27b009238accde710bb36b8e1119",
+    "mtime": 1784919431.0863757,
+    "ast_hash": "2795fdda8d662ffa4578c370a45fa262",
     "semantic_hash": ""
   },
   "src/nanopass/il.js": {
@@ -90,8 +90,8 @@
     "semantic_hash": "cfec1c881e8a670aaf2edf1786467a6f"
   },
   "src/parser/combinators.js": {
-    "mtime": 1784923234.0293732,
-    "ast_hash": "5ae20c8b3987ee3d742d07a729d1bdd7",
+    "mtime": 1784908187.2332165,
+    "ast_hash": "38cd26ae90b53d671747838d2b8c7ac3",
     "semantic_hash": ""
   },
   "src/parser/cparser.js": {
@@ -105,8 +105,8 @@
     "semantic_hash": "ca938d193286ef0e8f7aa0994334f5bb"
   },
   "src/preprocessor/lexer.js": {
-    "mtime": 1784939155.1612692,
-    "ast_hash": "1ae0bec7856ca1fbae31107c5bde7405",
+    "mtime": 1784919376.0895987,
+    "ast_hash": "62fc8f3b95183d9b6e3ea3e11e7f6d8c",
     "semantic_hash": ""
   },
   "src/preprocessor/tokenTypes.js": {
@@ -155,9 +155,9 @@
     "semantic_hash": "eb00a7f013d21822f3bc644fc401e62d"
   },
   "src/tests/parser.test.js": {
-    "mtime": 1784923740.872692,
-    "ast_hash": "dcf933ff25e25d62afe9c366bcb2fc88",
-    "semantic_hash": ""
+    "mtime": 1784888779.3626404,
+    "ast_hash": "ad3d41abf6d48f3d0d2bb822b931a0ff",
+    "semantic_hash": "ad3d41abf6d48f3d0d2bb822b931a0ff"
   },
   "src/tests/preprocessor.test.js": {
     "mtime": 1784888779.3640554,
@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1784924832.9073997,
-    "ast_hash": "e70c951e80d808f42d62d4e47edef6fa",
+    "mtime": 1784895224.3087316,
+    "ast_hash": "965b15f298061142592cbbe7c37d2000",
     "semantic_hash": ""
   },
   ".opencode/opencode.json": {
@@ -332,81 +332,6 @@
   "src/tests/stdlib.test.js": {
     "mtime": 1784920299.951134,
     "ast_hash": "8a3f0e7f3ca45546b2a0516b75243f9f",
-    "semantic_hash": ""
-  },
-  "src/nanopass/call-memory.js": {
-    "mtime": 1784941170.8118553,
-    "ast_hash": "db5d2efe28b0f6c694d1924fa9c885aa",
-    "semantic_hash": ""
-  },
-  "src/nanopass/control-flow.js": {
-    "mtime": 1784941002.6116626,
-    "ast_hash": "1a22617acf10b7d5f3419e97b2a3fe0a",
-    "semantic_hash": ""
-  },
-  "src/nanopass/expression-translator.js": {
-    "mtime": 1784941087.6418006,
-    "ast_hash": "e8dac5dbb7f81f0f3fde034a6dac4157",
-    "semantic_hash": ""
-  },
-  "src/nanopass/intrinsics.js": {
-    "mtime": 1784940826.0036602,
-    "ast_hash": "5671d9f17bfdedfbddfb309e39c2d4a0",
-    "semantic_hash": ""
-  },
-  "src/nanopass/state.js": {
-    "mtime": 1784940842.0492735,
-    "ast_hash": "d4e4d93d9645bd26a068a08af58d1354",
-    "semantic_hash": ""
-  },
-  "src/nanopass/statement-translator.js": {
-    "mtime": 1784941325.821176,
-    "ast_hash": "4e157b292e2fd93b232cdcfdb8f16ec0",
-    "semantic_hash": ""
-  },
-  "src/nanopass/string-literals.js": {
-    "mtime": 1784940796.3082285,
-    "ast_hash": "a0c26b981387439acd80eef236beb21b",
-    "semantic_hash": ""
-  },
-  "src/nanopass/translation-context.js": {
-    "mtime": 1784941569.44936,
-    "ast_hash": "61fca821352678a0cc1e0304e2200f27",
-    "semantic_hash": ""
-  },
-  "src/nanopass/type-queries.js": {
-    "mtime": 1784942473.7423794,
-    "ast_hash": "255473df666700667d75e992bf27dbbd",
-    "semantic_hash": ""
-  },
-  "src/nanopass/type-registry.js": {
-    "mtime": 1784940782.3641121,
-    "ast_hash": "8ce09957be673ad06ddd22157491387a",
-    "semantic_hash": ""
-  },
-  "src/preprocessor/const-eval.js": {
-    "mtime": 1784938954.0887656,
-    "ast_hash": "175e0fbd07b74eb11947ac526b6b7d88",
-    "semantic_hash": ""
-  },
-  "src/preprocessor/directives.js": {
-    "mtime": 1784938902.23055,
-    "ast_hash": "add4269ebe8edf8b759ade9acdebf001",
-    "semantic_hash": ""
-  },
-  "src/preprocessor/lexer-core.js": {
-    "mtime": 1784938755.0557706,
-    "ast_hash": "55e65daed1fdf7db8c93a56126aaea14",
-    "semantic_hash": ""
-  },
-  "src/preprocessor/macro-expansion.js": {
-    "mtime": 1784938828.1584744,
-    "ast_hash": "57bd1332bee5ec8482936fe1dc75bcf0",
-    "semantic_hash": ""
-  },
-  "src/preprocessor/preprocessed-source.js": {
-    "mtime": 1784938653.59658,
-    "ast_hash": "0add0439f6f36d95a633cf2060629f45",
     "semantic_hash": ""
   }
 }

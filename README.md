@@ -56,21 +56,21 @@ I'm compiling findings about this process on [FINDINGS.md](FINDINGS.md).
 - **Processor intrinsics** - `IntrinsicInstruction` IR class, intrinsic detection in `translateCall`, Z80 codegen for special opcodes and port access, 43 intrinsic tests
 - **Block transfer intrinsics** - `IntrinsicMap` extended with `__ini`, `__outi`, `__inir`, `__otir`, `__ind`, `__outd`, `__indr`, `__otdr`; Z80 codegen for INI/OUTI/INIR/OTIR/IND/OUTD/INDR/OTDR block transfer instructions using B for count, C for port, HL for buffer; 19 new tests
 - **Setjmp/Longjmp/Alloca intrinsics** - `IntrinsicMap` extended with `__setjmp`, `__longjmp`, `__alloca`; Z80 codegen for context save/restore (PC, SP, IX, HL, DE, BC, AF) for setjmp/longjmp, stack allocation for alloca; 12 new tests
-- **C standard library - memory operations** - `memset`, `memcpy`, `memcmp`, `memmove`, `memchr` implemented as C source files in `src/core/stdlib/`; parser support for C-style casts `(type)expr`, postfix increment/decrement (`x++`, `x--`), brace-enclosed array initializers `{1, 2, 3}`, and `NULL` keyword; 10 new tests
+ - **C standard library - memory operations** - `memset`, `memcpy`, `memcmp`, `memmove`, `memchr` implemented as C source files in `src/core/stdlib/`; parser support for C-style casts `(type)expr`, postfix increment/decrement (`x++`, `x--`), brace-enclosed array initializers `{1, 2, 3}`, and `NULL` keyword; 10 new tests
+ - **Z80 cycle-unaware simulator** - `src/simulator/` with CPU state management, 64KB flat memory with hooks, port I/O callback system, memory watch/probe manager, and instruction execution engine. Supports LD (8/16-bit), ALU (ADD/SUB/AND/OR/CP), PUSH/POP, JP/JR/CALL/RET, HALT, rotations (RLCA/RRA/RLA/RRCA), CPL, CCF, DAA, IN/OUT, RST, EI/DI, EXX, EX (SP),HL. 40 passing tests.
 
 ### 🔄 In Progress
 - Implement linker definitions to add entry point `crt0` to default compiled/linked output
 
 ### 🔜 Next Steps
-1. Implement a small proof-of-concept cycle-unaware Z80 simulator, with a standard flat memory setup, stepping and memory probes/watches, so that it can be used to test and verify codegen and the standard library
-2. Add character string operations to the C standard library (`sprintf`, `sscanf`, `strlen`, `strtoi`, etc.)
-3. Add file stream abstractions to the C standard library (`FILE`, `putc`, `getc`, `fprintf`, `fscanf`, etc.)
-4. Add file stream abstractions to the C standard library (`FILE`, `putc`, `getc`, `fprintf`, `fscanf`, etc.)
-5. Implement symbol map compiling and exporting for debugging
-6. Implement `unsigned:n` bit fields
+1. Add character string operations to the C standard library (`sprintf`, `sscanf`, `strlen`, `strtoi`, etc.)
+2. Add file stream abstractions to the C standard library (`FILE`, `putc`, `getc`, `fprintf`, `fscanf`, etc.)
+3. Implement symbol map compiling and exporting for debugging
+4. Implement `unsigned:n` bit fields
+5. Expand simulator instruction coverage (ADC/SBC 16-bit, block transfer INIR/OTIR, ED-prefix instructions)
 
 #### 🧪 Test Results
-- 682 passing tests
+- 722 passing tests (682 compiler + 40 simulator)
 
 ### 📔 Backlog (issues identified during implementation for later priorization)
 - Fix `typedef unsigned int newType` parsing

@@ -5,12 +5,12 @@
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1033 nodes · 1612 edges · 102 communities (53 shown, 49 thin omitted)
+- 1043 nodes · 1621 edges · 105 communities (55 shown, 50 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8a88604f`
+- Built from commit: `894063cc`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -58,6 +58,7 @@
 - wladxcodegen.js
 - WlaDxCodegen
 - IndexedLoadInstruction
+- objectfile_loader.js
 - Current Implementation Status
 - IndexedLoadInstruction
 - PreprocessedSource
@@ -79,6 +80,7 @@
 - PredParser
 - SomeParser
 - Memory
+- LinkResult
 - .setFlag
 - ReturnNode
 - StructFieldNode
@@ -86,6 +88,7 @@
 - EnumNode
 - Simulator
 - CPU
+- ResolvedSymbol
 - ExprStmtNode
 - IndexNode
 - MemberNode
@@ -122,7 +125,7 @@
 - **Compilation Pipeline Stages** — agents_preprocessor_lexer, agents_parser_cparser, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_backend_z80codegen [INFERRED]
 - **Core Modules Read Order** — agents_compiler_entry, agents_preprocessor_lexer, agents_parser_combinators, agents_parser_cparser, agents_nanopass_il, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_nanopass_register_passes, agents_backend_z80codegen [INFERRED]
 
-## Communities (102 total, 49 thin omitted)
+## Communities (105 total, 50 thin omitted)
 
 ### Community 0 - "AST Node Definitions"
 Cohesion: 0.06
@@ -149,8 +152,8 @@ Cohesion: 0.20
 Nodes (3): IntrinsicHandler, IntrinsicMap, TranslationState
 
 ### Community 7 - "CLI Entry & Compiler"
-Cohesion: 0.10
-Nodes (3): Compiler, CompilerOptions, PassManager
+Cohesion: 0.07
+Nodes (4): Compiler, CompilerOptions, PassManager, Lexer
 
 ### Community 11 - "Architecture Documentation"
 Cohesion: 0.09
@@ -169,16 +172,20 @@ Cohesion: 0.14
 Nodes (8): Archive, ArchiveMember, createArchive(), deserializeArchive(), loadArchive(), saveArchive(), serializeArchive(), isObjectFile()
 
 ### Community 18 - "Object File & Relocations"
-Cohesion: 0.13
-Nodes (10): resolveCrt0Relocations(), LinkerOptions, LinkResult, ResolvedSymbol, ObjectRelocation, ObjectSymbol, RelocationType, SectionType (+2 more)
+Cohesion: 0.21
+Nodes (8): resolveCrt0Relocations(), LinkerOptions, ObjectRelocation, ObjectSymbol, RelocationType, SectionType, SymbolType, SymbolVisibility
 
 ### Community 19 - "BinaryOpNode"
 Cohesion: 0.50
 Nodes (3): Context scale issues, Software design issues, Tooling issues
 
+### Community 20 - "Object File Format"
+Cohesion: 0.20
+Nodes (9): `CB`-prefixed instructions (bit operations), `ED`-prefixed instructions (extended), Flags effect legend, Implicit uses, Instruction set, `IX`/`IY`-indexed instructions (`0xDD`/`0xFD`), Registers, Unprefixed instructions (`0x00`–`0xFF`) (+1 more)
+
 ### Community 21 - "Binary Writer"
-Cohesion: 0.15
-Nodes (13): BinaryWriter, encodeString(), loadObjectFile(), RelocTypeMap, RelocTypeReverse, saveObjectFile(), SectionTypeMap, SectionTypeReverse (+5 more)
+Cohesion: 0.32
+Nodes (4): BinaryWriter, encodeString(), saveObjectFile(), serializeObjectFile()
 
 ### Community 22 - "Compiler Options & Loading"
 Cohesion: 0.70
@@ -228,6 +235,10 @@ Nodes (11): Registers, CodegenError, CompilerError, LexerError, ParserError, Sem
 Cohesion: 0.22
 Nodes (3): WlaDxCodegen, WlaDxSectionType, Z80Opcodes
 
+### Community 44 - "objectfile_loader.js"
+Cohesion: 0.20
+Nodes (9): loadObjectFile(), RelocTypeMap, RelocTypeReverse, SectionTypeMap, SectionTypeReverse, SymbolTypeMap, SymbolTypeReverse, VisibilityMap (+1 more)
+
 ### Community 45 - "Current Implementation Status"
 Cohesion: 0.29
 Nodes (6): 📔 Backlog (issues identified during implementation for later priorization), ✅ Completed, Current Implementation Status, 🔄 In Progress, 🔜 Next Steps, 🧪 Test Results
@@ -245,21 +256,21 @@ Cohesion: 0.32
 Nodes (3): computeFieldOffsets(), computeStructSize(), TypeRegistry
 
 ## Knowledge Gaps
-- **55 isolated node(s):** `✅ Completed`, `🔄 In Progress`, `🧪 Test Results`, `📔 Backlog (issues identified during implementation for later priorization)`, `Flags` (+50 more)
+- **61 isolated node(s):** `Registers`, `Implicit uses`, `Unprefixed instructions (`0x00`–`0xFF`)`, ``CB`-prefixed instructions (bit operations)`, ``ED`-prefixed instructions (extended)` (+56 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **49 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **50 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Z80Codegen` connect `Z80 Code Generator` to `EnumValueNode`?**
-  _High betweenness centrality (0.039) - this node is a cross-community bridge._
+  _High betweenness centrality (0.030) - this node is a cross-community bridge._
 - **Why does `Compiler` connect `CLI Entry & Compiler` to `EnumValueNode`?**
+  _High betweenness centrality (0.027) - this node is a cross-community bridge._
+- **Why does `LexerCore` connect `Link Result` to `Symbol Table`?**
   _High betweenness centrality (0.023) - this node is a cross-community bridge._
-- **Why does `Lexer` connect `Object File Format` to `Symbol Table`, `EnumValueNode`, `CLI Entry & Compiler`?**
-  _High betweenness centrality (0.020) - this node is a cross-community bridge._
-- **What connects `✅ Completed`, `🔄 In Progress`, `🧪 Test Results` to the rest of the system?**
-  _55 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **What connects `Registers`, `Implicit uses`, `Unprefixed instructions (`0x00`–`0xFF`)` to the rest of the system?**
+  _61 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AST Node Definitions` be split into smaller, more focused modules?**
   _Cohesion score 0.06451612903225806 - nodes in this community are weakly interconnected._
 - **Should `Parser Combinators` be split into smaller, more focused modules?**

@@ -45,15 +45,125 @@
   },
   "nodes": [
     {
+      "label": "SKILL.md",
+      "file_type": "document",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "skill.md"
+    },
+    {
+      "label": "Z80 Coder",
+      "file_type": "document",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill_z80_coder",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "z80 coder"
+    },
+    {
+      "label": "Registers",
+      "file_type": "document",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill_registers",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "registers"
+    },
+    {
+      "label": "Implicit uses",
+      "file_type": "document",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L37",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill_implicit_uses",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "implicit uses"
+    },
+    {
+      "label": "Instruction set",
+      "file_type": "document",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L55",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill_instruction_set",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "instruction set"
+    },
+    {
+      "label": "Unprefixed instructions (`0x00`\u2013`0xFF`)",
+      "file_type": "document",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L78",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill_unprefixed_instructions_0x00_0xff",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "unprefixed instructions (`0x00`\u2013`0xff`)"
+    },
+    {
+      "label": "`CB`-prefixed instructions (bit operations)",
+      "file_type": "document",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L149",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill_cb_prefixed_instructions_bit_operations",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "`cb`-prefixed instructions (bit operations)"
+    },
+    {
+      "label": "`ED`-prefixed instructions (extended)",
+      "file_type": "document",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L172",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill_ed_prefixed_instructions_extended",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "`ed`-prefixed instructions (extended)"
+    },
+    {
+      "label": "`IX`/`IY`-indexed instructions (`0xDD`/`0xFD`)",
+      "file_type": "document",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L222",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill_ix_iy_indexed_instructions_0xdd_0xfd",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "`ix`/`iy`-indexed instructions (`0xdd`/`0xfd`)"
+    },
+    {
+      "label": "Flags effect legend",
+      "file_type": "document",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L303",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill_flags_effect_legend",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "flags effect legend"
+    },
+    {
       "label": "README.md",
       "file_type": "document",
       "source_file": "README.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "readme",
       "community": 45,
       "community_name": "Current Implementation Status",
-      "norm_label": "readme.md"
+      "norm_label": "readme.md",
+      "id": "readme"
     },
     {
       "label": "Current Implementation Status",
@@ -61,10 +171,10 @@
       "source_file": "README.md",
       "source_location": "L10",
       "_origin": "ast",
-      "id": "readme_current_implementation_status",
       "community": 45,
       "community_name": "Current Implementation Status",
-      "norm_label": "current implementation status"
+      "norm_label": "current implementation status",
+      "id": "readme_current_implementation_status"
     },
     {
       "label": "\u2705 Completed",
@@ -72,10 +182,10 @@
       "source_file": "README.md",
       "source_location": "L12",
       "_origin": "ast",
-      "id": "readme_completed",
       "community": 45,
       "community_name": "Current Implementation Status",
-      "norm_label": "\u2705 completed"
+      "norm_label": "\u2705 completed",
+      "id": "readme_completed"
     },
     {
       "label": "\ud83d\udd04 In Progress",
@@ -83,10 +193,10 @@
       "source_file": "README.md",
       "source_location": "L70",
       "_origin": "ast",
-      "id": "readme_in_progress",
       "community": 45,
       "community_name": "Current Implementation Status",
-      "norm_label": "\ud83d\udd04 in progress"
+      "norm_label": "\ud83d\udd04 in progress",
+      "id": "readme_in_progress"
     },
     {
       "label": "\ud83d\udd1c Next Steps",
@@ -94,10 +204,10 @@
       "source_file": "README.md",
       "source_location": "L73",
       "_origin": "ast",
-      "id": "readme_next_steps",
       "community": 45,
       "community_name": "Current Implementation Status",
-      "norm_label": "\ud83d\udd1c next steps"
+      "norm_label": "\ud83d\udd1c next steps",
+      "id": "readme_next_steps"
     },
     {
       "label": "\ud83e\uddea Test Results",
@@ -105,10 +215,10 @@
       "source_file": "README.md",
       "source_location": "L84",
       "_origin": "ast",
-      "id": "readme_test_results",
       "community": 45,
       "community_name": "Current Implementation Status",
-      "norm_label": "\ud83e\uddea test results"
+      "norm_label": "\ud83e\uddea test results",
+      "id": "readme_test_results"
     },
     {
       "label": "\ud83d\udcd4 Backlog (issues identified during implementation for later priorization)",
@@ -116,10 +226,10 @@
       "source_file": "README.md",
       "source_location": "L87",
       "_origin": "ast",
-      "id": "readme_backlog_issues_identified_during_implementation_for_later_priorization",
       "community": 45,
       "community_name": "Current Implementation Status",
-      "norm_label": "\ud83d\udcd4 backlog (issues identified during implementation for later priorization)"
+      "norm_label": "\ud83d\udcd4 backlog (issues identified during implementation for later priorization)",
+      "id": "readme_backlog_issues_identified_during_implementation_for_later_priorization"
     },
     {
       "label": "simulator.js",
@@ -127,10 +237,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_simulator_simulator",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "simulator.js"
+      "norm_label": "simulator.js",
+      "id": "src_simulator_simulator"
     },
     {
       "label": "Simulator",
@@ -138,10 +248,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L28",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "simulator"
+      "norm_label": "simulator",
+      "id": "src_simulator_simulator_simulator"
     },
     {
       "label": ".constructor()",
@@ -149,10 +259,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L32",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_constructor",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_simulator_simulator_simulator_constructor"
     },
     {
       "label": ".cpu()",
@@ -160,10 +270,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L47",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_cpu",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": ".cpu()"
+      "norm_label": ".cpu()",
+      "id": "src_simulator_simulator_simulator_cpu"
     },
     {
       "label": ".memory()",
@@ -171,10 +281,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L52",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_memory",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": ".memory()"
+      "norm_label": ".memory()",
+      "id": "src_simulator_simulator_simulator_memory"
     },
     {
       "label": ".io()",
@@ -182,10 +292,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L57",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_io",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": ".io()"
+      "norm_label": ".io()",
+      "id": "src_simulator_simulator_simulator_io"
     },
     {
       "label": ".watcher()",
@@ -193,10 +303,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L62",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_watcher",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": ".watcher()"
+      "norm_label": ".watcher()",
+      "id": "src_simulator_simulator_simulator_watcher"
     },
     {
       "label": ".reset()",
@@ -204,10 +314,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L69",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_reset",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": ".reset()"
+      "norm_label": ".reset()",
+      "id": "src_simulator_simulator_simulator_reset"
     },
     {
       "label": ".load()",
@@ -215,10 +325,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L84",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_load",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": ".load()"
+      "norm_label": ".load()",
+      "id": "src_simulator_simulator_simulator_load"
     },
     {
       "label": ".loadAndRun()",
@@ -226,10 +336,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L95",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_loadandrun",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": ".loadandrun()"
+      "norm_label": ".loadandrun()",
+      "id": "src_simulator_simulator_simulator_loadandrun"
     },
     {
       "label": ".step()",
@@ -237,10 +347,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L105",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_step",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": ".step()"
+      "norm_label": ".step()",
+      "id": "src_simulator_simulator_simulator_step"
     },
     {
       "label": ".run()",
@@ -248,10 +358,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L140",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_run",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": ".run()"
+      "norm_label": ".run()",
+      "id": "src_simulator_simulator_simulator_run"
     },
     {
       "label": ".stop()",
@@ -259,10 +369,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L153",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_stop",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": ".stop()"
+      "norm_label": ".stop()",
+      "id": "src_simulator_simulator_simulator_stop"
     },
     {
       "label": ".setBreakpoint()",
@@ -270,10 +380,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L163",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_setbreakpoint",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": ".setbreakpoint()"
+      "norm_label": ".setbreakpoint()",
+      "id": "src_simulator_simulator_simulator_setbreakpoint"
     },
     {
       "label": ".removeBreakpoint()",
@@ -281,10 +391,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L174",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_removebreakpoint",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": ".removebreakpoint()"
+      "norm_label": ".removebreakpoint()",
+      "id": "src_simulator_simulator_simulator_removebreakpoint"
     },
     {
       "label": ".getSnapshot()",
@@ -292,10 +402,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L179",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_getsnapshot",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": ".getsnapshot()"
+      "norm_label": ".getsnapshot()",
+      "id": "src_simulator_simulator_simulator_getsnapshot"
     },
     {
       "label": ".restoreSnapshot()",
@@ -303,10 +413,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L184",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_restoresnapshot",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": ".restoresnapshot()"
+      "norm_label": ".restoresnapshot()",
+      "id": "src_simulator_simulator_simulator_restoresnapshot"
     },
     {
       "label": ".getStats()",
@@ -314,10 +424,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L189",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_getstats",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": ".getstats()"
+      "norm_label": ".getstats()",
+      "id": "src_simulator_simulator_simulator_getstats"
     },
     {
       "label": ".getFlag()",
@@ -325,10 +435,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L197",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_getflag",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": ".getflag()"
+      "norm_label": ".getflag()",
+      "id": "src_simulator_simulator_simulator_getflag"
     },
     {
       "label": "._decodeAndExecute()",
@@ -336,10 +446,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L204",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_decodeandexecute",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._decodeandexecute()"
+      "norm_label": "._decodeandexecute()",
+      "id": "src_simulator_simulator_simulator_decodeandexecute"
     },
     {
       "label": "._executeOpcode()",
@@ -347,10 +457,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L217",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_executeopcode",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._executeopcode()"
+      "norm_label": "._executeopcode()",
+      "id": "src_simulator_simulator_simulator_executeopcode"
     },
     {
       "label": "._executeCBPrefix()",
@@ -358,10 +468,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L449",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_executecbprefix",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._executecbprefix()"
+      "norm_label": "._executecbprefix()",
+      "id": "src_simulator_simulator_simulator_executecbprefix"
     },
     {
       "label": "._shiftRotate8()",
@@ -369,10 +479,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L492",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_shiftrotate8",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._shiftrotate8()"
+      "norm_label": "._shiftrotate8()",
+      "id": "src_simulator_simulator_simulator_shiftrotate8"
     },
     {
       "label": "._executeEDPrefix()",
@@ -380,10 +490,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L548",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_executeedprefix",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._executeedprefix()"
+      "norm_label": "._executeedprefix()",
+      "id": "src_simulator_simulator_simulator_executeedprefix"
     },
     {
       "label": "._aluApply()",
@@ -391,10 +501,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L814",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_aluapply",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._aluapply()"
+      "norm_label": "._aluapply()",
+      "id": "src_simulator_simulator_simulator_aluapply"
     },
     {
       "label": "._addA()",
@@ -402,10 +512,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L832",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_adda",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._adda()"
+      "norm_label": "._adda()",
+      "id": "src_simulator_simulator_simulator_adda"
     },
     {
       "label": "._adcA()",
@@ -413,10 +523,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L848",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_adca",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._adca()"
+      "norm_label": "._adca()",
+      "id": "src_simulator_simulator_simulator_adca"
     },
     {
       "label": "._subA()",
@@ -424,10 +534,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L865",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_suba",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._suba()"
+      "norm_label": "._suba()",
+      "id": "src_simulator_simulator_simulator_suba"
     },
     {
       "label": "._sbcA()",
@@ -435,10 +545,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L882",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_sbca",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._sbca()"
+      "norm_label": "._sbca()",
+      "id": "src_simulator_simulator_simulator_sbca"
     },
     {
       "label": "._andA()",
@@ -446,10 +556,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L901",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_anda",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._anda()"
+      "norm_label": "._anda()",
+      "id": "src_simulator_simulator_simulator_anda"
     },
     {
       "label": "._orA()",
@@ -457,10 +567,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L916",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_ora",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._ora()"
+      "norm_label": "._ora()",
+      "id": "src_simulator_simulator_simulator_ora"
     },
     {
       "label": "._xorA()",
@@ -468,10 +578,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L931",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_xora",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._xora()"
+      "norm_label": "._xora()",
+      "id": "src_simulator_simulator_simulator_xora"
     },
     {
       "label": "._cpA()",
@@ -479,10 +589,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L946",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_cpa",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._cpa()"
+      "norm_label": "._cpa()",
+      "id": "src_simulator_simulator_simulator_cpa"
     },
     {
       "label": "._daa()",
@@ -490,10 +600,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L960",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_daa",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._daa()"
+      "norm_label": "._daa()",
+      "id": "src_simulator_simulator_simulator_daa"
     },
     {
       "label": "._neg()",
@@ -501,10 +611,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L985",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_neg",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._neg()"
+      "norm_label": "._neg()",
+      "id": "src_simulator_simulator_simulator_neg"
     },
     {
       "label": "._signedByte()",
@@ -512,10 +622,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L1003",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_signedbyte",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._signedbyte()"
+      "norm_label": "._signedbyte()",
+      "id": "src_simulator_simulator_simulator_signedbyte"
     },
     {
       "label": "._readReg8()",
@@ -523,10 +633,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L1010",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_readreg8",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._readreg8()"
+      "norm_label": "._readreg8()",
+      "id": "src_simulator_simulator_simulator_readreg8"
     },
     {
       "label": "._writeReg8()",
@@ -534,10 +644,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L1029",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_writereg8",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._writereg8()"
+      "norm_label": "._writereg8()",
+      "id": "src_simulator_simulator_simulator_writereg8"
     },
     {
       "label": "._parity()",
@@ -545,10 +655,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L1049",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_parity",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._parity()"
+      "norm_label": "._parity()",
+      "id": "src_simulator_simulator_simulator_parity"
     },
     {
       "label": "._executeDDFDPrefix()",
@@ -556,10 +666,10 @@
       "source_file": "src/simulator/simulator.js",
       "source_location": "L1063",
       "_origin": "ast",
-      "id": "src_simulator_simulator_simulator_executeddfdprefix",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "._executeddfdprefix()"
+      "norm_label": "._executeddfdprefix()",
+      "id": "src_simulator_simulator_simulator_executeddfdprefix"
     },
     {
       "label": "simulator.test.js",
@@ -567,10 +677,10 @@
       "source_file": "src/tests/simulator.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_simulator_test",
       "community": 81,
       "community_name": "Simulator",
-      "norm_label": "simulator.test.js"
+      "norm_label": "simulator.test.js",
+      "id": "src_tests_simulator_test"
     },
     {
       "label": "cpu.js",
@@ -1975,8 +2085,8 @@
       "source_file": "src/linker/linker.js",
       "source_location": "L33",
       "_origin": "ast",
-      "community": 18,
-      "community_name": "Object File & Relocations",
+      "community": 83,
+      "community_name": "ResolvedSymbol",
       "norm_label": "resolvedsymbol",
       "id": "src_linker_linker_resolvedsymbol"
     },
@@ -1986,8 +2096,8 @@
       "source_file": "src/linker/linker.js",
       "source_location": "L42",
       "_origin": "ast",
-      "community": 18,
-      "community_name": "Object File & Relocations",
+      "community": 83,
+      "community_name": "ResolvedSymbol",
       "norm_label": ".constructor()",
       "id": "src_linker_linker_resolvedsymbol_constructor"
     },
@@ -1997,8 +2107,8 @@
       "source_file": "src/linker/linker.js",
       "source_location": "L54",
       "_origin": "ast",
-      "community": 18,
-      "community_name": "Object File & Relocations",
+      "community": 83,
+      "community_name": "ResolvedSymbol",
       "norm_label": ".tojson()",
       "id": "src_linker_linker_resolvedsymbol_tojson"
     },
@@ -2063,8 +2173,8 @@
       "source_file": "src/linker/linker.js",
       "source_location": "L116",
       "_origin": "ast",
-      "community": 18,
-      "community_name": "Object File & Relocations",
+      "community": 69,
+      "community_name": "LinkResult",
       "norm_label": "linkresult",
       "id": "src_linker_linker_linkresult"
     },
@@ -2074,8 +2184,8 @@
       "source_file": "src/linker/linker.js",
       "source_location": "L125",
       "_origin": "ast",
-      "community": 18,
-      "community_name": "Object File & Relocations",
+      "community": 69,
+      "community_name": "LinkResult",
       "norm_label": ".constructor()",
       "id": "src_linker_linker_linkresult_constructor"
     },
@@ -2085,8 +2195,8 @@
       "source_file": "src/linker/linker.js",
       "source_location": "L137",
       "_origin": "ast",
-      "community": 18,
-      "community_name": "Object File & Relocations",
+      "community": 69,
+      "community_name": "LinkResult",
       "norm_label": ".tojson()",
       "id": "src_linker_linker_linkresult_tojson"
     },
@@ -5055,8 +5165,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
+      "community": 7,
+      "community_name": "CLI Entry & Compiler",
       "norm_label": "lexer",
       "id": "src_preprocessor_lexer_lexer"
     },
@@ -5066,8 +5176,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L22",
       "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
+      "community": 7,
+      "community_name": "CLI Entry & Compiler",
       "norm_label": ".constructor()",
       "id": "src_preprocessor_lexer_lexer_constructor"
     },
@@ -5077,8 +5187,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
+      "community": 7,
+      "community_name": "CLI Entry & Compiler",
       "norm_label": "._expandmacro()",
       "id": "src_preprocessor_lexer_lexer_expandmacro"
     },
@@ -5088,8 +5198,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L45",
       "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
+      "community": 7,
+      "community_name": "CLI Entry & Compiler",
       "norm_label": "._expandargtokens()",
       "id": "src_preprocessor_lexer_lexer_expandargtokens"
     },
@@ -5099,8 +5209,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L58",
       "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
+      "community": 7,
+      "community_name": "CLI Entry & Compiler",
       "norm_label": "._substituteparamstokens()",
       "id": "src_preprocessor_lexer_lexer_substituteparamstokens"
     },
@@ -5110,8 +5220,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L68",
       "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
+      "community": 7,
+      "community_name": "CLI Entry & Compiler",
       "norm_label": "._expandtokensmacros()",
       "id": "src_preprocessor_lexer_lexer_expandtokensmacros"
     },
@@ -5121,8 +5231,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L78",
       "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
+      "community": 7,
+      "community_name": "CLI Entry & Compiler",
       "norm_label": "._collectargsfromtokens()",
       "id": "src_preprocessor_lexer_lexer_collectargsfromtokens"
     },
@@ -5132,8 +5242,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L86",
       "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
+      "community": 7,
+      "community_name": "CLI Entry & Compiler",
       "norm_label": "._parsemacroargs()",
       "id": "src_preprocessor_lexer_lexer_parsemacroargs"
     },
@@ -5143,8 +5253,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L94",
       "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
+      "community": 7,
+      "community_name": "CLI Entry & Compiler",
       "norm_label": ".readdirective()",
       "id": "src_preprocessor_lexer_lexer_readdirective"
     },
@@ -5154,8 +5264,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L103",
       "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
+      "community": 7,
+      "community_name": "CLI Entry & Compiler",
       "norm_label": "._evaluateconstantexpression()",
       "id": "src_preprocessor_lexer_lexer_evaluateconstantexpression"
     },
@@ -5165,8 +5275,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L111",
       "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
+      "community": 7,
+      "community_name": "CLI Entry & Compiler",
       "norm_label": ".nexttoken()",
       "id": "src_preprocessor_lexer_lexer_nexttoken"
     },
@@ -5176,8 +5286,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L237",
       "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
+      "community": 7,
+      "community_name": "CLI Entry & Compiler",
       "norm_label": ".tokenize()",
       "id": "src_preprocessor_lexer_lexer_tokenize"
     },
@@ -5187,8 +5297,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L273",
       "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
+      "community": 7,
+      "community_name": "CLI Entry & Compiler",
       "norm_label": "._tokenizeincludedfile()",
       "id": "src_preprocessor_lexer_lexer_tokenizeincludedfile"
     },
@@ -10104,9 +10214,9 @@
       "source_file": "src/linker/objectfile_loader.js",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 21,
+      "community": 44,
       "norm_label": "objectfile_loader.js",
-      "community_name": "Binary Writer",
+      "community_name": "objectfile_loader.js",
       "id": "src_linker_objectfile_loader"
     },
     {
@@ -10115,9 +10225,9 @@
       "source_file": "src/linker/objectfile_loader.js",
       "source_location": "L21",
       "_origin": "ast",
-      "community": 21,
+      "community": 44,
       "norm_label": "symboltypemap",
-      "community_name": "Binary Writer",
+      "community_name": "objectfile_loader.js",
       "id": "src_linker_objectfile_loader_symboltypemap"
     },
     {
@@ -10126,9 +10236,9 @@
       "source_file": "src/linker/objectfile_loader.js",
       "source_location": "L30",
       "_origin": "ast",
-      "community": 21,
+      "community": 44,
       "norm_label": "symboltypereverse",
-      "community_name": "Binary Writer",
+      "community_name": "objectfile_loader.js",
       "id": "src_linker_objectfile_loader_symboltypereverse"
     },
     {
@@ -10137,9 +10247,9 @@
       "source_file": "src/linker/objectfile_loader.js",
       "source_location": "L34",
       "_origin": "ast",
-      "community": 21,
+      "community": 44,
       "norm_label": "visibilitymap",
-      "community_name": "Binary Writer",
+      "community_name": "objectfile_loader.js",
       "id": "src_linker_objectfile_loader_visibilitymap"
     },
     {
@@ -10148,9 +10258,9 @@
       "source_file": "src/linker/objectfile_loader.js",
       "source_location": "L40",
       "_origin": "ast",
-      "community": 21,
+      "community": 44,
       "norm_label": "visibilityreverse",
-      "community_name": "Binary Writer",
+      "community_name": "objectfile_loader.js",
       "id": "src_linker_objectfile_loader_visibilityreverse"
     },
     {
@@ -10159,9 +10269,9 @@
       "source_file": "src/linker/objectfile_loader.js",
       "source_location": "L44",
       "_origin": "ast",
-      "community": 21,
+      "community": 44,
       "norm_label": "sectiontypemap",
-      "community_name": "Binary Writer",
+      "community_name": "objectfile_loader.js",
       "id": "src_linker_objectfile_loader_sectiontypemap"
     },
     {
@@ -10170,9 +10280,9 @@
       "source_file": "src/linker/objectfile_loader.js",
       "source_location": "L51",
       "_origin": "ast",
-      "community": 21,
+      "community": 44,
       "norm_label": "sectiontypereverse",
-      "community_name": "Binary Writer",
+      "community_name": "objectfile_loader.js",
       "id": "src_linker_objectfile_loader_sectiontypereverse"
     },
     {
@@ -10181,9 +10291,9 @@
       "source_file": "src/linker/objectfile_loader.js",
       "source_location": "L55",
       "_origin": "ast",
-      "community": 21,
+      "community": 44,
       "norm_label": "reloctypemap",
-      "community_name": "Binary Writer",
+      "community_name": "objectfile_loader.js",
       "id": "src_linker_objectfile_loader_reloctypemap"
     },
     {
@@ -10192,9 +10302,9 @@
       "source_file": "src/linker/objectfile_loader.js",
       "source_location": "L65",
       "_origin": "ast",
-      "community": 21,
+      "community": 44,
       "norm_label": "reloctypereverse",
-      "community_name": "Binary Writer",
+      "community_name": "objectfile_loader.js",
       "id": "src_linker_objectfile_loader_reloctypereverse"
     },
     {
@@ -10445,9 +10555,9 @@
       "source_file": "src/linker/objectfile_loader.js",
       "source_location": "L378",
       "_origin": "ast",
-      "community": 21,
+      "community": 44,
       "norm_label": "loadobjectfile()",
-      "community_name": "Binary Writer",
+      "community_name": "objectfile_loader.js",
       "id": "src_linker_objectfile_loader_loadobjectfile"
     },
     {
@@ -11550,13 +11660,112 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "opencode_skills_z80_coder_skill",
+      "target": "opencode_skills_z80_coder_skill_z80_coder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L37",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "opencode_skills_z80_coder_skill_z80_coder",
+      "target": "opencode_skills_z80_coder_skill_implicit_uses",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L55",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "opencode_skills_z80_coder_skill_z80_coder",
+      "target": "opencode_skills_z80_coder_skill_instruction_set",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "opencode_skills_z80_coder_skill_z80_coder",
+      "target": "opencode_skills_z80_coder_skill_registers",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L149",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "opencode_skills_z80_coder_skill_instruction_set",
+      "target": "opencode_skills_z80_coder_skill_cb_prefixed_instructions_bit_operations",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L172",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "opencode_skills_z80_coder_skill_instruction_set",
+      "target": "opencode_skills_z80_coder_skill_ed_prefixed_instructions_extended",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L222",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "opencode_skills_z80_coder_skill_instruction_set",
+      "target": "opencode_skills_z80_coder_skill_ix_iy_indexed_instructions_0xdd_0xfd",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L78",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "opencode_skills_z80_coder_skill_instruction_set",
+      "target": "opencode_skills_z80_coder_skill_unprefixed_instructions_0x00_0xff",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L303",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "opencode_skills_z80_coder_skill_ix_iy_indexed_instructions_0xdd_0xfd",
+      "target": "opencode_skills_z80_coder_skill_flags_effect_legend",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "README.md",
       "source_location": "L10",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "readme",
-      "target": "readme_current_implementation_status",
-      "confidence_score": 1.0
+      "target": "readme_current_implementation_status"
     },
     {
       "relation": "contains",
@@ -11565,9 +11774,9 @@
       "source_location": "L87",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "readme_current_implementation_status",
-      "target": "readme_backlog_issues_identified_during_implementation_for_later_priorization",
-      "confidence_score": 1.0
+      "target": "readme_backlog_issues_identified_during_implementation_for_later_priorization"
     },
     {
       "relation": "contains",
@@ -11576,9 +11785,9 @@
       "source_location": "L12",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "readme_current_implementation_status",
-      "target": "readme_completed",
-      "confidence_score": 1.0
+      "target": "readme_completed"
     },
     {
       "relation": "contains",
@@ -11587,9 +11796,9 @@
       "source_location": "L70",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "readme_current_implementation_status",
-      "target": "readme_in_progress",
-      "confidence_score": 1.0
+      "target": "readme_in_progress"
     },
     {
       "relation": "contains",
@@ -11598,9 +11807,9 @@
       "source_location": "L73",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "readme_current_implementation_status",
-      "target": "readme_next_steps",
-      "confidence_score": 1.0
+      "target": "readme_next_steps"
     },
     {
       "relation": "contains",
@@ -11609,9 +11818,9 @@
       "source_location": "L84",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "readme_next_steps",
-      "target": "readme_test_results",
-      "confidence_score": 1.0
+      "target": "readme_test_results"
     },
     {
       "relation": "contains",
@@ -11620,9 +11829,9 @@
       "source_location": "L28",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator",
-      "target": "src_simulator_simulator_simulator",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator"
     },
     {
       "relation": "imports_from",
@@ -11632,9 +11841,9 @@
       "source_location": "L12",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_simulator_test",
-      "target": "src_simulator_simulator",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator"
     },
     {
       "relation": "method",
@@ -11643,9 +11852,9 @@
       "source_location": "L848",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_adca",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_adca"
     },
     {
       "relation": "method",
@@ -11654,9 +11863,9 @@
       "source_location": "L832",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_adda",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_adda"
     },
     {
       "relation": "method",
@@ -11665,9 +11874,9 @@
       "source_location": "L814",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_aluapply",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_aluapply"
     },
     {
       "relation": "method",
@@ -11676,9 +11885,9 @@
       "source_location": "L901",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_anda",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_anda"
     },
     {
       "relation": "method",
@@ -11687,9 +11896,9 @@
       "source_location": "L32",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_constructor",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_constructor"
     },
     {
       "relation": "method",
@@ -11698,9 +11907,9 @@
       "source_location": "L946",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_cpa",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_cpa"
     },
     {
       "relation": "method",
@@ -11709,9 +11918,9 @@
       "source_location": "L49",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_cpu",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_cpu"
     },
     {
       "relation": "method",
@@ -11720,9 +11929,9 @@
       "source_location": "L960",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_daa",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_daa"
     },
     {
       "relation": "method",
@@ -11731,9 +11940,9 @@
       "source_location": "L204",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_decodeandexecute",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_decodeandexecute"
     },
     {
       "relation": "method",
@@ -11742,9 +11951,9 @@
       "source_location": "L449",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_executecbprefix",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_executecbprefix"
     },
     {
       "relation": "method",
@@ -11753,9 +11962,9 @@
       "source_location": "L1063",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_executeddfdprefix",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_executeddfdprefix"
     },
     {
       "relation": "method",
@@ -11764,9 +11973,9 @@
       "source_location": "L548",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_executeedprefix",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_executeedprefix"
     },
     {
       "relation": "method",
@@ -11775,9 +11984,9 @@
       "source_location": "L217",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_executeopcode",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_executeopcode"
     },
     {
       "relation": "method",
@@ -11786,9 +11995,9 @@
       "source_location": "L197",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_getflag",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_getflag"
     },
     {
       "relation": "method",
@@ -11797,9 +12006,9 @@
       "source_location": "L179",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_getsnapshot",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_getsnapshot"
     },
     {
       "relation": "method",
@@ -11808,9 +12017,9 @@
       "source_location": "L189",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_getstats",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_getstats"
     },
     {
       "relation": "method",
@@ -11819,9 +12028,9 @@
       "source_location": "L59",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_io",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_io"
     },
     {
       "relation": "method",
@@ -11830,9 +12039,9 @@
       "source_location": "L84",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_load",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_load"
     },
     {
       "relation": "method",
@@ -11841,9 +12050,9 @@
       "source_location": "L95",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_loadandrun",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_loadandrun"
     },
     {
       "relation": "method",
@@ -11852,9 +12061,9 @@
       "source_location": "L54",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_memory",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_memory"
     },
     {
       "relation": "method",
@@ -11863,9 +12072,9 @@
       "source_location": "L985",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_neg",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_neg"
     },
     {
       "relation": "method",
@@ -11874,9 +12083,9 @@
       "source_location": "L916",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_ora",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_ora"
     },
     {
       "relation": "method",
@@ -11885,9 +12094,9 @@
       "source_location": "L1049",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_parity",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_parity"
     },
     {
       "relation": "method",
@@ -11896,9 +12105,9 @@
       "source_location": "L1010",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_readreg8",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_readreg8"
     },
     {
       "relation": "method",
@@ -11907,9 +12116,9 @@
       "source_location": "L174",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_removebreakpoint",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_removebreakpoint"
     },
     {
       "relation": "method",
@@ -11918,9 +12127,9 @@
       "source_location": "L69",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_reset",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_reset"
     },
     {
       "relation": "method",
@@ -11929,9 +12138,9 @@
       "source_location": "L184",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_restoresnapshot",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_restoresnapshot"
     },
     {
       "relation": "method",
@@ -11940,9 +12149,9 @@
       "source_location": "L140",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_run",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_run"
     },
     {
       "relation": "method",
@@ -11951,9 +12160,9 @@
       "source_location": "L882",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_sbca",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_sbca"
     },
     {
       "relation": "method",
@@ -11962,9 +12171,9 @@
       "source_location": "L163",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_setbreakpoint",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_setbreakpoint"
     },
     {
       "relation": "method",
@@ -11973,9 +12182,9 @@
       "source_location": "L492",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_shiftrotate8",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_shiftrotate8"
     },
     {
       "relation": "method",
@@ -11984,9 +12193,9 @@
       "source_location": "L1003",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_signedbyte",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_signedbyte"
     },
     {
       "relation": "method",
@@ -11995,9 +12204,9 @@
       "source_location": "L105",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_step",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_step"
     },
     {
       "relation": "method",
@@ -12006,9 +12215,9 @@
       "source_location": "L153",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_stop",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_stop"
     },
     {
       "relation": "method",
@@ -12017,9 +12226,9 @@
       "source_location": "L865",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_suba",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_suba"
     },
     {
       "relation": "method",
@@ -12028,9 +12237,9 @@
       "source_location": "L64",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_watcher",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_watcher"
     },
     {
       "relation": "method",
@@ -12039,9 +12248,9 @@
       "source_location": "L1029",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_writereg8",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_writereg8"
     },
     {
       "relation": "method",
@@ -12050,9 +12259,9 @@
       "source_location": "L931",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator",
-      "target": "src_simulator_simulator_simulator_xora",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_xora"
     },
     {
       "relation": "imports",
@@ -12062,9 +12271,9 @@
       "source_location": "L12",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_simulator_test",
-      "target": "src_simulator_simulator_simulator",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator"
     },
     {
       "relation": "calls",
@@ -12074,9 +12283,9 @@
       "source_location": "L96",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_loadandrun",
-      "target": "src_simulator_simulator_simulator_load",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_load"
     },
     {
       "relation": "calls",
@@ -12086,9 +12295,9 @@
       "source_location": "L99",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_loadandrun",
-      "target": "src_simulator_simulator_simulator_run",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_run"
     },
     {
       "relation": "calls",
@@ -12098,9 +12307,9 @@
       "source_location": "L145",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_run",
-      "target": "src_simulator_simulator_simulator_step",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_step"
     },
     {
       "relation": "calls",
@@ -12110,9 +12319,9 @@
       "source_location": "L111",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_step",
-      "target": "src_simulator_simulator_simulator_decodeandexecute",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_decodeandexecute"
     },
     {
       "relation": "calls",
@@ -12122,9 +12331,9 @@
       "source_location": "L166",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_setbreakpoint",
-      "target": "src_simulator_simulator_simulator_stop",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_stop"
     },
     {
       "relation": "calls",
@@ -12134,9 +12343,9 @@
       "source_location": "L850",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_adca",
-      "target": "src_simulator_simulator_simulator_getflag",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_getflag"
     },
     {
       "relation": "calls",
@@ -12146,9 +12355,9 @@
       "source_location": "L963",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_daa",
-      "target": "src_simulator_simulator_simulator_getflag",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_getflag"
     },
     {
       "relation": "calls",
@@ -12158,9 +12367,9 @@
       "source_location": "L575",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_executeedprefix",
-      "target": "src_simulator_simulator_simulator_getflag",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_getflag"
     },
     {
       "relation": "calls",
@@ -12170,9 +12379,9 @@
       "source_location": "L340",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_executeopcode",
-      "target": "src_simulator_simulator_simulator_getflag",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_getflag"
     },
     {
       "relation": "calls",
@@ -12182,9 +12391,9 @@
       "source_location": "L884",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_sbca",
-      "target": "src_simulator_simulator_simulator_getflag",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_getflag"
     },
     {
       "relation": "calls",
@@ -12194,9 +12403,9 @@
       "source_location": "L505",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_shiftrotate8",
-      "target": "src_simulator_simulator_simulator_getflag",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_getflag"
     },
     {
       "relation": "calls",
@@ -12206,9 +12415,9 @@
       "source_location": "L207",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_decodeandexecute",
-      "target": "src_simulator_simulator_simulator_executeopcode",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_executeopcode"
     },
     {
       "relation": "calls",
@@ -12218,9 +12427,9 @@
       "source_location": "L367",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_executeopcode",
-      "target": "src_simulator_simulator_simulator_aluapply",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_aluapply"
     },
     {
       "relation": "calls",
@@ -12230,9 +12439,9 @@
       "source_location": "L362",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_executeopcode",
-      "target": "src_simulator_simulator_simulator_daa",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_daa"
     },
     {
       "relation": "calls",
@@ -12242,9 +12451,9 @@
       "source_location": "L223",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_executeopcode",
-      "target": "src_simulator_simulator_simulator_executecbprefix",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_executecbprefix"
     },
     {
       "relation": "calls",
@@ -12254,9 +12463,9 @@
       "source_location": "L437",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_executeopcode",
-      "target": "src_simulator_simulator_simulator_executeddfdprefix",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_executeddfdprefix"
     },
     {
       "relation": "calls",
@@ -12266,9 +12475,9 @@
       "source_location": "L224",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_executeopcode",
-      "target": "src_simulator_simulator_simulator_executeedprefix",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_executeedprefix"
     },
     {
       "relation": "calls",
@@ -12278,9 +12487,9 @@
       "source_location": "L234",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_executeopcode",
-      "target": "src_simulator_simulator_simulator_readreg8",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_readreg8"
     },
     {
       "relation": "calls",
@@ -12290,9 +12499,9 @@
       "source_location": "L347",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_executeopcode",
-      "target": "src_simulator_simulator_simulator_signedbyte",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_signedbyte"
     },
     {
       "relation": "calls",
@@ -12302,9 +12511,9 @@
       "source_location": "L234",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_executeopcode",
-      "target": "src_simulator_simulator_simulator_writereg8",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_writereg8"
     },
     {
       "relation": "calls",
@@ -12314,9 +12523,9 @@
       "source_location": "L455",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_executecbprefix",
-      "target": "src_simulator_simulator_simulator_readreg8",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_readreg8"
     },
     {
       "relation": "calls",
@@ -12326,9 +12535,9 @@
       "source_location": "L455",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_executecbprefix",
-      "target": "src_simulator_simulator_simulator_shiftrotate8",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_shiftrotate8"
     },
     {
       "relation": "calls",
@@ -12338,9 +12547,9 @@
       "source_location": "L456",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_executecbprefix",
-      "target": "src_simulator_simulator_simulator_writereg8",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_writereg8"
     },
     {
       "relation": "calls",
@@ -12350,9 +12559,9 @@
       "source_location": "L537",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_shiftrotate8",
-      "target": "src_simulator_simulator_simulator_parity",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_parity"
     },
     {
       "relation": "calls",
@@ -12362,9 +12571,9 @@
       "source_location": "L620",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_executeedprefix",
-      "target": "src_simulator_simulator_simulator_neg",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_neg"
     },
     {
       "relation": "calls",
@@ -12374,9 +12583,9 @@
       "source_location": "L608",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_executeedprefix",
-      "target": "src_simulator_simulator_simulator_parity",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_parity"
     },
     {
       "relation": "calls",
@@ -12386,9 +12595,9 @@
       "source_location": "L615",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_executeedprefix",
-      "target": "src_simulator_simulator_simulator_readreg8",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_readreg8"
     },
     {
       "relation": "calls",
@@ -12398,9 +12607,9 @@
       "source_location": "L604",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_executeedprefix",
-      "target": "src_simulator_simulator_simulator_writereg8",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_writereg8"
     },
     {
       "relation": "calls",
@@ -12410,9 +12619,9 @@
       "source_location": "L817",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_aluapply",
-      "target": "src_simulator_simulator_simulator_adca",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_adca"
     },
     {
       "relation": "calls",
@@ -12422,9 +12631,9 @@
       "source_location": "L816",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_aluapply",
-      "target": "src_simulator_simulator_simulator_adda",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_adda"
     },
     {
       "relation": "calls",
@@ -12434,9 +12643,9 @@
       "source_location": "L820",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_aluapply",
-      "target": "src_simulator_simulator_simulator_anda",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_anda"
     },
     {
       "relation": "calls",
@@ -12446,9 +12655,9 @@
       "source_location": "L823",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_aluapply",
-      "target": "src_simulator_simulator_simulator_cpa",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_cpa"
     },
     {
       "relation": "calls",
@@ -12458,9 +12667,9 @@
       "source_location": "L822",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_aluapply",
-      "target": "src_simulator_simulator_simulator_ora",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_ora"
     },
     {
       "relation": "calls",
@@ -12470,9 +12679,9 @@
       "source_location": "L819",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_aluapply",
-      "target": "src_simulator_simulator_simulator_sbca",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_sbca"
     },
     {
       "relation": "calls",
@@ -12482,9 +12691,9 @@
       "source_location": "L818",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_aluapply",
-      "target": "src_simulator_simulator_simulator_suba",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_suba"
     },
     {
       "relation": "calls",
@@ -12494,9 +12703,9 @@
       "source_location": "L821",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_aluapply",
-      "target": "src_simulator_simulator_simulator_xora",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_xora"
     },
     {
       "relation": "calls",
@@ -12506,9 +12715,9 @@
       "source_location": "L974",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_daa",
-      "target": "src_simulator_simulator_simulator_parity",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_parity"
     },
     {
       "relation": "calls",
@@ -12518,9 +12727,9 @@
       "source_location": "L994",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_simulator_simulator_simulator_neg",
-      "target": "src_simulator_simulator_simulator_parity",
-      "confidence_score": 1.0
+      "target": "src_simulator_simulator_simulator_parity"
     },
     {
       "relation": "contains",
@@ -30050,5 +30259,5 @@
       ]
     }
   ],
-  "built_at_commit": "8a88604f82f46bea24045b4cba9625e55c0fdb20"
+  "built_at_commit": "894063cc5a4d5784ae48ccc5d4e70b9612763913"
 }

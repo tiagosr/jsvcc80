@@ -1154,6 +1154,106 @@ export class Simulator {
       return 2;
     }
 
+    // CB-prefixed instructions with IX/IY displacement
+    // These are 4 bytes: DD/FD CB displacement opcode
+    if (opcode === 0xCB) {
+      return this._executeDDFDIndexedCB(indexReg, pc);
+    }
+
     return 2; // Default: 2 bytes for unhandled DD/FD instructions
+  }
+
+  /** Execute CB-prefixed indexed IX/IY operations.
+   * Format: DD/FD CB displacement opcode
+   * @param {string} indexReg - 'ix' or 'iy'
+   * @param {number} pc - Program counter (points to CB)
+   * @returns {number} Bytes consumed
+   * @private
+   */
+  _executeDDFDIndexedCB(indexReg, pc) {
+    const c = this.cpu;
+    const m = c.memory;
+    // DD/FD CB displacement opcode format
+    const disp = this._signedByte(m.readByte(pc));
+    const op = m.readByte(pc + 1);
+    const baseAddr = c.getPair(indexReg);
+    const addr = (baseAddr + disp) & 0xFFFF;
+    const reg = op & 0x07;
+
+    // INC (IX/IY+d) -- DD/FD CB 34
+    if (op === 0x34) {
+      const val = m.readByte(addr);
+      const result = (val + 1) & 0xFF;
+      m.writeByte(addr, result);
+      c.setFlags8(result);
+      return 4;
+    }
+
+    // DEC (IX/IY+d) -- DD/FD CB 3C
+    if (op === 0x3C) {
+      const val = m.readByte(addr);
+      const result = (val - 1) & 0xFF;
+      m.writeByte(addr, result);
+      c.setFlags8(result);
+      c.setFlag(Flags.NEGATIVE, true);
+      return 4;
+    }
+
+    if (op < 0x40) {
+      // RLC, RRC, RL, RR, SLA, SRA, SLL, SRL on (IX/IY+d)
+      const shiftOp = (op >> 3) & 0x07;
+      const val = m.readByte(addr);
+      const result = this._shiftRotate8(shiftOp, val);
+      m.writeByte(addr, result);
+      return 4;
+    }
+
+    if (op < 0x80) {
+      // BIT b, (IX/IY+d)
+      const bit = (op >> 3) & 0x07;
+      const val = m.readByte(addr);
+      const z = ((val >> bit) & 1) === 0;
+      c.setFlag(Flags.ZERO, z);
+      c.setFlag(Flags.NEGATIVE, false);
+      c.setFlag(Flags.HALF_CARRY, true);
+      c.setFlag(Flags.PARITY_OVERFLOW, z);
+      return 4;
+    }
+
+    // ALU operations on (IX/IY+d) -- ADD, ADC, SUB, SBC, AND, XOR, OR, CP
+    // Bits 3-5 encode the operation type
+    if (op < 0xC0) {
+      const aluOp = (op >> 3) & 0x07;
+      const val = m.readByte(addr);
+      const aluOps = {
+        0: '_addA',
+        1: '_adcA',
+        2: '_subA',
+        3: '_sbcA',
+        4: '_andA',
+        5: '_xorA',
+        6: '_orA',
+        7: '_cpA',
+      };
+      const methodName = aluOps[aluOp];
+      if (methodName) {
+        this[methodName](val);
+      }
+      return 4;
+    }
+
+    // RES b, (IX/IY+d) - no flags affected
+    if (op < 0xC0) {
+      const bit = (op >> 3) & 0x07;
+      const val = m.readByte(addr);
+      m.writeByte(addr, val & ~(1 << bit));
+      return 4;
+    }
+
+    // SET b, (IX/IY+d) - no flags affected
+    const bit = (op >> 3) & 0x07;
+    const val = m.readByte(addr);
+    m.writeByte(addr, val | (1 << bit));
+    return 4;
   }
 }

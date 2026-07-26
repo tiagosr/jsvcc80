@@ -97,10 +97,12 @@ function example(name) { ... }
 - Check syntax: `node --check src/**/*.js`
 - Ensure JSDoc comments on all exported functions
 - No hardcoded paths - use relative imports from current file
-- Update README.md:
-  - Move the current completed task from the "Next Steps" to the "Completed" list, with a short description of the features worked on
-  - If any part of the current task can be taken on in the next iteration, move the task to the "In Progress" list
+- Update CHANGELOG.md:
+  - Append the current completed task to the "Completed" list, with a short description of the features worked on
   - Update the "Test Results" count
+- Update README.md:
+  - Remove the current completed task from the "Next Steps" list
+  - If any part of the current task can be taken on in the next iteration, move the task to the "In Progress" list
   - If any part of the current task should be deferred to a later moment, add these parts to the "Backlog" list
 
 ## graphify

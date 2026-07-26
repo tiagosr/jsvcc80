@@ -200,7 +200,7 @@ export class CallAndMemoryTranslator {
     }
 
     if (fieldOffset === 0) {
-      block.add(new IL.BinaryOpInstruction(dest, 'member', objResult.result, fieldName));
+      block.add(new IL.BinaryOpInstruction(dest, '.', objResult.result, fieldName));
     } else {
       // Load base address, add offset, dereference
       const addrTemp = this.context.state.temp();
@@ -295,7 +295,7 @@ export class CallAndMemoryTranslator {
     }
 
     if (fieldOffset === 0) {
-      block.add(new IL.BinaryOpInstruction(dest, 'pmember', ptrResult.result, fieldName));
+      block.add(new IL.BinaryOpInstruction(dest, '->', ptrResult.result, fieldName));
     } else {
       const addrTemp = this.context.state.temp();
       block.add(new IL.BinaryOpInstruction(addrTemp, 'add', ptrResult.result, fieldOffset));

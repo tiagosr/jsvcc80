@@ -23,19 +23,20 @@ export class CompilerOptions {
    * Creates compiler options with defaults
    * @param {Object} [options] - Override options
    * @param {string[]} [options.includePaths] - Include search directories
+   * @param {string[]} [options.linkerOptions.inputFiles] - Input files for link map
    */
-  constructor(options = {}) {
-    this.sourceFile = options.source || '<stdin>';
-    this.optimizationLevel = options.opt || 'O0';
-    this.targetArchitecture = options.arch || 'z80';
-    this.debugInfo = !!options.debug;
-    this.emitIR = !!options.emitIr;
-    this.plugins = options.plugins || [];
-    this.compileOnly = !!options.compileOnly;
-    this.outputFormat = options.outputFormat || 'assembly';
-    this.includePaths = options.includePaths || [];
-    this.linkerOptions = options.linkerOptions || {};
-  }
+   constructor(options = {}) {
+     this.sourceFile = options.source || '<stdin>';
+     this.optimizationLevel = options.opt || 'O0';
+     this.targetArchitecture = options.arch || 'z80';
+     this.debugInfo = !!options.debug;
+     this.emitIR = !!options.emitIr;
+     this.plugins = options.plugins || [];
+     this.compileOnly = !!options.compileOnly;
+     this.outputFormat = options.outputFormat || 'assembly';
+     this.includePaths = options.includePaths || [];
+     this.linkerOptions = options.linkerOptions || {};
+   }
 
   /**
    * Gets optimization flags for the pass manager
@@ -516,6 +517,7 @@ export class Compiler {
 
       result.warnings = linkResult.warnings;
       result.map = linker.generateMap();
+      result.jsonMap = linker.generateJsonMap();
 
       if (this.options.outputFormat === 'binary') {
         result.binary = linker.generateBinary();

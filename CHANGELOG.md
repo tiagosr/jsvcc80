@@ -1,5 +1,5 @@
 ### 🧪 Test Results
-- 786 passing tests
+- 818 passing tests
 
 ### ✅ Completed
 - Preprocessor/lexer with pragma support (`#pragma once`, `#pragma pack`)
@@ -59,3 +59,4 @@
   - **Z80 simulator - Sign flag (S) and conditional instructions** - Added `SIGN: 7` to Flags object, added `clearFlag()` method, fixed `setFlags8()` to set S flag, fixed all ALU operations (ADD/ADC/SUB/SBC/AND/XOR/OR/CP) to set S flag, fixed INC/DEC/RLCA/RRCA/RLA/RRA to set S flag, fixed shift/rotate CB-prefixed instructions to set S flag, corrected JP P/M (0xC2/0xEA) to check parity/sign flags respectively, corrected CALL P/M (0xC4/0xEC) and RET P/M (0xC0/0xE0) to check correct flags, fixed JR P/M (0xE2/0xE8) to check parity/sign flags; 11 new tests passing
 - **Z80 simulator - DD/FD (IX/IY) initial support** - Implemented `LD IX/IY, nn`, `LD (nn), IX/IY`, `LD IX/IY, (nn)`, `LD IX/IY, BC/DE`, `LD BC/DE, IX/IY`, `LD SP, IX/IY`, `PUSH IX/IY`, `POP IX/IY`, `INC IX/IY`, `DEC IX/IY`, `ADD IX/IY, HL`, `JP (IX/IY)`; 16 new tests passing
 - **Z80 simulator - DD/FD (IX/IY) Logic/arithmetic/bit operations** - Implemented `INC (IX/IY+d)`, `DEC (IX/IY+d)`, `ADD/ADC/SUB/SBC A, (IX/IY+d)`, `AND/OR/XOR/CP (IX/IY+d)`, `RLC/RRC/RL/RR (IX/IY+d)`, `SLA/SRA/SLL (IX/IY+d)`, `SET/RES/BIT b,(IX/IY+d)`
+- **Linker map files (JSON-based format)** - `src/linker/mapfile.js` with MapSection, MapSymbol, MapRelocation, LinkMap classes, bytesToHex helper, createLinkMapFromLinker factory; Linker.generateJsonMap() method; CLI `--map-format json|text` flag replacing `--map`; Compiler.link() stores both text and JSON maps; 35 new tests

@@ -39,9 +39,10 @@ function parseArgs() {
     help: 'Output format: assembly, wladx, binary (default: assembly)'
   });
 
-  parser.add_argument('--map', {
-    action: 'store_true',
-    help: 'Generate link map'
+  parser.add_argument('--map-format', {
+    default: 'text',
+    choices: ['text', 'json'],
+    help: 'Link map format: text, json (default: text)'
   });
 
   parser.add_argument('-O', {
@@ -105,7 +106,7 @@ function parseArgs() {
     help: false,
     version: false,
     compileOnly: parsed.compileOnly,
-    map: parsed.map,
+    mapFormat: parsed.mapFormat,
     format: parsed.format,
     enableCrt0: parsed.enableCrt0,
     stackTop: stackTop
@@ -191,7 +192,8 @@ async function main() {
         linkerOptions: {
           enableCrt0: options.enableCrt0,
           stackTop: options.stackTop,
-          entryPoint: 'main'
+          entryPoint: 'main',
+          inputFiles: options.files
         }
       });
 
@@ -269,7 +271,8 @@ async function main() {
       linkerOptions: {
         enableCrt0: options.enableCrt0,
         stackTop: options.stackTop,
-        entryPoint: 'main'
+        entryPoint: 'main',
+        inputFiles: options.files
       }
     });
     const linkerCompiler = new Compiler(compilerOptions);
@@ -283,7 +286,11 @@ async function main() {
       process.exit(1);
     }
 
-    if (options.map) {
+    if (options.mapFormat === 'json') {
+      console.error('--- Link Map (JSON) ---');
+      console.error(linkResult.jsonMap);
+      console.error('--- End Map ---');
+    } else if (options.mapFormat === 'text') {
       console.error('--- Link Map ---');
       console.error(linkResult.map);
       console.error('--- End Map ---');

@@ -4,6 +4,7 @@
 import { ObjectFile, ObjectSection, ObjectSymbol, SymbolType, SymbolVisibility, SectionType } from './objectfile.js';
 import { WlaDxCodegen } from './wladxcodegen.js';
 import { createCrt0, resolveCrt0Relocations } from './crt0.js';
+import { createLinkMapFromLinker } from './mapfile.js';
 
 /**
  * Linker options and configuration
@@ -12,19 +13,21 @@ export class LinkerOptions {
   /**
    * Creates linker options with defaults
    * @param {Object} [options] - Override options
+   * @param {string[]} [options.inputFiles] - Input files for link map
    */
-  constructor(options = {}) {
-    this.entryPoint = options.entryPoint || 'main';
-    this.outputFormat = options.outputFormat || 'wladx';
-    this.baseAddress = options.baseAddress || 0x8000;
-    this.dataAddress = options.dataAddress || 0xC000;
-    this.bssAddress = options.bssAddress || 0xD000;
-    this.rodataAddress = options.rodataAddress || 0x10000;
-    this.resolveExternals = !!options.resolveExternals;
-    this.verbose = !!options.verbose;
-    this.enableCrt0 = options.enableCrt0 !== false;
-    this.stackTop = options.stackTop ?? 0xFFFF;
-  }
+   constructor(options = {}) {
+     this.entryPoint = options.entryPoint || 'main';
+     this.outputFormat = options.outputFormat || 'wladx';
+     this.baseAddress = options.baseAddress || 0x8000;
+     this.dataAddress = options.dataAddress || 0xC000;
+     this.bssAddress = options.bssAddress || 0xD000;
+     this.rodataAddress = options.rodataAddress || 0x10000;
+     this.resolveExternals = !!options.resolveExternals;
+     this.verbose = !!options.verbose;
+     this.enableCrt0 = options.enableCrt0 !== false;
+     this.stackTop = options.stackTop ?? 0xFFFF;
+     this.inputFiles = options.inputFiles || [];
+   }
 }
 
 /**
@@ -510,6 +513,19 @@ export class Linker {
     }
 
     return lines.join('\n') + '\n';
+  }
+
+  /**
+   * Generates a JSON link map from linked output
+   * @returns {string} JSON map string
+   */
+  generateJsonMap() {
+    const map = createLinkMapFromLinker(this, {
+      inputFiles: this.options.inputFiles,
+      compilerVersion: 'vcc80 v0.1.0',
+      baseAddress: this.options.baseAddress
+    });
+    return map.toJSONString();
   }
 }
 

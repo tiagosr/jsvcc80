@@ -89,6 +89,7 @@
   "87": "PointerMemberNode",
   "88": "IOHandler",
   "89": "WatchManager",
+  "90": "simulator.cpu.test.js",
   "91": "StructNode",
   "92": "TypeOfNode",
   "93": "ast_to_ir.test.js",
@@ -103,5 +104,8 @@
   "102": "function_pointers.test.js",
   "103": "il.test.js",
   "104": "linker.test.js",
-  "105": "optimizations.test.js"
+  "105": "optimizations.test.js",
+  "106": "simulator.io.test.js",
+  "107": "simulator.memory.test.js",
+  "108": "simulator.watcher.test.js"
 }

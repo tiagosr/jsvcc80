@@ -165,8 +165,8 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1785067551.817449,
-    "ast_hash": "c199dfafcc4f9c0734c4bc65bc15b165",
+    "mtime": 1785085149.3578682,
+    "ast_hash": "846f7f6f8a2b100a35b275018c04290a",
     "semantic_hash": ""
   },
   ".opencode/opencode.json": {
@@ -205,8 +205,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1785070192.8696651,
-    "ast_hash": "a8a785c41b5527cac47746a254433c1c",
+    "mtime": 1785097049.7385664,
+    "ast_hash": "7c2cfdeb6deb2a8004d6f8fc4e41f7cc",
     "semantic_hash": ""
   },
   "FINDINGS.md": {
@@ -335,8 +335,8 @@
     "semantic_hash": ""
   },
   "src/nanopass/call-memory.js": {
-    "mtime": 1784941170.8118553,
-    "ast_hash": "db5d2efe28b0f6c694d1924fa9c885aa",
+    "mtime": 1785094594.9958365,
+    "ast_hash": "ce9e4a7aced602977ef051fa7bde9ecc",
     "semantic_hash": ""
   },
   "src/nanopass/control-flow.js": {
@@ -425,18 +425,13 @@
     "semantic_hash": ""
   },
   "src/simulator/simulator.js": {
-    "mtime": 1785069859.0838,
-    "ast_hash": "044af13a2dff7da6e0b1fd253c2e85d1",
+    "mtime": 1785096039.854679,
+    "ast_hash": "3bf1f5c25b87004c2130bb711c3e6d2e",
     "semantic_hash": ""
   },
   "src/simulator/watcher.js": {
     "mtime": 1784943294.4466918,
     "ast_hash": "a2f85a5d64d6fdade251b8b6e7f4b235",
-    "semantic_hash": ""
-  },
-  "src/tests/simulator.test.js": {
-    "mtime": 1785067839.0762208,
-    "ast_hash": "9324873c3831d7eafdb7c15297f74b14",
     "semantic_hash": ""
   },
   "src/linker/crt0.js": {
@@ -457,6 +452,36 @@
   ".opencode/skills/z80-coder/SKILL.md": {
     "mtime": 1785059599.5797272,
     "ast_hash": "a594f32393c8e64291aa21a9cc33f373",
+    "semantic_hash": ""
+  },
+  "src/tests/simulator.cpu.test.js": {
+    "mtime": 1785094089.8775725,
+    "ast_hash": "9e00dfc87d79c2bc72ee6929fe8c8225",
+    "semantic_hash": ""
+  },
+  "src/tests/simulator.io.test.js": {
+    "mtime": 1785094125.5015438,
+    "ast_hash": "47f23fd2974f6e34002bbba90319ed9a",
+    "semantic_hash": ""
+  },
+  "src/tests/simulator.ixiy.test.js": {
+    "mtime": 1785096117.660477,
+    "ast_hash": "322d527018a7515e5a6bfdd77be05256",
+    "semantic_hash": ""
+  },
+  "src/tests/simulator.memory.test.js": {
+    "mtime": 1785094110.9518657,
+    "ast_hash": "2ba78774a0bee1d0739119db2e4734c8",
+    "semantic_hash": ""
+  },
+  "src/tests/simulator.watcher.test.js": {
+    "mtime": 1785094143.8438053,
+    "ast_hash": "aef14a71be7a8158e2ef4db0be297710",
+    "semantic_hash": ""
+  },
+  "CHANGELOG.md": {
+    "mtime": 1785096963.104458,
+    "ast_hash": "4e7037e894ddb4aa4d69edf0515caadc",
     "semantic_hash": ""
   }
 }

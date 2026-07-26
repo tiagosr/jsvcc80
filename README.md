@@ -65,19 +65,24 @@ I'm compiling findings about this process on [FINDINGS.md](FINDINGS.md).
  - **Z80 simulator - Memory watch integration** - WatchManager now triggered on all data memory reads/writes (not just instruction fetches); fixed constructor ordering in Simulator (watcher created before memory.watcher assignment).
   - **Z80 simulator - RES/SET instructions (CB 80-FF)** - Implemented RES b,r (ED 80-BF) and SET b,r (ED C0-FF) for all registers and (HL) memory references;
   - **Z80 simulator - Sign flag (S) and conditional instructions** - Added `SIGN: 7` to Flags object, added `clearFlag()` method, fixed `setFlags8()` to set S flag, fixed all ALU operations (ADD/ADC/SUB/SBC/AND/XOR/OR/CP) to set S flag, fixed INC/DEC/RLCA/RRCA/RLA/RRA to set S flag, fixed shift/rotate CB-prefixed instructions to set S flag, corrected JP P/M (0xC2/0xEA) to check parity/sign flags respectively, corrected CALL P/M (0xC4/0xEC) and RET P/M (0xC0/0xE0) to check correct flags, fixed JR P/M (0xE2/0xE8) to check parity/sign flags; 11 new tests passing
+- **Z80 simulator - DD/FD (IX/IY) initial support** - Implemented `LD IX/IY, nn`, `LD (nn), IX/IY`, `LD IX/IY, (nn)`, `LD IX/IY, BC/DE`, `LD BC/DE, IX/IY`, `LD SP, IX/IY`, `PUSH IX/IY`, `POP IX/IY`, `INC IX/IY`, `DEC IX/IY`, `ADD IX/IY, HL`, `JP (IX/IY)`; 16 new tests passing
 
 ### 🔄 In Progress
 - Nothing at the moment
 
 ### 🔜 Next Steps
-1. Expand simulator instruction coverage (DD/FD (IX/IY) prefixes)
-2. Add character string operations to the C standard library (`sprintf`, `sscanf`, `strlen`, `strtoi`, etc.)
-4. Add file stream abstractions to the C standard library (`FILE`, `putc`, `getc`, `fprintf`, `fscanf`, etc.)
-5. Implement symbol map compiling and exporting for debugging
-6. Implement `unsigned:n` bit fields
+1. Expand simulator instruction coverage (DD/FD (IX/IY) `INC IX/IY`, `DEC IX/IY`, `ADD A, (IX/IY+d)`, `ADC A, (IX/IY+d)`, `SUB (IX/IY+d)`, `SBC A, (IX/IY+d)`)
+3. Expand simulator instruction coverage (DD/FD (IX/IY) `AND (IX/IY+d)`, `XOR (IX/IY+d)`, `OR (IX/IY+d)`, `CP (IX/IY+d)`)
+4. Expand simulator instruction coverage (DD/FD (IX/IY) `RLC (IX/IY+d)`, `RRC (IX/IY+d)`, `RL (IX/IY+d)`, `RR (IX/IY+d)`)
+5. Expand simulator instruction coverage (DD/FD (IX/IY) `SLA (IX/IY+d)`, `SRA (IX/IY+d)`, `SLL (IX/IY+d)`, `SRL (IX/IY+d)`)
+6. Expand simulator instruction coverage (DD/FD (IX/IY) `BIT b, (IX/IY+d)`, `RES b, (IX/IY+d)`, `SET b, (IX/IY+d)`)
+7. Add character string operations to the C standard library (`sprintf`, `sscanf`, `strlen`, `strtoi`, etc.)
+8. Add file stream abstractions to the C standard library (`FILE`, `putc`, `getc`, `fprintf`, `fscanf`, etc.)
+9. Implement symbol map compiling and exporting for debugging
+10. Implement `unsigned:n` bit fields
 
 #### 🧪 Test Results
-- 774 passing tests
+- 790 passing tests
 
 ### 📔 Backlog (issues identified during implementation for later priorization)
 - Fix `typedef unsigned int newType` parsing

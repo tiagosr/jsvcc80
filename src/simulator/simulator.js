@@ -430,8 +430,12 @@ export class Simulator {
     // EX (SP), HL
     if (opcode === 0xE3) { const hl = c.getPair('hl'); const sv = m.readWord(c.sp); m.writeWord(c.sp, hl); c.setPair('hl', sv); return 1; }
 
-    // DD/FD prefixes (IX/IY) not implemented - treat as NOP + swallow prefix byte
-    if (opcode === 0xDD || opcode === 0xFD) return 1;
+    // DD/FD prefixes (IX/IY)
+    if (opcode === 0xDD || opcode === 0xFD) {
+      const indexReg = opcode === 0xDD ? 'ix' : 'iy';
+      const nextByte = m.readByte(pc + 1);
+      return this._executeDDFDPrefix(indexReg, nextByte, pc + 2);
+    }
 
     // Unknown
     return 1;
@@ -1038,14 +1042,118 @@ export class Simulator {
   }
 
   /** Calculate parity.
-   * @param {number} value
-   * @returns {number}
-   * @private
-   */
+    * @param {number} value
+    * @returns {number}
+    * @private
+    */
   _parity(value) {
     const v = value & 0xFF;
     let p = 0;
     for (let i = 0; i < 8; i++) p ^= (v >> i) & 1;
     return p ^ 1;
+  }
+
+  /** Execute DD/FD prefixed instruction (IX/IY variants).
+    * @param {'ix'|'iy'} indexReg
+    * @param {number} opcode
+    * @param {number} pc - PC after the 2-byte prefix
+    * @returns {number} Bytes consumed by the full instruction
+    * @private
+    */
+  _executeDDFDPrefix(indexReg, opcode, pc) {
+    const c = this.cpu;
+    const m = c.memory;
+
+    // LD IX/IY, nn -- DD/FD 21 (4 bytes total)
+    if (opcode === 0x21) {
+      c.setPair(indexReg, m.readWord(pc));
+      return 4;
+    }
+
+    // LD (nn), IX/IY -- DD/FD 22 (4 bytes total)
+    if (opcode === 0x22) {
+      const addr = m.readWord(pc);
+      m.writeWord(addr, c.getPair(indexReg));
+      return 4;
+    }
+
+    // LD IX/IY, (nn) -- DD/FD 2A (4 bytes total)
+    if (opcode === 0x2A) {
+      const addr = m.readWord(pc);
+      c.setPair(indexReg, m.readWord(addr));
+      return 4;
+    }
+
+    // LD IX/IY, BC -- DD/FD 01 (2 bytes total)
+    if (opcode === 0x01) {
+      c.setPair(indexReg, c.getPair('bc'));
+      return 2;
+    }
+
+    // LD IX/IY, DE -- DD/FD 11 (2 bytes total)
+    if (opcode === 0x11) {
+      c.setPair(indexReg, c.getPair('de'));
+      return 2;
+    }
+
+    // LD BC, IX/IY -- DD/FD 41 (2 bytes total)
+    if (opcode === 0x41) {
+      c.setPair('bc', c.getPair(indexReg));
+      return 2;
+    }
+
+    // LD DE, IX/IY -- DD/FD 49 (2 bytes total)
+    if (opcode === 0x49) {
+      c.setPair('de', c.getPair(indexReg));
+      return 2;
+    }
+
+    // LD SP, IX/IY -- DD/FD F9 (2 bytes total)
+    if (opcode === 0xF9) {
+      c.sp = c.getPair(indexReg);
+      return 2;
+    }
+
+    // PUSH IX/IY -- DD/FD 55 (2 bytes total)
+    if (opcode === 0x55) {
+      c.push(c.getPair(indexReg));
+      return 2;
+    }
+
+    // POP IX/IY -- DD/FD 51 (2 bytes total)
+    if (opcode === 0x51) {
+      c.setPair(indexReg, c.pop());
+      return 2;
+    }
+
+    // INC IX/IY -- DD/FD 23 (2 bytes total)
+    if (opcode === 0x23) {
+      c.setPair(indexReg, (c.getPair(indexReg) + 1) & 0xFFFF);
+      return 2;
+    }
+
+    // DEC IX/IY -- DD/FD 2B (2 bytes total)
+    if (opcode === 0x2B) {
+      c.setPair(indexReg, (c.getPair(indexReg) - 1) & 0xFFFF);
+      return 2;
+    }
+
+    // ADD IX/IY, HL -- DD/FD 09 (2 bytes total)
+    if (opcode === 0x09) {
+      const ix = c.getPair(indexReg);
+      const hl = c.getPair('hl');
+      const result = (ix + hl) & 0xFFFF;
+      c.setPair(indexReg, result);
+      c.setAddFlags16(ix, hl);
+      return 2;
+    }
+
+    // JP (IX/IY) -- DD/FD E9 (2 bytes total)
+    if (opcode === 0xE9) {
+      c.pc = c.getPair(indexReg);
+      return 2;
+    }
+
+    return 2; // Default: 2 bytes for unhandled DD/FD instructions
   }
 }

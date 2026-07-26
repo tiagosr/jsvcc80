@@ -933,3 +933,188 @@ describe('Simulator - Full Simulation', () => {
     assert.strictEqual(sim.cpu.a, 0xFB, 'SET 4 then RES 2 on 0xFF = 0xFB');
   });
 });
+
+describe('Simulator - IX/IY instructions', () => {
+  it('should execute LD IX, nn (DD 21)', () => {
+    const sim = new Simulator();
+    const prog = [
+      0xDD, 0x21, 0x34, 0x12, // LD IX, 0x1234
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, prog);
+    assert.strictEqual(sim.cpu.ix, 0x1234, 'IX should be 0x1234');
+  });
+
+  it('should execute LD IY, nn (FD 21)', () => {
+    const sim = new Simulator();
+    const prog = [
+      0xFD, 0x21, 0xAB, 0xCD, // LD IY, 0xCDAB
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, prog);
+    assert.strictEqual(sim.cpu.iy, 0xCDAB, 'IY should be 0xCDAB');
+  });
+
+  it('should execute PUSH IX (DD 55) and POP IX (DD 51)', () => {
+    const sim = new Simulator();
+    const prog = [
+      0xDD, 0x21, 0x34, 0x12, // LD IX, 0x1234
+      0xDD, 0x55, // PUSH IX
+      0xDD, 0x21, 0x00, 0x00, // LD IX, 0x0000
+      0xDD, 0x51, // POP IX
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, prog);
+    assert.strictEqual(sim.cpu.ix, 0x1234, 'IX should be restored to 0x1234 after POP');
+  });
+
+  it('should execute PUSH IY (FD 55) and POP IY (FD 51)', () => {
+    const sim = new Simulator();
+    const prog = [
+      0xFD, 0x21, 0xAB, 0xCD, // LD IY, 0xCDAB
+      0xFD, 0x55, // PUSH IY
+      0xFD, 0x21, 0xFF, 0xFF, // LD IY, 0xFFFF
+      0xFD, 0x51, // POP IY
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, prog);
+    assert.strictEqual(sim.cpu.iy, 0xCDAB, 'IY should be restored to 0xCDAB after POP');
+  });
+
+  it('should execute LD IX, BC (DD 01)', () => {
+    const sim = new Simulator();
+    const prog = [
+      0x01, 0x34, 0x12, // LD BC, 0x1234
+      0xDD, 0x01, // LD IX, BC
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, prog);
+    assert.strictEqual(sim.cpu.ix, 0x1234, 'IX should equal BC = 0x1234');
+  });
+
+  it('should execute LD IX, DE (DD 11)', () => {
+    const sim = new Simulator();
+    const prog = [
+      0x11, 0x56, 0x78, // LD DE, 0x7856
+      0xDD, 0x11, // LD IX, DE
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, prog);
+    assert.strictEqual(sim.cpu.ix, 0x7856, 'IX should equal DE = 0x7856');
+  });
+
+  it('should execute LD BC, IX (DD 41)', () => {
+    const sim = new Simulator();
+    const prog = [
+      0xDD, 0x21, 0x34, 0x12, // LD IX, 0x1234
+      0xDD, 0x41, // LD BC, IX
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, prog);
+    assert.strictEqual(sim.cpu.b, 0x12, 'B should be 0x12');
+    assert.strictEqual(sim.cpu.c, 0x34, 'C should be 0x34');
+  });
+
+  it('should execute LD DE, IX (DD 49)', () => {
+    const sim = new Simulator();
+    const prog = [
+      0xDD, 0x21, 0x56, 0x78, // LD IX, 0x7856
+      0xDD, 0x49, // LD DE, IX
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, prog);
+    assert.strictEqual(sim.cpu.d, 0x78, 'D should be 0x78');
+    assert.strictEqual(sim.cpu.e, 0x56, 'E should be 0x56');
+  });
+
+  it('should execute LD SP, IX (DD F9)', () => {
+    const sim = new Simulator();
+    const prog = [
+      0xDD, 0x21, 0x00, 0x80, // LD IX, 0x8000
+      0xDD, 0xF9, // LD SP, IX
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, prog);
+    assert.strictEqual(sim.cpu.sp, 0x8000, 'SP should equal IX = 0x8000');
+  });
+
+  it('should execute LD SP, IY (FD F9)', () => {
+    const sim = new Simulator();
+    const prog = [
+      0xFD, 0x21, 0x00, 0xC0, // LD IY, 0xC000
+      0xFD, 0xF9, // LD SP, IY
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, prog);
+    assert.strictEqual(sim.cpu.sp, 0xC000, 'SP should equal IY = 0xC000');
+  });
+
+  it('should execute LD (nn), IX (DD 22)', () => {
+    const sim = new Simulator();
+    const prog = [
+      0xDD, 0x21, 0x34, 0x12, // LD IX, 0x1234
+      0xDD, 0x22, 0x00, 0x05, // LD (0x0500), IX
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, prog);
+    assert.strictEqual(sim.memory.readWord(0x0500), 0x1234, 'Memory at 0x0500 should be 0x1234');
+  });
+
+  it('should execute LD IX, (nn) (DD 2A)', () => {
+    const sim = new Simulator();
+    sim.memory.writeWord(0x0600, 0x5678);
+    const prog = [
+      0xDD, 0x2A, 0x00, 0x06, // LD IX, (0x0600)
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, prog);
+    assert.strictEqual(sim.cpu.ix, 0x5678, 'IX should be loaded from memory = 0x5678');
+  });
+
+  it('should execute LD (nn), IY (FD 22)', () => {
+    const sim = new Simulator();
+    const prog = [
+      0xFD, 0x21, 0xAB, 0xCD, // LD IY, 0xCDAB
+      0xFD, 0x22, 0x00, 0x07, // LD (0x0700), IY
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, prog);
+    assert.strictEqual(sim.memory.readWord(0x0700), 0xCDAB, 'Memory at 0x0700 should be 0xCDAB');
+  });
+
+  it('should execute LD IY, (nn) (FD 2A)', () => {
+    const sim = new Simulator();
+    sim.memory.writeWord(0x0800, 0x9ABC);
+    const prog = [
+      0xFD, 0x2A, 0x00, 0x08, // LD IY, (0x0800)
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, prog);
+    assert.strictEqual(sim.cpu.iy, 0x9ABC, 'IY should be loaded from memory = 0x9ABC');
+  });
+
+  it('should execute LD IY, BC (FD 01) and LD IY, DE (FD 11)', () => {
+    const sim = new Simulator();
+    const prog = [
+      0x01, 0x12, 0x34, // LD BC, 0x3412
+      0xFD, 0x01, // LD IY, BC
+      0x11, 0x56, 0x78, // LD DE, 0x7856
+      0xFD, 0x11, // LD IY, DE
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, prog);
+    assert.strictEqual(sim.cpu.iy, 0x7856, 'IY should equal DE = 0x7856');
+  });
+
+  it('should execute LD BC, IY (FD 41) and LD DE, IY (FD 49)', () => {
+    const sim = new Simulator();
+    const prog = [
+      0xFD, 0x21, 0x12, 0x34, // LD IY, 0x3412
+      0xFD, 0x41, // LD BC, IY
+      0x76 // HALT
+    ];
+    sim.loadAndRun(0x0000, prog);
+    assert.strictEqual(sim.cpu.b, 0x34, 'B should be 0x34');
+    assert.strictEqual(sim.cpu.c, 0x12, 'C should be 0x12');
+  });
+});

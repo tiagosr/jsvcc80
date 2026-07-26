@@ -68,7 +68,7 @@ function example(name) { ... }
 ```
 
 ## Testing Conventions
-- Tests use `node:test` runner via `npm test`
+- Tests use `mocha` runner via `npm test`
 - Test files in `src/tests/*.test.js` import from `../../src/...` (two levels up)
 - Use `describe()` and `it()` for test organization
 - All assertions must be strict (`assert.strictEqual`, not loose equality)

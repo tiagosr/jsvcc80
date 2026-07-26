@@ -1,16 +1,16 @@
 # Graph Report - jsvcc80  (2026-07-25)
 
 ## Corpus Check
-- 91 files · ~94,549 words
+- 91 files · ~94,694 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1031 nodes · 1615 edges · 105 communities (54 shown, 51 thin omitted)
+- 1032 nodes · 1616 edges · 105 communities (54 shown, 51 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 4 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `bf2ff800`
+- Built from commit: `4e5ce253`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -101,7 +101,7 @@
 ## God Nodes (most connected - your core abstractions)
 1. `Simulator` - 39 edges
 2. `Z80Codegen` - 38 edges
-3. `CPU` - 33 edges
+3. `CPU` - 34 edges
 4. `LexerCore` - 24 edges
 5. `PreprocessedSource` - 23 edges
 6. `Compiler` - 21 edges
@@ -260,11 +260,11 @@ Nodes (3): computeFieldOffsets(), computeStructSize(), TypeRegistry
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Z80Codegen` connect `Z80 Code Generator` to `EnumValueNode`?**
-  _High betweenness centrality (0.039) - this node is a cross-community bridge._
+  _High betweenness centrality (0.044) - this node is a cross-community bridge._
+- **Why does `Compiler` connect `CLI Entry & Compiler` to `EnumValueNode`?**
+  _High betweenness centrality (0.023) - this node is a cross-community bridge._
 - **Why does `Lexer` connect `CLI Entry & Compiler` to `Symbol Table`, `EnumValueNode`?**
   _High betweenness centrality (0.020) - this node is a cross-community bridge._
-- **Why does `Compiler` connect `CLI Entry & Compiler` to `EnumValueNode`?**
-  _High betweenness centrality (0.018) - this node is a cross-community bridge._
 - **What connects `✅ Completed`, `🔄 In Progress`, `🧪 Test Results` to the rest of the system?**
   _54 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AST Node Definitions` be split into smaller, more focused modules?**

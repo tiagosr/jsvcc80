@@ -35,18 +35,20 @@ describe('MapSection', () => {
 
 describe('MapSymbol', () => {
   it('should create a map symbol', () => {
-    const symbol = new MapSymbol('main', MapSymbolType.FUNCTION, MapSymbolVisibility.GLOBAL, 0x8000, '.text', 0, 'test.c');
+    const symbol = new MapSymbol('main', MapSymbolType.FUNCTION, MapSymbolVisibility.GLOBAL, 0x8000, '.text', 0, 2, 10, 'test.c');
     assert.strictEqual(symbol.name, 'main');
     assert.strictEqual(symbol.type, MapSymbolType.FUNCTION);
     assert.strictEqual(symbol.visibility, MapSymbolVisibility.GLOBAL);
     assert.strictEqual(symbol.address, 0x8000);
     assert.strictEqual(symbol.section, '.text');
     assert.strictEqual(symbol.value, 0);
+    assert.strictEqual(symbol.size, 2);
+    assert.strictEqual(symbol.line, 10);
     assert.strictEqual(symbol.sourceFile, 'test.c');
   });
 
   it('should serialize to JSON', () => {
-    const symbol = new MapSymbol('counter', MapSymbolType.VARIABLE, MapSymbolVisibility.GLOBAL, 0xC000, '.data', 0, 'test.c');
+    const symbol = new MapSymbol('counter', MapSymbolType.VARIABLE, MapSymbolVisibility.GLOBAL, 0xC000, '.data', 0, 4, 25, 'test.c');
     const json = symbol.toJSON();
     assert.strictEqual(json.name, 'counter');
     assert.strictEqual(json.type, MapSymbolType.VARIABLE);
@@ -54,6 +56,8 @@ describe('MapSymbol', () => {
     assert.strictEqual(json.address, 0xC000);
     assert.strictEqual(json.section, '.data');
     assert.strictEqual(json.value, 0);
+    assert.strictEqual(json.size, 4);
+    assert.strictEqual(json.line, 25);
     assert.strictEqual(json.sourceFile, 'test.c');
   });
 });
@@ -101,7 +105,7 @@ describe('LinkMap', () => {
 
   it('should add symbols', () => {
     const map = new LinkMap();
-    map.addSymbol(new MapSymbol('main', MapSymbolType.FUNCTION, MapSymbolVisibility.GLOBAL, 0x8000, '.text', 0, 'test.c'));
+    map.addSymbol(new MapSymbol('main', MapSymbolType.FUNCTION, MapSymbolVisibility.GLOBAL, 0x8000, '.text', 0, 2, 10, 'test.c'));
     assert.strictEqual(map.symbols.length, 1);
   });
 
@@ -128,7 +132,7 @@ describe('LinkMap', () => {
   it('should serialize to JSON', () => {
     const map = new LinkMap({ compilerVersion: 'vcc80 v0.1.0', inputFiles: ['a.c', 'b.c'], baseAddress: 0x8000 });
     map.addSection(new MapSection('.text', MapSectionType.CODE, 0x8000, 100, 'DEAD'));
-    map.addSymbol(new MapSymbol('main', MapSymbolType.FUNCTION, MapSymbolVisibility.GLOBAL, 0x8000, '.text', 0, 'a.c'));
+    map.addSymbol(new MapSymbol('main', MapSymbolType.FUNCTION, MapSymbolVisibility.GLOBAL, 0x8000, '.text', 0, 2, 10, 'a.c'));
     map.addWarning('test warning');
     map.addError('test error');
     map.hasCrt0 = true;

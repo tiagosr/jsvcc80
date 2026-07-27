@@ -296,6 +296,9 @@ export function serializeObjectFile(objectFile) {
     } else {
       writer.writeUint16(NO_SECTION);
     }
+    writer.writeUint32(symbol.size || 0);
+    writer.writeUint32(symbol.line || 0);
+    writer.writeString(symbol.sourceFile || '');
   }
 
   return writer.toBytes();
@@ -361,9 +364,12 @@ export function deserializeObjectFile(data) {
     const sVis = VisibilityReverse[sVisCode] ?? 'global';
     const sValue = reader.readUint32();
     const sSectionIdx = reader.readUint16();
+    const sSize = reader.readUint32();
+    const sLine = reader.readUint32();
+    const sSourceFile = reader.readString();
 
     const sSection = sSectionIdx !== NO_SECTION ? sectionNames[sSectionIdx] : null;
-    const symbol = new ObjectSymbol(sname, sType, sVis, sValue, sSection);
+    const symbol = new ObjectSymbol(sname, sType, sVis, sValue, sSection, sSize, sLine, sSourceFile || null);
     objectFile.addSymbol(symbol);
   }
 

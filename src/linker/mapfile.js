@@ -83,45 +83,51 @@ export class MapSection {
 }
 
 /**
- * Represents a symbol in a link map
- */
-export class MapSymbol {
-  /**
-   * Creates a map symbol
-   * @param {string} name - Symbol name
-   * @param {string} type - Symbol type (function, variable, section, absolute, label, equ)
-   * @param {string} visibility - Symbol visibility (global, local, weak)
-   * @param {number} address - Final memory address
-   * @param {string} section - Section name
-   * @param {number} value - Symbol value/offset within section
-   * @param {string} sourceFile - Source file name
-   */
-  constructor(name, type, visibility, address, section, value, sourceFile) {
-    this.name = name;
-    this.type = type;
-    this.visibility = visibility;
-    this.address = address;
-    this.section = section;
-    this.value = value;
-    this.sourceFile = sourceFile;
-  }
+  * Represents a symbol in a link map
+  */
+ export class MapSymbol {
+   /**
+    * Creates a map symbol
+    * @param {string} name - Symbol name
+    * @param {string} type - Symbol type (function, variable, section, absolute, label, equ)
+    * @param {string} visibility - Symbol visibility (global, local, weak)
+    * @param {number} address - Final memory address
+    * @param {string} section - Section name
+    * @param {number} value - Symbol value/offset within section
+    * @param {number} [size] - Symbol size in bytes
+    * @param {number} [line] - Source line number where symbol is defined
+    * @param {string} [sourceFile] - Source file name
+    */
+   constructor(name, type, visibility, address, section, value, size = 0, line = 0, sourceFile = null) {
+     this.name = name;
+     this.type = type;
+     this.visibility = visibility;
+     this.address = address;
+     this.section = section;
+     this.value = value;
+     this.size = size;
+     this.line = line;
+     this.sourceFile = sourceFile;
+   }
 
-  /**
-   * Returns a JSON-serializable representation
-   * @returns {Object} JSON representation
-   */
-  toJSON() {
-    return {
-      name: this.name,
-      type: this.type,
-      visibility: this.visibility,
-      address: this.address,
-      section: this.section,
-      value: this.value,
-      sourceFile: this.sourceFile
-    };
-  }
-}
+   /**
+    * Returns a JSON-serializable representation
+    * @returns {Object} JSON representation
+    */
+   toJSON() {
+     return {
+       name: this.name,
+       type: this.type,
+       visibility: this.visibility,
+       address: this.address,
+       section: this.section,
+       value: this.value,
+       size: this.size,
+       line: this.line,
+       sourceFile: this.sourceFile
+     };
+   }
+ }
 
 /**
  * Represents a relocation in a link map
@@ -300,6 +306,8 @@ export function createLinkMapFromLinker(linker, options = {}) {
       symbol.address,
       symbol.section,
       symbol.value || 0,
+      symbol.size || 0,
+      symbol.line || 0,
       symbol.sourceFile || 'unknown'
     ));
   }

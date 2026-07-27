@@ -171,7 +171,9 @@ export class TranslationContext {
           returnType: resolvedReturn.baseType,
           parameters: func.parameters.filter(p => p.name && !p.isVariadic).map(p => p.name),
           paramTypes,
-          isVariadic: func.isVariadic
+          isVariadic: func.isVariadic,
+          line: func.name.location?.line || 0,
+          sourceFile: func.name.location?.file || null
         },
         callingConvention
       );
@@ -203,14 +205,20 @@ export class TranslationContext {
           functionParams: resolved.functionParams.map(p => p.type),
           getSize: () => 2
         },
-        initial: null
+        size: 2,
+        initial: null,
+        line: decl.name.location?.line || 0,
+        sourceFile: decl.name.location?.file || null
       };
     }
 
     return {
       name: decl.name.name,
       type: resolved.baseType,
-      initial: decl.init ? this.expressionTranslator.translateExpressionValue(decl.init) : null
+      size: resolved.getSize(this.typeRegistry.structRegistry),
+      initial: decl.init ? this.expressionTranslator.translateExpressionValue(decl.init) : null,
+      line: decl.name.location?.line || 0,
+      sourceFile: decl.name.location?.file || null
     };
    }
 

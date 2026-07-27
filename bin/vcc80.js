@@ -45,6 +45,11 @@ function parseArgs() {
     help: 'Link map format: text, json (default: text)'
   });
 
+  parser.add_argument('--map', {
+    dest: 'mapFile',
+    help: 'Output link map to file (default: stdout/stderr)'
+  });
+
   parser.add_argument('-O', {
     default: 'O0',
     dest: 'opt',
@@ -121,7 +126,8 @@ function parseArgs() {
     help: false,
     version: false,
     compileOnly: parsed.compileOnly,
-    mapFormat: parsed.mapFormat,
+    mapFormat: parsed.map_format,
+    mapFile: parsed.mapFile,
     format: parsed.format,
     enableCrt0: parsed.enableCrt0,
     stackTop: stackTop,
@@ -341,7 +347,11 @@ async function main() {
       process.exit(1);
     }
 
-    if (options.mapFormat === 'json') {
+    if (options.mapFile) {
+      const mapContent = options.mapFormat === 'json' ? linkResult.jsonMap : linkResult.map;
+      writeFileSync(options.mapFile, mapContent);
+      console.error(`Link map written to ${options.mapFile}`);
+    } else if (options.mapFormat === 'json') {
       console.error('--- Link Map (JSON) ---');
       console.error(linkResult.jsonMap);
       console.error('--- End Map ---');

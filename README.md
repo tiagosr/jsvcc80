@@ -16,9 +16,8 @@ See [CHANGELOG.md](CHANGELOG.md)
 - Nothing at the moment
 
 ### 🔜 Next Steps
-1. Implement symbol map compiling and exporting for debugging
-2. Implement `unsigned:n` bit fields
-3. Implement object file viewer
+1. Implement `unsigned:n` bit fields
+2. Implement object file viewer
 
 
 ### 📔 Backlog (issues identified during implementation for later priorization)

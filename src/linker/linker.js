@@ -31,38 +31,44 @@ export class LinkerOptions {
 }
 
 /**
- * Represents a resolved symbol with final address
- */
-export class ResolvedSymbol {
-  /**
-   * Creates a resolved symbol
-   * @param {string} name - Symbol name
-   * @param {string} type - Symbol type
-   * @param {number} address - Final memory address
-   * @param {string} section - Section name
-   * @param {string} sourceFile - Source file name
-   */
-  constructor(name, type, address, section, sourceFile) {
-    this.name = name;
-    this.type = type;
-    this.address = address;
-    this.section = section;
-    this.sourceFile = sourceFile;
-  }
+  * Represents a resolved symbol with final address
+  */
+ export class ResolvedSymbol {
+   /**
+    * Creates a resolved symbol
+    * @param {string} name - Symbol name
+    * @param {string} type - Symbol type
+    * @param {number} address - Final memory address
+    * @param {string} section - Section name
+    * @param {number} [size] - Symbol size in bytes
+    * @param {number} [line] - Source line number where symbol is defined
+    * @param {string} [sourceFile] - Source file name
+    */
+   constructor(name, type, address, section, size = 0, line = 0, sourceFile = null) {
+     this.name = name;
+     this.type = type;
+     this.address = address;
+     this.section = section;
+     this.size = size;
+     this.line = line;
+     this.sourceFile = sourceFile;
+   }
 
-  /**
-   * Returns a JSON-serializable representation
-   * @returns {Object} JSON representation
-   */
-  toJSON() {
-    return {
-      name: this.name,
-      type: this.type,
-      address: this.address,
-      section: this.section,
-      sourceFile: this.sourceFile
-    };
-  }
+   /**
+    * Returns a JSON-serializable representation
+    * @returns {Object} JSON representation
+    */
+   toJSON() {
+      return {
+        name: this.name,
+        type: this.type,
+        address: this.address,
+        section: this.section,
+        size: this.size,
+        line: this.line,
+        sourceFile: this.sourceFile
+      };
+   }
 }
 
 /**
@@ -436,6 +442,8 @@ export class Linker {
         symbol.type,
         address,
         symbol.section,
+        symbol.size || 0,
+        symbol.line || 0,
         symbol.sourceFile || 'unknown'
       ));
     }

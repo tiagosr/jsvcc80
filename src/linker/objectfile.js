@@ -47,39 +47,48 @@ export const RelocationType = {
 };
 
 /**
- * Represents a single symbol in an object file
- */
-export class ObjectSymbol {
-  /**
-   * Creates an object symbol
-   * @param {string} name - Symbol name
-   * @param {string} type - Symbol type (function, variable, section, absolute, label, equ)
-   * @param {string} visibility - Symbol visibility (global, local, weak)
-   * @param {number} [value] - Symbol value/offset
-   * @param {string} [section] - Section name this symbol belongs to
-   */
-  constructor(name, type, visibility, value = 0, section = null) {
-    this.name = name;
-    this.type = type;
-    this.visibility = visibility;
-    this.value = value;
-    this.section = section;
-  }
+  * Represents a single symbol in an object file
+  */
+ export class ObjectSymbol {
+   /**
+    * Creates an object symbol
+    * @param {string} name - Symbol name
+    * @param {string} type - Symbol type (function, variable, section, absolute, label, equ)
+    * @param {string} visibility - Symbol visibility (global, local, weak)
+    * @param {number} [value] - Symbol value/offset
+    * @param {string} [section] - Section name this symbol belongs to
+    * @param {number} [size] - Symbol size in bytes
+    * @param {number} [line] - Source line number where symbol is defined
+    * @param {string} [sourceFile] - Source file where symbol is defined
+    */
+   constructor(name, type, visibility, value = 0, section = null, size = 0, line = 0, sourceFile = null) {
+     this.name = name;
+     this.type = type;
+     this.visibility = visibility;
+     this.value = value;
+     this.section = section;
+     this.size = size;
+     this.line = line;
+     this.sourceFile = sourceFile;
+   }
 
-  /**
-   * Returns a JSON-serializable representation
-   * @returns {Object} JSON representation
-   */
-  toJSON() {
-    return {
-      name: this.name,
-      type: this.type,
-      visibility: this.visibility,
-      value: this.value,
-      section: this.section
-    };
-  }
-}
+   /**
+    * Returns a JSON-serializable representation
+    * @returns {Object} JSON representation
+    */
+   toJSON() {
+     return {
+       name: this.name,
+       type: this.type,
+       visibility: this.visibility,
+       value: this.value,
+       section: this.section,
+       size: this.size,
+       line: this.line,
+       sourceFile: this.sourceFile
+     };
+   }
+ }
 
 /**
  * Represents a relocation entry for unresolved references
@@ -313,12 +322,16 @@ export class IrToObjectFile {
     this.objectFile.addSection(section);
     this.currentSection = section;
 
+    const metadata = func.metadata || {};
     this.objectFile.addSymbol(new ObjectSymbol(
       func.name,
       SymbolType.FUNCTION,
       SymbolVisibility.GLOBAL,
       0,
-      sectionName
+      sectionName,
+      0,
+      metadata.line || 0,
+      metadata.sourceFile || null
     ));
 
     for (const block of func.blocks) {
@@ -552,7 +565,10 @@ export class IrToObjectFile {
       SymbolType.VARIABLE,
       SymbolVisibility.GLOBAL,
       0,
-      sectionName
+      sectionName,
+      global.size || 1,
+      global.line || 0,
+      global.sourceFile || null
     ));
   }
 }

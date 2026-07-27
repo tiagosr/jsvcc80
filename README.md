@@ -16,8 +16,7 @@ See [CHANGELOG.md](CHANGELOG.md)
 - Nothing at the moment
 
 ### 🔜 Next Steps
-1. Add breakpoint functionality (add/remove breakpoints, run to breakpoint, run to instruction, step instruction (already implemented), step into call, step out of call) to the simulator
-2. Implement object file viewer
+1. Implement object file viewer
 
 
 ### 📔 Backlog (issues identified during implementation for later priorization)

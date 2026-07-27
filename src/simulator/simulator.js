@@ -7,12 +7,16 @@ import { CPU, Flags } from './cpu.js';
 import { Memory } from './memory.js';
 import { IOHandler } from './io.js';
 import { WatchManager } from './watcher.js';
+import { CallTracker } from './call-tracker.js';
+import { BreakpointManager } from './breakpoints.js';
 
 /** @typedef {import('./cpu.js').CPU} CPU */
 /** @typedef {import('./cpu.js').Flags} Flags */
 /** @typedef {import('./memory.js').Memory} Memory */
 /** @typedef {import('./io.js').IOHandler} IOHandler */
 /** @typedef {import('./watcher.js').WatchManager} WatchManager */
+/** @typedef {import('./call-tracker.js').CallTracker} CallTracker */
+/** @typedef {import('./breakpoints.js').BreakpointManager} BreakpointManager */
 
 /**
  * Simulator configuration options.
@@ -41,6 +45,8 @@ export class Simulator {
     /** @type {boolean} */ this.stopped = false;
     /** @type {number} */ this.stepCount = 0;
     /** @type {number|null} */ this.stopPC = null;
+    /** @type {CallTracker} */ this._callTracker = new CallTracker();
+    /** @type {BreakpointManager} */ this._breakpoints = new BreakpointManager();
   }
 
   /** @returns {CPU} The CPU instance. */
@@ -74,6 +80,8 @@ export class Simulator {
     this.stopped = false;
     this.stepCount = 0;
     this.stopPC = null;
+    this._callTracker.reset();
+    this._breakpoints.clear();
     if (this.memory.trackAccess) this.memory.clearAccessLog();
   }
 
@@ -108,9 +116,10 @@ export class Simulator {
     }
 
     const pc = this.cpu.pc;
+    const hitBreakpoint = this._breakpoints.has(pc);
     const bytes = this._decodeAndExecute();
     // Only advance PC if the instruction didn't set it directly (bytes > 0)
-    if (bytes > 0) {
+    if (bytes > 0 && !hitBreakpoint) {
       this.cpu.pc = (pc + bytes) & 0xFFFF;
     }
     this.cpu.r = (this.cpu.r + 1) & 0xFF;
@@ -120,6 +129,13 @@ export class Simulator {
 
     // Check stop PC
     if (this.stopPC !== null && currentPC === this.stopPC) {
+      this.stopped = true;
+      this.running = false;
+    }
+
+    // Check breakpoints
+    if (hitBreakpoint) {
+      this._breakpoints.invoke(pc);
       this.stopped = true;
       this.running = false;
     }
@@ -156,22 +172,29 @@ export class Simulator {
   }
 
   /** Set a breakpoint at a PC address.
-   * @param {number} pc
-   * @param {() => void} [callback] - Callback when breakpoint hit.
-   * @returns {number} Breakpoint ID.
+   * @param {number} pc - Program counter address.
+   * @param {() => void} [callback] - Callback when breakpoint is hit.
+   * @returns {number} Breakpoint ID (PC address).
    */
   setBreakpoint(pc, callback) {
-    this.watcher.addWatch(pc, () => {
-      if (callback) callback();
-      this.stop();
-    }, 'access');
-    return pc;
+    return this._breakpoints.add(pc, callback);
   }
 
   /** Remove a breakpoint.
-   * @param {number} pc
+   * @param {number} pc - Program counter address.
    */
-  removeBreakpoint(pc) { this.watcher.removeWatches(pc); }
+  removeBreakpoint(pc) { this._breakpoints.remove(pc); }
+
+  /** Check if a breakpoint exists at a PC address.
+   * @param {number} pc - Program counter address.
+   * @returns {boolean}
+   */
+  hasBreakpoint(pc) { return this._breakpoints.has(pc); }
+
+  /** Get all breakpoints.
+   * @returns {import('./breakpoints.js').Breakpoint[]}
+   */
+  getBreakpoints() { return this._breakpoints.getAll(); }
 
   /** Get a snapshot of CPU state.
    * @returns {Record<string, number>}
@@ -190,11 +213,140 @@ export class Simulator {
      return { steps: this.stepCount, pc: this.cpu.pc, sp: this.cpu.sp, a: this.cpu.a, f: this.cpu.f };
    }
 
-   /** Get a flag bit.
-    * @param {number} flag - Flag constant.
-    * @returns {number}
-    */
-   getFlag(flag) { return this.cpu.getFlag(flag); }
+    /** Get a flag bit.
+     * @param {number} flag - Flag constant.
+     * @returns {number}
+     */
+    getFlag(flag) { return this.cpu.getFlag(flag); }
+
+    /** Execute instructions until a breakpoint is hit, HALT, or stopPC is reached.
+     * @param {number} [stopPC] - Optional PC address to stop at.
+     * @returns {{pc:number,bytes:number,stopped:boolean}} Info about the final state.
+     */
+    runToBreakpoint(stopPC) {
+      if (stopPC !== undefined) this.stopPC = stopPC;
+      this.running = true;
+      this.stopped = false;
+      while (this.running) {
+        const result = this.step();
+        if (this.cpu.halted) break;
+        if (this.stopped) break;
+      }
+      this.running = false;
+      return { pc: this.cpu.pc, stopped: this.stopped };
+    }
+
+    /** Execute a single instruction, tracking call depth for step-into.
+     * Like `step()` but increments call depth on CALL/RST instructions.
+     * @returns {{pc:number,bytes:number,stopped:boolean}} Info about executed instruction.
+     */
+    stepInto() {
+      if (this.cpu.halted) {
+        return { pc: this.cpu.pc, bytes: 1, stopped: true };
+      }
+
+      const pc = this.cpu.pc;
+      const hitBreakpoint = this._breakpoints.has(pc);
+      const bytes = this._decodeAndExecute();
+      if (bytes > 0 && !hitBreakpoint) {
+        this.cpu.pc = (pc + bytes) & 0xFFFF;
+      }
+      this.cpu.r = (this.cpu.r + 1) & 0xFF;
+      this.stepCount++;
+
+      const currentPC = this.cpu.pc;
+
+      // Check stop PC
+      if (this.stopPC !== null && currentPC === this.stopPC) {
+        this.stopped = true;
+        this.running = false;
+      }
+
+      // Check breakpoints
+      if (hitBreakpoint) {
+        this._breakpoints.invoke(pc);
+        this.stopped = true;
+        this.running = false;
+      }
+
+      // Notify watchers
+      if (this.watcher.hasWatches(pc)) {
+        for (let i = 0; i < bytes; i++) {
+          this.watcher.notify(pc + i, undefined, 'read');
+        }
+      }
+
+      return { pc, bytes, stopped: this.stopped };
+    }
+
+    /** Execute one instruction, or if it's a CALL, execute until the matching RET.
+     * Steps over the called function and all nested calls.
+     * @returns {{pc:number,bytes:number,stopped:boolean}} Info about executed instruction.
+     */
+    stepOver() {
+      if (this.cpu.halted) {
+        return { pc: this.cpu.pc, bytes: 1, stopped: true };
+      }
+
+      const pc = this.cpu.pc;
+      const opcode = this.cpu.readByte(pc);
+      const isCall = this._isCallOpcode(opcode);
+      const hitBreakpoint = this._breakpoints.has(pc);
+      const bytes = this._decodeAndExecute();
+      if (bytes > 0 && !hitBreakpoint) {
+        this.cpu.pc = (pc + bytes) & 0xFFFF;
+      }
+      this.cpu.r = (this.cpu.r + 1) & 0xFF;
+      this.stepCount++;
+
+      const currentPC = this.cpu.pc;
+
+      // Check stop PC
+      if (this.stopPC !== null && currentPC === this.stopPC) {
+        this.stopped = true;
+        this.running = false;
+      }
+
+      // Check breakpoints
+      if (hitBreakpoint) {
+        this._breakpoints.invoke(pc);
+        this.stopped = true;
+        this.running = false;
+      }
+
+      // Notify watchers
+      if (this.watcher.hasWatches(pc)) {
+        for (let i = 0; i < bytes; i++) {
+          this.watcher.notify(pc + i, undefined, 'read');
+        }
+      }
+
+      // If this was a CALL, step until call depth returns to 0
+      if (isCall) {
+        while (this._callTracker.depth > 0 && !this.stopped && !this.cpu.halted) {
+          this.step();
+        }
+        if (this.cpu.halted) {
+          this.stopped = true;
+        }
+      }
+
+      return { pc, bytes, stopped: this.stopped };
+    }
+
+    /** Check if an opcode is a CALL or RST instruction.
+     * @param {number} opcode
+     * @returns {boolean}
+     * @private
+     */
+    _isCallOpcode(opcode) {
+      const callOpcodes = [
+        0xCD, // CALL nn
+        0xC4, 0xCC, 0xD4, 0xDC, 0xE4, 0xEC, // CALL cc, nn
+        0xC7, 0xCF, 0xD7, 0xDF, 0xE7, 0xEF, 0xF7, 0xFF // RST n
+      ];
+      return callOpcodes.includes(opcode);
+    }
 
   /**
    * Decode and execute one instruction.
@@ -386,32 +538,32 @@ export class Simulator {
     if (opcode === 0xE9) { c.pc = c.getPair('hl'); return 0; }
 
     // CALL nn / CALL cc, nn
-    if (opcode === 0xCD) { c.push((pc + 3) & 0xFFFF); c.pc = m.readWord(pc + 1); return 0; }
-    if (opcode === 0xC4) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.PARITY_OVERFLOW)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
-    if (opcode === 0xCC) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.SIGN)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
-    if (opcode === 0xD4) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
-    if (opcode === 0xDC) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
-    if (opcode === 0xE4) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.ZERO)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
-    if (opcode === 0xEC) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.ZERO)) { c.push((pc + 3) & 0xFFFF); c.pc = a; return 0; } return 3; }
+    if (opcode === 0xCD) { c.push((pc + 3) & 0xFFFF); c.pc = m.readWord(pc + 1); this._callTracker.onCall(); return 0; }
+    if (opcode === 0xC4) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.PARITY_OVERFLOW)) { c.push((pc + 3) & 0xFFFF); c.pc = a; this._callTracker.onCall(); return 0; } return 3; }
+    if (opcode === 0xCC) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.SIGN)) { c.push((pc + 3) & 0xFFFF); c.pc = a; this._callTracker.onCall(); return 0; } return 3; }
+    if (opcode === 0xD4) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.push((pc + 3) & 0xFFFF); c.pc = a; this._callTracker.onCall(); return 0; } return 3; }
+    if (opcode === 0xDC) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.push((pc + 3) & 0xFFFF); c.pc = a; this._callTracker.onCall(); return 0; } return 3; }
+    if (opcode === 0xE4) { const a = m.readWord(pc + 1); if (c.getFlag(Flags.ZERO)) { c.push((pc + 3) & 0xFFFF); c.pc = a; this._callTracker.onCall(); return 0; } return 3; }
+    if (opcode === 0xEC) { const a = m.readWord(pc + 1); if (!c.getFlag(Flags.ZERO)) { c.push((pc + 3) & 0xFFFF); c.pc = a; this._callTracker.onCall(); return 0; } return 3; }
 
     // RET / RET cc
-    if (opcode === 0xC9) { c.pc = c.pop(); return 0; }
-    if (opcode === 0xC0) { if (c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = c.pop(); return 0; } return 1; }
-    if (opcode === 0xC8) { if (c.getFlag(Flags.SIGN)) { c.pc = c.pop(); return 0; } return 1; }
-    if (opcode === 0xD0) { if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = c.pop(); return 0; } return 1; }
-    if (opcode === 0xD8) { if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = c.pop(); return 0; } return 1; }
-    if (opcode === 0xE0) { if (c.getFlag(Flags.ZERO)) { c.pc = c.pop(); return 0; } return 1; }
-    if (opcode === 0xE8) { if (!c.getFlag(Flags.ZERO)) { c.pc = c.pop(); return 0; } return 1; }
+    if (opcode === 0xC9) { c.pc = c.pop(); this._callTracker.onRet(); return 0; }
+    if (opcode === 0xC0) { if (c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = c.pop(); this._callTracker.onRet(); return 0; } return 1; }
+    if (opcode === 0xC8) { if (c.getFlag(Flags.SIGN)) { c.pc = c.pop(); this._callTracker.onRet(); return 0; } return 1; }
+    if (opcode === 0xD0) { if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = c.pop(); this._callTracker.onRet(); return 0; } return 1; }
+    if (opcode === 0xD8) { if (!c.getFlag(Flags.PARITY_OVERFLOW)) { c.pc = c.pop(); this._callTracker.onRet(); return 0; } return 1; }
+    if (opcode === 0xE0) { if (c.getFlag(Flags.ZERO)) { c.pc = c.pop(); this._callTracker.onRet(); return 0; } return 1; }
+    if (opcode === 0xE8) { if (!c.getFlag(Flags.ZERO)) { c.pc = c.pop(); this._callTracker.onRet(); return 0; } return 1; }
 
     // RST
-    if (opcode === 0xC7) { c.push((pc + 1) & 0xFFFF); c.pc = 0x00; return 0; }
-    if (opcode === 0xCF) { c.push((pc + 1) & 0xFFFF); c.pc = 0x08; return 0; }
-    if (opcode === 0xD7) { c.push((pc + 1) & 0xFFFF); c.pc = 0x10; return 0; }
-    if (opcode === 0xDF) { c.push((pc + 1) & 0xFFFF); c.pc = 0x18; return 0; }
-    if (opcode === 0xE7) { c.push((pc + 1) & 0xFFFF); c.pc = 0x20; return 0; }
-    if (opcode === 0xEF) { c.push((pc + 1) & 0xFFFF); c.pc = 0x28; return 0; }
-    if (opcode === 0xF7) { c.push((pc + 1) & 0xFFFF); c.pc = 0x30; return 0; }
-    if (opcode === 0xFF) { c.push((pc + 1) & 0xFFFF); c.pc = 0x38; return 0; }
+    if (opcode === 0xC7) { c.push((pc + 1) & 0xFFFF); c.pc = 0x00; this._callTracker.onCall(); return 0; }
+    if (opcode === 0xCF) { c.push((pc + 1) & 0xFFFF); c.pc = 0x08; this._callTracker.onCall(); return 0; }
+    if (opcode === 0xD7) { c.push((pc + 1) & 0xFFFF); c.pc = 0x10; this._callTracker.onCall(); return 0; }
+    if (opcode === 0xDF) { c.push((pc + 1) & 0xFFFF); c.pc = 0x18; this._callTracker.onCall(); return 0; }
+    if (opcode === 0xE7) { c.push((pc + 1) & 0xFFFF); c.pc = 0x20; this._callTracker.onCall(); return 0; }
+    if (opcode === 0xEF) { c.push((pc + 1) & 0xFFFF); c.pc = 0x28; this._callTracker.onCall(); return 0; }
+    if (opcode === 0xF7) { c.push((pc + 1) & 0xFFFF); c.pc = 0x30; this._callTracker.onCall(); return 0; }
+    if (opcode === 0xFF) { c.push((pc + 1) & 0xFFFF); c.pc = 0x38; this._callTracker.onCall(); return 0; }
 
     // IN A, (n) / OUT (n), A
     if (opcode === 0xDB) { c.a = this.io.handleIn(m.readByte(pc + 1)); return 2; }
@@ -620,10 +772,10 @@ export class Simulator {
     if (opcode === 0x44) return this._neg();
 
     // RETN -- ED 45
-    if (opcode === 0x45) { c.pc = c.pop(); c.iff1 = c.iff2; return 0; }
+    if (opcode === 0x45) { c.pc = c.pop(); c.iff1 = c.iff2; this._callTracker.onRet(); return 0; }
 
     // RETI -- ED 4D
-    if (opcode === 0x4D) { c.pc = c.pop(); return 0; }
+    if (opcode === 0x4D) { c.pc = c.pop(); this._callTracker.onRet(); return 0; }
 
     // IM 0 / IM 1 / IM 2
     if (opcode === 0x46) { c.im = 0; return 1; }

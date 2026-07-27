@@ -16,13 +16,13 @@ See [CHANGELOG.md](CHANGELOG.md)
 - Nothing at the moment
 
 ### 🔜 Next Steps
-3. Implement single-precision IEEE 754 `float` with optionally-linkable soft-float `+`, `-`, `*`, `/`, `%` operations, `isnan`, `isinf`
-4. Implement nearest integer, absolute value, remainder `fabsf`, `frexpf`, `ldexpf`, `ceilf`, `floorf`, `modff`
-5. Fix `typedef unsigned int newType` parsing
-6. Implement soft-float trigonometric operations (`sinf`, `cosf`, `tanf`, `cotf`, `asinf`, `acosf`, `atanf`, `atan2f`)
-7. Implement soft-float exponential operations (`expf`, `powf`, `logf`, `log10f`, `sqrtf`)
-8. Implement object file viewer (like binutils' `objdump`)
-9. Add line:column information for tokens to give proper error/debugging location information
+1. Implement single-precision IEEE 754 `float` with optionally-linkable soft-float `+`, `-`, `*`, `/`, `%` operations, `isnan`, `isinf`
+3. Implement nearest integer, absolute value, remainder `fabsf`, `frexpf`, `ldexpf`, `ceilf`, `floorf`, `modff`
+4. Fix `typedef unsigned int newType` parsing
+5. Implement soft-float trigonometric operations (`sinf`, `cosf`, `tanf`, `cotf`, `asinf`, `acosf`, `atanf`, `atan2f`)
+6. Implement soft-float exponential operations (`expf`, `powf`, `logf`, `log10f`, `sqrtf`)
+7. Implement object file viewer (like binutils' `objdump`)
+8.  Add line:column information for tokens to give proper error/debugging location information
 
 
 ### 📔 Backlog (issues identified during implementation for later priorization)

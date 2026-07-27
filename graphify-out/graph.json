@@ -45,15 +45,169 @@
   },
   "nodes": [
     {
+      "label": "lexer.js",
+      "file_type": "code",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "src_preprocessor_lexer",
+      "community": 55,
+      "community_name": "CaseClauseNode",
+      "norm_label": "lexer.js"
+    },
+    {
+      "label": "Lexer",
+      "file_type": "code",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L16",
+      "_origin": "ast",
+      "id": "src_preprocessor_lexer_lexer",
+      "community": 55,
+      "community_name": "CaseClauseNode",
+      "norm_label": "lexer"
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L22",
+      "_origin": "ast",
+      "id": "src_preprocessor_lexer_lexer_constructor",
+      "community": 55,
+      "community_name": "CaseClauseNode",
+      "norm_label": ".constructor()"
+    },
+    {
+      "label": "._expandMacro()",
+      "file_type": "code",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L35",
+      "_origin": "ast",
+      "id": "src_preprocessor_lexer_lexer_expandmacro",
+      "community": 55,
+      "community_name": "CaseClauseNode",
+      "norm_label": "._expandmacro()"
+    },
+    {
+      "label": "._expandArgTokens()",
+      "file_type": "code",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L45",
+      "_origin": "ast",
+      "id": "src_preprocessor_lexer_lexer_expandargtokens",
+      "community": 55,
+      "community_name": "CaseClauseNode",
+      "norm_label": "._expandargtokens()"
+    },
+    {
+      "label": "._substituteParamsTokens()",
+      "file_type": "code",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L58",
+      "_origin": "ast",
+      "id": "src_preprocessor_lexer_lexer_substituteparamstokens",
+      "community": 55,
+      "community_name": "CaseClauseNode",
+      "norm_label": "._substituteparamstokens()"
+    },
+    {
+      "label": "._expandTokensMacros()",
+      "file_type": "code",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L68",
+      "_origin": "ast",
+      "id": "src_preprocessor_lexer_lexer_expandtokensmacros",
+      "community": 55,
+      "community_name": "CaseClauseNode",
+      "norm_label": "._expandtokensmacros()"
+    },
+    {
+      "label": "._collectArgsFromTokens()",
+      "file_type": "code",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L78",
+      "_origin": "ast",
+      "id": "src_preprocessor_lexer_lexer_collectargsfromtokens",
+      "community": 55,
+      "community_name": "CaseClauseNode",
+      "norm_label": "._collectargsfromtokens()"
+    },
+    {
+      "label": "._parseMacroArgs()",
+      "file_type": "code",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L86",
+      "_origin": "ast",
+      "id": "src_preprocessor_lexer_lexer_parsemacroargs",
+      "community": 55,
+      "community_name": "CaseClauseNode",
+      "norm_label": "._parsemacroargs()"
+    },
+    {
+      "label": ".readDirective()",
+      "file_type": "code",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L94",
+      "_origin": "ast",
+      "id": "src_preprocessor_lexer_lexer_readdirective",
+      "community": 55,
+      "community_name": "CaseClauseNode",
+      "norm_label": ".readdirective()"
+    },
+    {
+      "label": "._evaluateConstantExpression()",
+      "file_type": "code",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L103",
+      "_origin": "ast",
+      "id": "src_preprocessor_lexer_lexer_evaluateconstantexpression",
+      "community": 55,
+      "community_name": "CaseClauseNode",
+      "norm_label": "._evaluateconstantexpression()"
+    },
+    {
+      "label": ".nextToken()",
+      "file_type": "code",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L111",
+      "_origin": "ast",
+      "id": "src_preprocessor_lexer_lexer_nexttoken",
+      "community": 55,
+      "community_name": "CaseClauseNode",
+      "norm_label": ".nexttoken()"
+    },
+    {
+      "label": ".tokenize()",
+      "file_type": "code",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L242",
+      "_origin": "ast",
+      "id": "src_preprocessor_lexer_lexer_tokenize",
+      "community": 55,
+      "community_name": "CaseClauseNode",
+      "norm_label": ".tokenize()"
+    },
+    {
+      "label": "._tokenizeIncludedFile()",
+      "file_type": "code",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L283",
+      "_origin": "ast",
+      "id": "src_preprocessor_lexer_lexer_tokenizeincludedfile",
+      "community": 55,
+      "community_name": "CaseClauseNode",
+      "norm_label": "._tokenizeincludedfile()"
+    },
+    {
       "label": "CHANGELOG.md",
       "file_type": "document",
       "source_file": "CHANGELOG.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "changelog",
       "community": 45,
       "community_name": "Current Implementation Status",
-      "norm_label": "changelog.md"
+      "norm_label": "changelog.md",
+      "id": "changelog"
     },
     {
       "label": "\ud83e\uddea Test Results",
@@ -61,10 +215,10 @@
       "source_file": "CHANGELOG.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "changelog_test_results",
       "community": 45,
       "community_name": "Current Implementation Status",
-      "norm_label": "\ud83e\uddea test results"
+      "norm_label": "\ud83e\uddea test results",
+      "id": "changelog_test_results"
     },
     {
       "label": "\u2705 Completed",
@@ -72,10 +226,10 @@
       "source_file": "CHANGELOG.md",
       "source_location": "L4",
       "_origin": "ast",
-      "id": "changelog_completed",
       "community": 45,
       "community_name": "Current Implementation Status",
-      "norm_label": "\u2705 completed"
+      "norm_label": "\u2705 completed",
+      "id": "changelog_completed"
     },
     {
       "label": "README.md",
@@ -83,10 +237,10 @@
       "source_file": "README.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "readme",
       "community": 45,
       "community_name": "Current Implementation Status",
-      "norm_label": "readme.md"
+      "norm_label": "readme.md",
+      "id": "readme"
     },
     {
       "label": "Current Implementation Status",
@@ -94,10 +248,10 @@
       "source_file": "README.md",
       "source_location": "L10",
       "_origin": "ast",
-      "id": "readme_current_implementation_status",
       "community": 45,
       "community_name": "Current Implementation Status",
-      "norm_label": "current implementation status"
+      "norm_label": "current implementation status",
+      "id": "readme_current_implementation_status"
     },
     {
       "label": "\u2705 Completed",
@@ -105,10 +259,10 @@
       "source_file": "README.md",
       "source_location": "L12",
       "_origin": "ast",
-      "id": "readme_completed",
       "community": 45,
       "community_name": "Current Implementation Status",
-      "norm_label": "\u2705 completed"
+      "norm_label": "\u2705 completed",
+      "id": "readme_completed"
     },
     {
       "label": "\ud83d\udd04 In Progress",
@@ -116,10 +270,10 @@
       "source_file": "README.md",
       "source_location": "L15",
       "_origin": "ast",
-      "id": "readme_in_progress",
       "community": 45,
       "community_name": "Current Implementation Status",
-      "norm_label": "\ud83d\udd04 in progress"
+      "norm_label": "\ud83d\udd04 in progress",
+      "id": "readme_in_progress"
     },
     {
       "label": "\ud83d\udd1c Next Steps",
@@ -127,10 +281,10 @@
       "source_file": "README.md",
       "source_location": "L18",
       "_origin": "ast",
-      "id": "readme_next_steps",
       "community": 45,
       "community_name": "Current Implementation Status",
-      "norm_label": "\ud83d\udd1c next steps"
+      "norm_label": "\ud83d\udd1c next steps",
+      "id": "readme_next_steps"
     },
     {
       "label": "\ud83d\udcd4 Backlog (issues identified during implementation for later priorization)",
@@ -138,10 +292,10 @@
       "source_file": "README.md",
       "source_location": "L28",
       "_origin": "ast",
-      "id": "readme_backlog_issues_identified_during_implementation_for_later_priorization",
       "community": 45,
       "community_name": "Current Implementation Status",
-      "norm_label": "\ud83d\udcd4 backlog (issues identified during implementation for later priorization)"
+      "norm_label": "\ud83d\udcd4 backlog (issues identified during implementation for later priorization)",
+      "id": "readme_backlog_issues_identified_during_implementation_for_later_priorization"
     },
     {
       "label": "expression-translator.js",
@@ -149,10 +303,10 @@
       "source_file": "src/nanopass/expression-translator.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_nanopass_expression_translator",
       "community": 38,
       "community_name": "EnumValueNode",
-      "norm_label": "expression-translator.js"
+      "norm_label": "expression-translator.js",
+      "id": "src_nanopass_expression_translator"
     },
     {
       "label": "ExpressionTranslator",
@@ -160,10 +314,10 @@
       "source_file": "src/nanopass/expression-translator.js",
       "source_location": "L8",
       "_origin": "ast",
-      "id": "src_nanopass_expression_translator_expressiontranslator",
       "community": 47,
       "community_name": "PreprocessedSource",
-      "norm_label": "expressiontranslator"
+      "norm_label": "expressiontranslator",
+      "id": "src_nanopass_expression_translator_expressiontranslator"
     },
     {
       "label": ".constructor()",
@@ -171,10 +325,10 @@
       "source_file": "src/nanopass/expression-translator.js",
       "source_location": "L13",
       "_origin": "ast",
-      "id": "src_nanopass_expression_translator_expressiontranslator_constructor",
       "community": 47,
       "community_name": "PreprocessedSource",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_nanopass_expression_translator_expressiontranslator_constructor"
     },
     {
       "label": ".translateExpression()",
@@ -182,10 +336,10 @@
       "source_file": "src/nanopass/expression-translator.js",
       "source_location": "L22",
       "_origin": "ast",
-      "id": "src_nanopass_expression_translator_expressiontranslator_translateexpression",
       "community": 47,
       "community_name": "PreprocessedSource",
-      "norm_label": ".translateexpression()"
+      "norm_label": ".translateexpression()",
+      "id": "src_nanopass_expression_translator_expressiontranslator_translateexpression"
     },
     {
       "label": ".translateLiteral()",
@@ -193,10 +347,10 @@
       "source_file": "src/nanopass/expression-translator.js",
       "source_location": "L115",
       "_origin": "ast",
-      "id": "src_nanopass_expression_translator_expressiontranslator_translateliteral",
       "community": 47,
       "community_name": "PreprocessedSource",
-      "norm_label": ".translateliteral()"
+      "norm_label": ".translateliteral()",
+      "id": "src_nanopass_expression_translator_expressiontranslator_translateliteral"
     },
     {
       "label": ".translateIdentifier()",
@@ -204,10 +358,10 @@
       "source_file": "src/nanopass/expression-translator.js",
       "source_location": "L134",
       "_origin": "ast",
-      "id": "src_nanopass_expression_translator_expressiontranslator_translateidentifier",
       "community": 47,
       "community_name": "PreprocessedSource",
-      "norm_label": ".translateidentifier()"
+      "norm_label": ".translateidentifier()",
+      "id": "src_nanopass_expression_translator_expressiontranslator_translateidentifier"
     },
     {
       "label": ".translateCallNode()",
@@ -215,10 +369,10 @@
       "source_file": "src/nanopass/expression-translator.js",
       "source_location": "L158",
       "_origin": "ast",
-      "id": "src_nanopass_expression_translator_expressiontranslator_translatecallnode",
       "community": 47,
       "community_name": "PreprocessedSource",
-      "norm_label": ".translatecallnode()"
+      "norm_label": ".translatecallnode()",
+      "id": "src_nanopass_expression_translator_expressiontranslator_translatecallnode"
     },
     {
       "label": ".translateBinaryOp()",
@@ -226,10 +380,10 @@
       "source_file": "src/nanopass/expression-translator.js",
       "source_location": "L178",
       "_origin": "ast",
-      "id": "src_nanopass_expression_translator_expressiontranslator_translatebinaryop",
       "community": 47,
       "community_name": "PreprocessedSource",
-      "norm_label": ".translatebinaryop()"
+      "norm_label": ".translatebinaryop()",
+      "id": "src_nanopass_expression_translator_expressiontranslator_translatebinaryop"
     },
     {
       "label": ".translateAssignment()",
@@ -237,10 +391,10 @@
       "source_file": "src/nanopass/expression-translator.js",
       "source_location": "L210",
       "_origin": "ast",
-      "id": "src_nanopass_expression_translator_expressiontranslator_translateassignment",
       "community": 47,
       "community_name": "PreprocessedSource",
-      "norm_label": ".translateassignment()"
+      "norm_label": ".translateassignment()",
+      "id": "src_nanopass_expression_translator_expressiontranslator_translateassignment"
     },
     {
       "label": ".translateCompoundAssignment()",
@@ -248,10 +402,10 @@
       "source_file": "src/nanopass/expression-translator.js",
       "source_location": "L356",
       "_origin": "ast",
-      "id": "src_nanopass_expression_translator_expressiontranslator_translatecompoundassignment",
       "community": 47,
       "community_name": "PreprocessedSource",
-      "norm_label": ".translatecompoundassignment()"
+      "norm_label": ".translatecompoundassignment()",
+      "id": "src_nanopass_expression_translator_expressiontranslator_translatecompoundassignment"
     },
     {
       "label": ".translateUnaryOp()",
@@ -259,10 +413,10 @@
       "source_file": "src/nanopass/expression-translator.js",
       "source_location": "L429",
       "_origin": "ast",
-      "id": "src_nanopass_expression_translator_expressiontranslator_translateunaryop",
       "community": 47,
       "community_name": "PreprocessedSource",
-      "norm_label": ".translateunaryop()"
+      "norm_label": ".translateunaryop()",
+      "id": "src_nanopass_expression_translator_expressiontranslator_translateunaryop"
     },
     {
       "label": ".translateIncDec()",
@@ -270,10 +424,10 @@
       "source_file": "src/nanopass/expression-translator.js",
       "source_location": "L449",
       "_origin": "ast",
-      "id": "src_nanopass_expression_translator_expressiontranslator_translateincdec",
       "community": 47,
       "community_name": "PreprocessedSource",
-      "norm_label": ".translateincdec()"
+      "norm_label": ".translateincdec()",
+      "id": "src_nanopass_expression_translator_expressiontranslator_translateincdec"
     },
     {
       "label": ".translateConditional()",
@@ -281,10 +435,10 @@
       "source_file": "src/nanopass/expression-translator.js",
       "source_location": "L490",
       "_origin": "ast",
-      "id": "src_nanopass_expression_translator_expressiontranslator_translateconditional",
       "community": 47,
       "community_name": "PreprocessedSource",
-      "norm_label": ".translateconditional()"
+      "norm_label": ".translateconditional()",
+      "id": "src_nanopass_expression_translator_expressiontranslator_translateconditional"
     },
     {
       "label": ".translateExpressionValue()",
@@ -292,10 +446,10 @@
       "source_file": "src/nanopass/expression-translator.js",
       "source_location": "L525",
       "_origin": "ast",
-      "id": "src_nanopass_expression_translator_expressiontranslator_translateexpressionvalue",
       "community": 47,
       "community_name": "PreprocessedSource",
-      "norm_label": ".translateexpressionvalue()"
+      "norm_label": ".translateexpressionvalue()",
+      "id": "src_nanopass_expression_translator_expressiontranslator_translateexpressionvalue"
     },
     {
       "label": "expr-assign.js",
@@ -303,10 +457,10 @@
       "source_file": "src/parser/expr-assign.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_parser_expr_assign",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "expr-assign.js"
+      "norm_label": "expr-assign.js",
+      "id": "src_parser_expr_assign"
     },
     {
       "label": "locFromToken()",
@@ -314,10 +468,10 @@
       "source_file": "src/parser/expr-assign.js",
       "source_location": "L7",
       "_origin": "ast",
-      "id": "src_parser_expr_assign_locfromtoken",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "locfromtoken()"
+      "norm_label": "locfromtoken()",
+      "id": "src_parser_expr_assign_locfromtoken"
     },
     {
       "label": "buildAssignmentExpr()",
@@ -325,10 +479,10 @@
       "source_file": "src/parser/expr-assign.js",
       "source_location": "L13",
       "_origin": "ast",
-      "id": "src_parser_expr_assign_buildassignmentexpr",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "buildassignmentexpr()"
+      "norm_label": "buildassignmentexpr()",
+      "id": "src_parser_expr_assign_buildassignmentexpr"
     },
     {
       "label": "compound-assign.test.js",
@@ -336,10 +490,10 @@
       "source_file": "src/tests/compound-assign.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_compound_assign_test",
       "community": 85,
       "community_name": "ConstantEvaluator",
-      "norm_label": "compound-assign.test.js"
+      "norm_label": "compound-assign.test.js",
+      "id": "src_tests_compound_assign_test"
     },
     {
       "label": "compoundOps",
@@ -347,10 +501,10 @@
       "source_file": "src/tests/compound-assign.test.js",
       "source_location": "L8",
       "_origin": "ast",
-      "id": "src_tests_compound_assign_test_compoundops",
       "community": 85,
       "community_name": "ConstantEvaluator",
-      "norm_label": "compoundops"
+      "norm_label": "compoundops",
+      "id": "src_tests_compound_assign_test_compoundops"
     },
     {
       "label": "compileAndCheck()",
@@ -358,10 +512,10 @@
       "source_file": "src/tests/compound-assign.test.js",
       "source_location": "L96",
       "_origin": "ast",
-      "id": "src_tests_compound_assign_test_compileandcheck",
       "community": 85,
       "community_name": "ConstantEvaluator",
-      "norm_label": "compileandcheck()"
+      "norm_label": "compileandcheck()",
+      "id": "src_tests_compound_assign_test_compileandcheck"
     },
     {
       "label": "z80codegen.js",
@@ -3189,160 +3343,6 @@
       "community_name": "IR Instruction Base",
       "norm_label": "buildtypedefdecl()",
       "id": "src_parser_decl_global_buildtypedefdecl"
-    },
-    {
-      "label": "lexer.js",
-      "file_type": "code",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 55,
-      "community_name": "CaseClauseNode",
-      "norm_label": "lexer.js",
-      "id": "src_preprocessor_lexer"
-    },
-    {
-      "label": "Lexer",
-      "file_type": "code",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L16",
-      "_origin": "ast",
-      "community": 55,
-      "community_name": "CaseClauseNode",
-      "norm_label": "lexer",
-      "id": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "label": ".constructor()",
-      "file_type": "code",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L22",
-      "_origin": "ast",
-      "community": 55,
-      "community_name": "CaseClauseNode",
-      "norm_label": ".constructor()",
-      "id": "src_preprocessor_lexer_lexer_constructor"
-    },
-    {
-      "label": "._expandMacro()",
-      "file_type": "code",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L35",
-      "_origin": "ast",
-      "community": 55,
-      "community_name": "CaseClauseNode",
-      "norm_label": "._expandmacro()",
-      "id": "src_preprocessor_lexer_lexer_expandmacro"
-    },
-    {
-      "label": "._expandArgTokens()",
-      "file_type": "code",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L45",
-      "_origin": "ast",
-      "community": 55,
-      "community_name": "CaseClauseNode",
-      "norm_label": "._expandargtokens()",
-      "id": "src_preprocessor_lexer_lexer_expandargtokens"
-    },
-    {
-      "label": "._substituteParamsTokens()",
-      "file_type": "code",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L58",
-      "_origin": "ast",
-      "community": 55,
-      "community_name": "CaseClauseNode",
-      "norm_label": "._substituteparamstokens()",
-      "id": "src_preprocessor_lexer_lexer_substituteparamstokens"
-    },
-    {
-      "label": "._expandTokensMacros()",
-      "file_type": "code",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L68",
-      "_origin": "ast",
-      "community": 55,
-      "community_name": "CaseClauseNode",
-      "norm_label": "._expandtokensmacros()",
-      "id": "src_preprocessor_lexer_lexer_expandtokensmacros"
-    },
-    {
-      "label": "._collectArgsFromTokens()",
-      "file_type": "code",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L78",
-      "_origin": "ast",
-      "community": 55,
-      "community_name": "CaseClauseNode",
-      "norm_label": "._collectargsfromtokens()",
-      "id": "src_preprocessor_lexer_lexer_collectargsfromtokens"
-    },
-    {
-      "label": "._parseMacroArgs()",
-      "file_type": "code",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L86",
-      "_origin": "ast",
-      "community": 55,
-      "community_name": "CaseClauseNode",
-      "norm_label": "._parsemacroargs()",
-      "id": "src_preprocessor_lexer_lexer_parsemacroargs"
-    },
-    {
-      "label": ".readDirective()",
-      "file_type": "code",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L94",
-      "_origin": "ast",
-      "community": 55,
-      "community_name": "CaseClauseNode",
-      "norm_label": ".readdirective()",
-      "id": "src_preprocessor_lexer_lexer_readdirective"
-    },
-    {
-      "label": "._evaluateConstantExpression()",
-      "file_type": "code",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L103",
-      "_origin": "ast",
-      "community": 55,
-      "community_name": "CaseClauseNode",
-      "norm_label": "._evaluateconstantexpression()",
-      "id": "src_preprocessor_lexer_lexer_evaluateconstantexpression"
-    },
-    {
-      "label": ".nextToken()",
-      "file_type": "code",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L111",
-      "_origin": "ast",
-      "community": 55,
-      "community_name": "CaseClauseNode",
-      "norm_label": ".nexttoken()",
-      "id": "src_preprocessor_lexer_lexer_nexttoken"
-    },
-    {
-      "label": ".tokenize()",
-      "file_type": "code",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L237",
-      "_origin": "ast",
-      "community": 55,
-      "community_name": "CaseClauseNode",
-      "norm_label": ".tokenize()",
-      "id": "src_preprocessor_lexer_lexer_tokenize"
-    },
-    {
-      "label": "._tokenizeIncludedFile()",
-      "file_type": "code",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L278",
-      "_origin": "ast",
-      "community": 55,
-      "community_name": "CaseClauseNode",
-      "norm_label": "._tokenizeincludedfile()",
-      "id": "src_preprocessor_lexer_lexer_tokenizeincludedfile"
     },
     {
       "label": "headerfiles.test.js",
@@ -14463,15 +14463,746 @@
   ],
   "links": [
     {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/compiler.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_compiler",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "re_exports",
+      "context": "export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/index.js",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_index",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_preprocessor_lexer",
+      "target": "src_preprocessor_lexer_lexer",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/calling_convention_parsing.test.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_calling_convention_parsing_test",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/cparser.test.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_cparser_test",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/function_pointer_ir.test.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_function_pointer_ir_test",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/function_pointer.test.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_function_pointer_test",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/intrinsics.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_intrinsics_test",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/pointers.test.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_pointers_test",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.builtin-macros.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_builtin_macros_test",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.combined-directives.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_combined_directives_test",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.conditional-directives.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_conditional_directives_test",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.define-undef.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_define_undef_test",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.elif-directive.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_elif_directive_test",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.if-directive.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_if_directive_test",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.if-nesting.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_if_nesting_test",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.include-directive.test.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_include_directive_test",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.lexer-basic.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_lexer_basic_test",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.macro-expansion.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_macro_expansion_test",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.nested-conditionals.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_nested_conditionals_test",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.special-operators.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_special_operators_test",
+      "target": "src_preprocessor_lexer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/compiler.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_compiler",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "re_exports",
+      "context": "re-export",
+      "confidence": "EXTRACTED",
+      "source_file": "src/index.js",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_index",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L78",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_preprocessor_lexer_lexer",
+      "target": "src_preprocessor_lexer_lexer_collectargsfromtokens",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L22",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_preprocessor_lexer_lexer",
+      "target": "src_preprocessor_lexer_lexer_constructor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L103",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_preprocessor_lexer_lexer",
+      "target": "src_preprocessor_lexer_lexer_evaluateconstantexpression",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L45",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_preprocessor_lexer_lexer",
+      "target": "src_preprocessor_lexer_lexer_expandargtokens",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L35",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_preprocessor_lexer_lexer",
+      "target": "src_preprocessor_lexer_lexer_expandmacro",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L68",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_preprocessor_lexer_lexer",
+      "target": "src_preprocessor_lexer_lexer_expandtokensmacros",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L111",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_preprocessor_lexer_lexer",
+      "target": "src_preprocessor_lexer_lexer_nexttoken",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L86",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_preprocessor_lexer_lexer",
+      "target": "src_preprocessor_lexer_lexer_parsemacroargs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L94",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_preprocessor_lexer_lexer",
+      "target": "src_preprocessor_lexer_lexer_readdirective",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L58",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_preprocessor_lexer_lexer",
+      "target": "src_preprocessor_lexer_lexer_substituteparamstokens",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L242",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_preprocessor_lexer_lexer",
+      "target": "src_preprocessor_lexer_lexer_tokenize",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L283",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_preprocessor_lexer_lexer",
+      "target": "src_preprocessor_lexer_lexer_tokenizeincludedfile",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/calling_convention_parsing.test.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_calling_convention_parsing_test",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/cparser.test.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_cparser_test",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/function_pointer_ir.test.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_function_pointer_ir_test",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/function_pointer.test.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_function_pointer_test",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/intrinsics.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_intrinsics_test",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/pointers.test.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_pointers_test",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.builtin-macros.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_builtin_macros_test",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.combined-directives.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_combined_directives_test",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.conditional-directives.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_conditional_directives_test",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.define-undef.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_define_undef_test",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.elif-directive.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_elif_directive_test",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.if-directive.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_if_directive_test",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.if-nesting.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_if_nesting_test",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.include-directive.test.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_include_directive_test",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.lexer-basic.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_lexer_basic_test",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.macro-expansion.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_macro_expansion_test",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.nested-conditionals.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_nested_conditionals_test",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tests/preprocessor.special-operators.test.js",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "src_tests_preprocessor_special_operators_test",
+      "target": "src_preprocessor_lexer_lexer"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L133",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_preprocessor_lexer_lexer_nexttoken",
+      "target": "src_preprocessor_lexer_lexer_readdirective",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L246",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_preprocessor_lexer_lexer_tokenize",
+      "target": "src_preprocessor_lexer_lexer_nexttoken",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/preprocessor/lexer.js",
+      "source_location": "L262",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_preprocessor_lexer_lexer_tokenize",
+      "target": "src_preprocessor_lexer_lexer_tokenizeincludedfile",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/tests/function_pointer.test.js",
+      "source_location": "L85",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_tests_function_pointer_test_compile",
+      "target": "src_preprocessor_lexer_lexer_tokenize"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/tests/intrinsics.test.js",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_tests_intrinsics_test_compile",
+      "target": "src_preprocessor_lexer_lexer_tokenize"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/tests/intrinsics.test.js",
+      "source_location": "L230",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_tests_intrinsics_test_compiletoassembly",
+      "target": "src_preprocessor_lexer_lexer_tokenize"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/tests/pointers.test.js",
+      "source_location": "L228",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_tests_pointers_test_compile",
+      "target": "src_preprocessor_lexer_lexer_tokenize"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/tests/pointers.test.js",
+      "source_location": "L54",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_tests_pointers_test_parse",
+      "target": "src_preprocessor_lexer_lexer_tokenize"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/tests/pointers.test.js",
+      "source_location": "L174",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_tests_pointers_test_translate",
+      "target": "src_preprocessor_lexer_lexer_tokenize"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "CHANGELOG.md",
       "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "changelog",
-      "target": "changelog_completed",
-      "confidence_score": 1.0
+      "target": "changelog_completed"
     },
     {
       "relation": "contains",
@@ -14480,9 +15211,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "changelog",
-      "target": "changelog_test_results",
-      "confidence_score": 1.0
+      "target": "changelog_test_results"
     },
     {
       "relation": "references",
@@ -14491,9 +15222,9 @@
       "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "readme",
-      "target": "changelog",
-      "confidence_score": 1.0
+      "target": "changelog"
     },
     {
       "relation": "contains",
@@ -14502,9 +15233,9 @@
       "source_location": "L10",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "readme",
-      "target": "readme_current_implementation_status",
-      "confidence_score": 1.0
+      "target": "readme_current_implementation_status"
     },
     {
       "relation": "contains",
@@ -14513,9 +15244,9 @@
       "source_location": "L28",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "readme_current_implementation_status",
-      "target": "readme_backlog_issues_identified_during_implementation_for_later_priorization",
-      "confidence_score": 1.0
+      "target": "readme_backlog_issues_identified_during_implementation_for_later_priorization"
     },
     {
       "relation": "contains",
@@ -14524,9 +15255,9 @@
       "source_location": "L12",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "readme_current_implementation_status",
-      "target": "readme_completed",
-      "confidence_score": 1.0
+      "target": "readme_completed"
     },
     {
       "relation": "contains",
@@ -14535,9 +15266,9 @@
       "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "readme_current_implementation_status",
-      "target": "readme_in_progress",
-      "confidence_score": 1.0
+      "target": "readme_in_progress"
     },
     {
       "relation": "contains",
@@ -14546,9 +15277,9 @@
       "source_location": "L18",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "readme_current_implementation_status",
-      "target": "readme_next_steps",
-      "confidence_score": 1.0
+      "target": "readme_next_steps"
     },
     {
       "relation": "imports_from",
@@ -14569,9 +15300,9 @@
       "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator",
-      "target": "src_nanopass_expression_translator_expressiontranslator",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator"
     },
     {
       "relation": "imports",
@@ -14592,9 +15323,9 @@
       "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator",
-      "target": "src_nanopass_expression_translator_expressiontranslator_constructor",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_constructor"
     },
     {
       "relation": "method",
@@ -14603,9 +15334,9 @@
       "source_location": "L210",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translateassignment",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translateassignment"
     },
     {
       "relation": "method",
@@ -14614,9 +15345,9 @@
       "source_location": "L178",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translatebinaryop",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translatebinaryop"
     },
     {
       "relation": "method",
@@ -14625,9 +15356,9 @@
       "source_location": "L158",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translatecallnode",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translatecallnode"
     },
     {
       "relation": "method",
@@ -14636,9 +15367,9 @@
       "source_location": "L356",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translatecompoundassignment",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translatecompoundassignment"
     },
     {
       "relation": "method",
@@ -14647,9 +15378,9 @@
       "source_location": "L490",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translateconditional",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translateconditional"
     },
     {
       "relation": "method",
@@ -14658,9 +15389,9 @@
       "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translateexpression",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translateexpression"
     },
     {
       "relation": "method",
@@ -14669,9 +15400,9 @@
       "source_location": "L525",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translateexpressionvalue",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translateexpressionvalue"
     },
     {
       "relation": "method",
@@ -14680,9 +15411,9 @@
       "source_location": "L134",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translateidentifier",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translateidentifier"
     },
     {
       "relation": "method",
@@ -14691,9 +15422,9 @@
       "source_location": "L449",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translateincdec",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translateincdec"
     },
     {
       "relation": "method",
@@ -14702,9 +15433,9 @@
       "source_location": "L115",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translateliteral",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translateliteral"
     },
     {
       "relation": "method",
@@ -14713,9 +15444,9 @@
       "source_location": "L429",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translateunaryop",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translateunaryop"
     },
     {
       "relation": "calls",
@@ -14725,9 +15456,9 @@
       "source_location": "L211",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator_translateassignment",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translateexpression",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translateexpression"
     },
     {
       "relation": "calls",
@@ -14737,9 +15468,9 @@
       "source_location": "L194",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator_translatebinaryop",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translateexpression",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translateexpression"
     },
     {
       "relation": "calls",
@@ -14749,9 +15480,9 @@
       "source_location": "L364",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator_translatecompoundassignment",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translateexpression",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translateexpression"
     },
     {
       "relation": "calls",
@@ -14761,9 +15492,9 @@
       "source_location": "L496",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator_translateconditional",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translateexpression",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translateexpression"
     },
     {
       "relation": "calls",
@@ -14773,9 +15504,9 @@
       "source_location": "L61",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator_translateexpression",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translatecallnode",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translatecallnode"
     },
     {
       "relation": "calls",
@@ -14785,9 +15516,9 @@
       "source_location": "L46",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator_translateexpression",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translateidentifier",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translateidentifier"
     },
     {
       "relation": "calls",
@@ -14797,9 +15528,9 @@
       "source_location": "L42",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator_translateexpression",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translateliteral",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translateliteral"
     },
     {
       "relation": "calls",
@@ -14809,9 +15540,9 @@
       "source_location": "L57",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator_translateexpression",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translateunaryop",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translateunaryop"
     },
     {
       "relation": "calls",
@@ -14821,9 +15552,9 @@
       "source_location": "L450",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator_translateincdec",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translateexpression",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translateexpression"
     },
     {
       "relation": "calls",
@@ -14833,9 +15564,9 @@
       "source_location": "L180",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator_translatebinaryop",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translateassignment",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translateassignment"
     },
     {
       "relation": "calls",
@@ -14845,9 +15576,9 @@
       "source_location": "L185",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator_translatebinaryop",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translatecompoundassignment",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translatecompoundassignment"
     },
     {
       "relation": "calls",
@@ -14857,9 +15588,9 @@
       "source_location": "L432",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_nanopass_expression_translator_expressiontranslator_translateunaryop",
-      "target": "src_nanopass_expression_translator_expressiontranslator_translateincdec",
-      "confidence_score": 1.0
+      "target": "src_nanopass_expression_translator_expressiontranslator_translateincdec"
     },
     {
       "relation": "imports_from",
@@ -14880,9 +15611,9 @@
       "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_expr_assign",
-      "target": "src_parser_expr_assign_buildassignmentexpr",
-      "confidence_score": 1.0
+      "target": "src_parser_expr_assign_buildassignmentexpr"
     },
     {
       "relation": "contains",
@@ -14891,9 +15622,9 @@
       "source_location": "L7",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_expr_assign",
-      "target": "src_parser_expr_assign_locfromtoken",
-      "confidence_score": 1.0
+      "target": "src_parser_expr_assign_locfromtoken"
     },
     {
       "relation": "calls",
@@ -14903,9 +15634,9 @@
       "source_location": "L30",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_expr_assign_buildassignmentexpr",
-      "target": "src_parser_expr_assign_locfromtoken",
-      "confidence_score": 1.0
+      "target": "src_parser_expr_assign_locfromtoken"
     },
     {
       "relation": "imports",
@@ -14938,9 +15669,9 @@
       "source_location": "L96",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_compound_assign_test",
-      "target": "src_tests_compound_assign_test_compileandcheck",
-      "confidence_score": 1.0
+      "target": "src_tests_compound_assign_test_compileandcheck"
     },
     {
       "relation": "contains",
@@ -14949,9 +15680,9 @@
       "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_compound_assign_test",
-      "target": "src_tests_compound_assign_test_compoundops",
-      "confidence_score": 1.0
+      "target": "src_tests_compound_assign_test_compoundops"
     },
     {
       "relation": "contains",
@@ -20660,737 +21391,6 @@
       "_origin": "ast",
       "source": "src_parser_cparser_cpegparser_constructor",
       "target": "src_parser_decl_global_buildtypedefdecl"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/compiler.js",
-      "source_location": "L5",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_compiler",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "re_exports",
-      "context": "export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/index.js",
-      "source_location": "L14",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_index",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L16",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_preprocessor_lexer",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/calling_convention_parsing.test.js",
-      "source_location": "L4",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_calling_convention_parsing_test",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/cparser.test.js",
-      "source_location": "L4",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_cparser_test",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/function_pointer_ir.test.js",
-      "source_location": "L6",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_function_pointer_ir_test",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/function_pointer.test.js",
-      "source_location": "L4",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_function_pointer_test",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/intrinsics.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_intrinsics_test",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/pointers.test.js",
-      "source_location": "L4",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_pointers_test",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.builtin-macros.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_builtin_macros_test",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.combined-directives.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_combined_directives_test",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.conditional-directives.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_conditional_directives_test",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.define-undef.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_define_undef_test",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.elif-directive.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_elif_directive_test",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.if-directive.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_if_directive_test",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.if-nesting.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_if_nesting_test",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.include-directive.test.js",
-      "source_location": "L6",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_include_directive_test",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.lexer-basic.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_lexer_basic_test",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.macro-expansion.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_macro_expansion_test",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.nested-conditionals.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_nested_conditionals_test",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.special-operators.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_special_operators_test",
-      "target": "src_preprocessor_lexer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/compiler.js",
-      "source_location": "L5",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_compiler",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "re_exports",
-      "context": "re-export",
-      "confidence": "EXTRACTED",
-      "source_file": "src/index.js",
-      "source_location": "L14",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_index",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L78",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_preprocessor_lexer_lexer",
-      "target": "src_preprocessor_lexer_lexer_collectargsfromtokens"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L22",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_preprocessor_lexer_lexer",
-      "target": "src_preprocessor_lexer_lexer_constructor"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L103",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_preprocessor_lexer_lexer",
-      "target": "src_preprocessor_lexer_lexer_evaluateconstantexpression"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L45",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_preprocessor_lexer_lexer",
-      "target": "src_preprocessor_lexer_lexer_expandargtokens"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L35",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_preprocessor_lexer_lexer",
-      "target": "src_preprocessor_lexer_lexer_expandmacro"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L68",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_preprocessor_lexer_lexer",
-      "target": "src_preprocessor_lexer_lexer_expandtokensmacros"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L111",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_preprocessor_lexer_lexer",
-      "target": "src_preprocessor_lexer_lexer_nexttoken"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L86",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_preprocessor_lexer_lexer",
-      "target": "src_preprocessor_lexer_lexer_parsemacroargs"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L94",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_preprocessor_lexer_lexer",
-      "target": "src_preprocessor_lexer_lexer_readdirective"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L58",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_preprocessor_lexer_lexer",
-      "target": "src_preprocessor_lexer_lexer_substituteparamstokens"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L237",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_preprocessor_lexer_lexer",
-      "target": "src_preprocessor_lexer_lexer_tokenize"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L278",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_preprocessor_lexer_lexer",
-      "target": "src_preprocessor_lexer_lexer_tokenizeincludedfile"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/calling_convention_parsing.test.js",
-      "source_location": "L4",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_calling_convention_parsing_test",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/cparser.test.js",
-      "source_location": "L4",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_cparser_test",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/function_pointer_ir.test.js",
-      "source_location": "L6",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_function_pointer_ir_test",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/function_pointer.test.js",
-      "source_location": "L4",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_function_pointer_test",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/intrinsics.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_intrinsics_test",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/pointers.test.js",
-      "source_location": "L4",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_pointers_test",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.builtin-macros.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_builtin_macros_test",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.combined-directives.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_combined_directives_test",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.conditional-directives.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_conditional_directives_test",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.define-undef.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_define_undef_test",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.elif-directive.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_elif_directive_test",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.if-directive.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_if_directive_test",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.if-nesting.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_if_nesting_test",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.include-directive.test.js",
-      "source_location": "L6",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_include_directive_test",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.lexer-basic.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_lexer_basic_test",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.macro-expansion.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_macro_expansion_test",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.nested-conditionals.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_nested_conditionals_test",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "src/tests/preprocessor.special-operators.test.js",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_tests_preprocessor_special_operators_test",
-      "target": "src_preprocessor_lexer_lexer"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L133",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_preprocessor_lexer_lexer_nexttoken",
-      "target": "src_preprocessor_lexer_lexer_readdirective"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L241",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_preprocessor_lexer_lexer_tokenize",
-      "target": "src_preprocessor_lexer_lexer_nexttoken"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "src/preprocessor/lexer.js",
-      "source_location": "L257",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "src_preprocessor_lexer_lexer_tokenize",
-      "target": "src_preprocessor_lexer_lexer_tokenizeincludedfile"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/tests/function_pointer.test.js",
-      "source_location": "L85",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_tests_function_pointer_test_compile",
-      "target": "src_preprocessor_lexer_lexer_tokenize"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/tests/intrinsics.test.js",
-      "source_location": "L12",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_tests_intrinsics_test_compile",
-      "target": "src_preprocessor_lexer_lexer_tokenize"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/tests/intrinsics.test.js",
-      "source_location": "L230",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_tests_intrinsics_test_compiletoassembly",
-      "target": "src_preprocessor_lexer_lexer_tokenize"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/tests/pointers.test.js",
-      "source_location": "L228",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_tests_pointers_test_compile",
-      "target": "src_preprocessor_lexer_lexer_tokenize"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/tests/pointers.test.js",
-      "source_location": "L54",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_tests_pointers_test_parse",
-      "target": "src_preprocessor_lexer_lexer_tokenize"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/tests/pointers.test.js",
-      "source_location": "L174",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "src_tests_pointers_test_translate",
-      "target": "src_preprocessor_lexer_lexer_tokenize"
     },
     {
       "relation": "contains",
@@ -45067,5 +45067,5 @@
       ]
     }
   ],
-  "built_at_commit": "242bf4d43ac06890732a89269aa12e5a50274633"
+  "built_at_commit": "edbdb292ad0a8efb2acbcc86b1321964ca6ab65d"
 }

@@ -452,6 +452,14 @@ export class Z80Codegen {
           this.codeLines.push(`  ld l, a`);
         } else if (dest === 'a') {
           this.codeLines.push(`  ld a, a`);
+        } else if (dest === 'b') {
+          this.codeLines.push(`  ld b, a`);
+        } else if (dest === 'c') {
+          this.codeLines.push(`  ld c, a`);
+        } else if (dest === 'd') {
+          this.codeLines.push(`  ld d, a`);
+        } else if (dest === 'e') {
+          this.codeLines.push(`  ld e, a`);
         } else {
           this.codeLines.push(`  ld l, a`);
           this.codeLines.push(`  ld h, 0`);
@@ -466,6 +474,14 @@ export class Z80Codegen {
           this.codeLines.push(`  ld l, l`);
         } else if (dest === 'a') {
           this.codeLines.push(`  ld a, l`);
+        } else if (dest === 'b') {
+          this.codeLines.push(`  ld b, l`);
+        } else if (dest === 'c') {
+          this.codeLines.push(`  ld c, l`);
+        } else if (dest === 'd') {
+          this.codeLines.push(`  ld d, l`);
+        } else if (dest === 'e') {
+          this.codeLines.push(`  ld e, l`);
         } else {
           this.codeLines.push(`  ld (${dest}), hl`);
         }
@@ -479,6 +495,14 @@ export class Z80Codegen {
         this.codeLines.push(`  ld l, l`);
       } else if (dest === 'a') {
         this.codeLines.push(`  ld a, l`);
+      } else if (dest === 'b') {
+        this.codeLines.push(`  ld b, l`);
+      } else if (dest === 'c') {
+        this.codeLines.push(`  ld c, l`);
+      } else if (dest === 'd') {
+        this.codeLines.push(`  ld d, l`);
+      } else if (dest === 'e') {
+        this.codeLines.push(`  ld e, l`);
       } else {
         this.codeLines.push(`  ld (${dest}), hl`);
       }
@@ -792,13 +816,7 @@ export class Z80Codegen {
       // Args are already pushed by PushInstruction in IR
       codeLines.push(`  call ${funcName}`);
 
-      if (args.length > 0) {
-        const bytes = args.length * 2;
-        codeLines.push(`  ld hl, sp`);
-        codeLines.push(`  ld de, ${bytes}`);
-        codeLines.push('  add hl, de');
-        codeLines.push('  ld sp, hl');
-      }
+      // Callee clears stack - no caller cleanup
 
       return codeLines;
     }

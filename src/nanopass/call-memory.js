@@ -52,17 +52,37 @@ export class CallAndMemoryTranslator {
         if (i < 2) {
           const size = argTypes[i] || 1;
           if (size === 2) {
-            blocks.push(new IL.BasicBlock(this.context.state.label('reg'), [
-              new IL.BinaryOpInstruction('h', 'mov', argResult.result, 0),
-              new IL.UnaryOpInstruction('l', 'mov', argResult.result, 0)
-            ]));
-            registerArgs.push('h');
-            registerArgs.push('l');
+            if (i === 0) {
+              // First word arg: HL
+              blocks.push(new IL.BasicBlock(this.context.state.label('reg'), [
+                new IL.BinaryOpInstruction('h', 'mov', argResult.result, 0),
+                new IL.UnaryOpInstruction('l', 'mov', argResult.result, 0)
+              ]));
+              registerArgs.push('h');
+              registerArgs.push('l');
+            } else {
+              // Second word arg: DE
+              blocks.push(new IL.BasicBlock(this.context.state.label('reg'), [
+                new IL.BinaryOpInstruction('d', 'mov', argResult.result, 0),
+                new IL.UnaryOpInstruction('e', 'mov', argResult.result, 0)
+              ]));
+              registerArgs.push('d');
+              registerArgs.push('e');
+            }
           } else {
-            blocks.push(new IL.BasicBlock(this.context.state.label('reg'), [
-              new IL.UnaryOpInstruction('a', 'mov', argResult.result, 0)
-            ]));
-            registerArgs.push('a');
+            if (i === 0) {
+              // First byte arg: A
+              blocks.push(new IL.BasicBlock(this.context.state.label('reg'), [
+                new IL.UnaryOpInstruction('a', 'mov', argResult.result, 0)
+              ]));
+              registerArgs.push('a');
+            } else {
+              // Second byte arg: L
+              blocks.push(new IL.BasicBlock(this.context.state.label('reg'), [
+                new IL.UnaryOpInstruction('l', 'mov', argResult.result, 0)
+              ]));
+              registerArgs.push('l');
+            }
           }
         } else {
           blocks.push(new IL.BasicBlock(this.context.state.label('arg'), [

@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `242bf4d4`
+- Built from commit: `edbdb292`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -258,7 +258,7 @@ Nodes (3): BreakpointManager, CallTracker, Simulator
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Z80Codegen` connect `Z80 Code Generator` to `AST Node Definitions`, `Resolved Symbol`, `EnumValueNode`, `CaseClauseNode`?**
-  _High betweenness centrality (0.054) - this node is a cross-community bridge._
+  _High betweenness centrality (0.061) - this node is a cross-community bridge._
 - **Why does `PreprocessedSource` connect `CaseClauseNode` to `CompoundNode`, `Resolved Symbol`?**
   _High betweenness centrality (0.039) - this node is a cross-community bridge._
 - **Why does `Linker` connect `WLA DX Codegen` to `Object File & Relocations`, `Linker Core`, `Resolved Symbol`?**

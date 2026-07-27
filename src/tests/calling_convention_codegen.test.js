@@ -15,7 +15,7 @@ int main() { fn_byte(1); return 0; }
     const callLine = lines.find(l => l.includes('call fn_byte'));
     assert.ok(callLine);
     const pushLines = lines.filter(l => l.includes('push af'));
-    assert.ok(pushLines.length === 0, 'new_sdcc default passes byte arg on A');
+    assert.ok(pushLines.length > 0, 'cdecl passes byte arg on stack via push af');
   });
 
   it('should generate stack push for multiple args', () => {
@@ -44,7 +44,7 @@ int main() { fn_arg(1); return 0; }
     assert.ok(callLine);
     const cleanupIdx = lines.indexOf(callLine);
     const afterCall = lines.slice(cleanupIdx + 1, cleanupIdx + 8);
-    assert.ok(!afterCall.some(l => l.includes('ld hl, sp')), 'new_sdcc default no stack cleanup for single arg');
+    assert.ok(afterCall.some(l => l.includes('ld hl, sp')), 'cdecl caller clears stack with ld hl, sp');
   });
 });
 

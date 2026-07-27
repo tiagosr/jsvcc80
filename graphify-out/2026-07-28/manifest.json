@@ -105,8 +105,8 @@
     "semantic_hash": "ca938d193286ef0e8f7aa0994334f5bb"
   },
   "src/preprocessor/lexer.js": {
-    "mtime": 1785164434.0000513,
-    "ast_hash": "6dd79d276c4efae273b4a0088d4b0336",
+    "mtime": 1785191599.3220384,
+    "ast_hash": "b57f284defff9f494f281e2d9cb5cce5",
     "semantic_hash": ""
   },
   "src/preprocessor/tokenTypes.js": {
@@ -195,8 +195,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1785190415.493552,
-    "ast_hash": "2b5277a22ebc00c066e66b79499fecf3",
+    "mtime": 1785191819.2311504,
+    "ast_hash": "0a81a922bdc2322b63cd2e6389fa01a8",
     "semantic_hash": ""
   },
   "FINDINGS.md": {
@@ -215,8 +215,8 @@
     "semantic_hash": ""
   },
   "src/parser/expr-assign.js": {
-    "mtime": 1784915389.5240624,
-    "ast_hash": "cafe959f959c7f565b1d58bbc47bf1c2",
+    "mtime": 1785191599.3218477,
+    "ast_hash": "ef06fcaafbd51728928e82261d901191",
     "semantic_hash": ""
   },
   "src/parser/expr-bitwise.js": {
@@ -335,8 +335,8 @@
     "semantic_hash": ""
   },
   "src/nanopass/expression-translator.js": {
-    "mtime": 1785186480.747651,
-    "ast_hash": "e5ec46648fe3dc5b89ddf561ab4ae788",
+    "mtime": 1785191599.321559,
+    "ast_hash": "131eb8d901423c6713f55eaf5ab7f885",
     "semantic_hash": ""
   },
   "src/nanopass/intrinsics.js": {
@@ -385,7 +385,7 @@
     "semantic_hash": ""
   },
   "src/preprocessor/lexer-core.js": {
-    "mtime": 1785186480.7487457,
+    "mtime": 1785191350.7221432,
     "ast_hash": "55e65daed1fdf7db8c93a56126aaea14",
     "semantic_hash": ""
   },
@@ -470,8 +470,8 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1785190408.4120572,
-    "ast_hash": "cdf8d46eeb61d9f229eba2d2ef2a6dd5",
+    "mtime": 1785191811.5264175,
+    "ast_hash": "af1c358fb674ac5bfa77fcb38d16a800",
     "semantic_hash": ""
   },
   "src/tests/linker.crt0.test.js": {
@@ -762,6 +762,11 @@
   "src/tests/stack_arg_return.test.js": {
     "mtime": 1785190267.9453888,
     "ast_hash": "6a1d9b1c4004849aa912a6605d135544",
+    "semantic_hash": ""
+  },
+  "src/tests/compound-assign.test.js": {
+    "mtime": 1785191489.4561713,
+    "ast_hash": "179b323e998967cd973810c135831614",
     "semantic_hash": ""
   }
 }

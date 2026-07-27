@@ -85,12 +85,10 @@
   "83": "stdint.h",
   "84": "StringLiteralCollector",
   "85": "ConstantEvaluator",
-  "86": "Lexer",
   "87": "calling_convention_codegen.test.js",
   "88": "IOHandler",
   "89": "WatchManager",
   "90": "simulator.cpu.test.js",
   "91": "LoadAddrInstruction",
-  "95": "qualifiers.test.js",
-  "96": "preprocessor.test.js"
+  "95": "qualifiers.test.js"
 }

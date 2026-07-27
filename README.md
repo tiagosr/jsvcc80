@@ -16,12 +16,11 @@ See [CHANGELOG.md](CHANGELOG.md)
 - Nothing at the moment
 
 ### 🔜 Next Steps
-1. Implement a disassembler for object files, and flat binaries with a settable address base
-2. Implement an object file viewer
-3. Add character string operations to the C standard library (`sprintf`, `sscanf`, `strlen`, `strtoi`, etc.)
-4. Add file stream abstractions to the C standard library (`FILE`, `putc`, `getc`, `fprintf`, `fscanf`, etc.)
-5. Implement symbol map compiling and exporting for debugging
-6. Implement `unsigned:n` bit fields
+1. Add character string operations to the C standard library (`sprintf`, `sscanf`, `strlen`, `strtoi`, etc.)
+2. Add file stream abstractions to the C standard library (`FILE`, `putc`, `getc`, `fprintf`, `fscanf`, etc.)
+3. Implement symbol map compiling and exporting for debugging
+4. Implement `unsigned:n` bit fields
+5. Implement object file viewer
 
 
 ### 📔 Backlog (issues identified during implementation for later priorization)

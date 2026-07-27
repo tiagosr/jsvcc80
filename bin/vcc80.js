@@ -80,6 +80,17 @@ function parseArgs() {
     help: 'Stack pointer top address (default: 0xFFFF)'
   });
 
+  parser.add_argument('--disassemble', {
+    action: 'store_true',
+    dest: 'disassemble',
+    help: 'Disassemble object file or binary'
+  });
+
+  parser.add_argument('--base', {
+    dest: 'baseAddress',
+    help: 'Base address for disassembly (default: $0000)'
+  });
+
   parser.add_argument('-v', '--version', {
     action: 'version',
     version: 'vcc80 Z80 C Compiler v0.1.0',
@@ -97,6 +108,10 @@ function parseArgs() {
     ? (parsed.stackTop.startsWith('$') ? parseInt(parsed.stackTop, 16) : parseInt(parsed.stackTop, 10))
     : null;
 
+  const baseAddress = parsed.baseAddress
+    ? (parsed.baseAddress.startsWith('$') ? parseInt(parsed.baseAddress, 16) : parseInt(parsed.baseAddress, 10))
+    : null;
+
   return {
     files: parsed.files,
     output: parsed.output,
@@ -109,7 +124,9 @@ function parseArgs() {
     mapFormat: parsed.mapFormat,
     format: parsed.format,
     enableCrt0: parsed.enableCrt0,
-    stackTop: stackTop
+    stackTop: stackTop,
+    disassemble: parsed.disassemble,
+    baseAddress: baseAddress
   };
 }
 
@@ -177,6 +194,44 @@ async function main() {
   const { Compiler, CompilerOptions } = await import('../src/compiler.js');
 
   try {
+    if (options.disassemble) {
+      const file = options.files[0];
+      const ext = extname(file);
+
+      if (ext === '.o') {
+        const { loadObjectFile } = await import('../src/linker/objectfile_loader.js');
+        const { disassembleObjectFile } = await import('../src/disassembler/objectfile_disassembler.js');
+        const data = readFileSync(file);
+        const objectFile = loadObjectFile(file);
+        const result = disassembleObjectFile(objectFile, {
+          baseAddress: options.baseAddress ?? 0x8000,
+          verbose: false
+        });
+        if (options.output) {
+          writeFileSync(options.output, result.toString());
+          console.error(`Output written to ${options.output}`);
+        } else {
+          console.log(result.toString());
+        }
+      } else if (ext === '.bin') {
+        const { disassembleBinaryFromFile } = await import('../src/disassembler/binary_disassembler.js');
+        const result = disassembleBinaryFromFile(file, {
+          baseAddress: options.baseAddress ?? 0x0000,
+          verbose: false
+        });
+        if (options.output) {
+          writeFileSync(options.output, result.toString());
+          console.error(`Output written to ${options.output}`);
+        } else {
+          console.log(result.toString());
+        }
+      } else {
+        console.error('Error: --disassemble requires a .o or .bin file');
+        process.exit(1);
+      }
+      return;
+    }
+
     if (singleSourceCompile) {
       const file = options.files[0];
       const source = readFileSync(file, 'utf-8');

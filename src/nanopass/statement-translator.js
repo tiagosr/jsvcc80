@@ -58,18 +58,20 @@ export class StatementTranslator {
   }
 
   /**
-   * Translate a compound statement (block)
-   * @param {AST.CompoundNode} compound - Compound statement
-   * @returns {IL.BasicBlock[]} Basic blocks
-   */
-  translateCompound(compound) {
-    const blocks = [];
-    for (const stmt of compound.statements) {
-      const stmtBlocks = this.translateStatement(stmt);
-      blocks.push(...stmtBlocks);
-    }
-    return blocks.length ? blocks : [new IL.BasicBlock(this.context.state.label('block'), [])];
-  }
+    * Translate a compound statement (block)
+    * @param {AST.CompoundNode} compound - Compound statement
+    * @returns {IL.BasicBlock[]} Basic blocks
+    */
+   translateCompound(compound) {
+     this.context.state.pushScope();
+     const blocks = [];
+     for (const stmt of compound.statements) {
+       const stmtBlocks = this.translateStatement(stmt);
+       blocks.push(...stmtBlocks);
+     }
+     this.context.state.popScope();
+     return blocks.length ? blocks : [new IL.BasicBlock(this.context.state.label('block'), [])];
+   }
 
   /**
    * Translate a return statement

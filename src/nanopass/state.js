@@ -41,17 +41,32 @@ export class TranslationState {
   }
 
   /**
-   * Resets state for a new function translation
-   * @param {string} name - Function name
-   */
-  resetForFunction(name) {
-    this.currentFunction = name;
-    this.symbolTable = new IL.SymbolTable();
-    this.nextLabel = 0;
-    this.nextTemp = 0;
-    this.loopBreakLabel = null;
-    this.loopContinueLabel = null;
-  }
+    * Resets state for a new function translation
+    * @param {string} name - Function name
+    */
+   resetForFunction(name) {
+     this.currentFunction = name;
+     this.symbolTable = new IL.SymbolTable();
+     this.nextLabel = 0;
+     this.nextTemp = 0;
+     this.loopBreakLabel = null;
+     this.loopContinueLabel = null;
+   }
+
+  /**
+    * Push a new symbol table scope
+    * @returns {IL.SymbolTable} New child scope
+    */
+   pushScope() {
+     this.symbolTable = this.symbolTable.pushScope();
+   }
+
+  /**
+    * Pop the current symbol table scope, restoring parent
+    */
+   popScope() {
+     this.symbolTable = this.symbolTable.popScope();
+   }
 
   /**
    * Push new loop context (for nested loops)

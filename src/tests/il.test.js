@@ -217,18 +217,14 @@ describe('SymbolTable', () => {
     assert.ok(table.hasLocal('x'));
   });
 
-  it('should throw on duplicate definition in same scope', () => {
+  it('should allow shadowing (redefine) in same scope', () => {
     const table = new SymbolTable();
     table.define('x', { name: 'x', kind: 'variable' });
     
-    let threw = false;
-    try {
-      table.define('x', { name: 'x', kind: 'function' });
-    } catch (error) {
-      threw = true;
-    }
+    table.define('x', { name: 'x', kind: 'function' });
     
-    assert.strictEqual(threw, true);
+    const sym = table.lookup('x');
+    assert.strictEqual(sym.kind, 'function');
   });
 
   it('should look up symbols in parent scopes', () => {

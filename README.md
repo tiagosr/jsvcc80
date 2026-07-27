@@ -16,8 +16,19 @@ See [CHANGELOG.md](CHANGELOG.md)
 - Nothing at the moment
 
 ### 🔜 Next Steps
-1. Implement object file viewer
+1. Fix codegen for stack argument/return passing
+2. Fix support for missing compound statements `&=`, `|=`, `^=`, `<<=`, `>>=`.
+3. Implement single-precision IEEE 754 `float` with optionally-linkable soft-float `+`, `-`, `*`, `/`, `%` operations, `isnan`, `isinf`
+4. Implement nearest integer, absolute value, remainder `fabsf`, `frexpf`, `ldexpf`, `ceilf`, `floorf`, `modff`
+5. Fix `typedef unsigned int newType` parsing
+6. Implement soft-float trigonometric operations (`sinf`, `cosf`, `tanf`, `cotf`, `asinf`, `acosf`, `atanf`, `atan2f`)
+7. Implement soft-float exponential operations (`expf`, `powf`, `logf`, `log10f`, `sqrtf`)
+8. Implement object file viewer (like binutils' `objdump`)
+9. Add line:column information for tokens to give proper error/debugging location information
+10. Implement stack access in compiled code
 
 
 ### 📔 Backlog (issues identified during implementation for later priorization)
-- Fix `typedef unsigned int newType` parsing
+- Change `FILE` to use callbacks for abstraction, which the (per file descriptor: read/write character, seek/get position (if stream supports))
+- Fix long files issue?
+- Fix deep call nesting compilation failure

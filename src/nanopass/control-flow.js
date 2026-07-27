@@ -39,208 +39,224 @@ export class ControlFlowTranslator {
   }
 
   /**
-   * Translate an if statement
-   * @param {AST.ControlFlowNode} ifNode - If statement
-   * @returns {IL.BasicBlock[]} Basic blocks
-   */
-  translateIf(ifNode) {
-    const condResult = this.expressionTranslator.translateExpression(ifNode.condition);
-    const elseLabel = this.context.state.label('else');
-    const endLabel = this.context.state.label('endif');
+    * Translate an if statement
+    * @param {AST.ControlFlowNode} ifNode - If statement
+    * @returns {IL.BasicBlock[]} Basic blocks
+    */
+   translateIf(ifNode) {
+     const condResult = this.expressionTranslator.translateExpression(ifNode.condition);
+     const elseLabel = this.context.state.label('else');
+     const endLabel = this.context.state.label('endif');
 
-    const testBlock = condResult.blocks[condResult.blocks.length - 1];
-    testBlock.add(new IL.JumpIfInstruction('eq', condResult.result, elseLabel));
+     const testBlock = condResult.blocks[condResult.blocks.length - 1];
+     testBlock.add(new IL.JumpIfInstruction('eq', condResult.result, elseLabel));
 
-    const thenBlocks = this.statementTranslator.translateStatement(ifNode.body);
+     this.context.state.pushScope();
+     const thenBlocks = this.statementTranslator.translateStatement(ifNode.body);
+     this.context.state.popScope();
 
-    if (ifNode.elseBody) {
-      thenBlocks.push(new IL.BasicBlock(this.context.state.label('jmp'), [
-        new IL.JumpInstruction(endLabel)
-      ]));
-      thenBlocks.push(new IL.BasicBlock(elseLabel, []));
-      thenBlocks.push(...this.statementTranslator.translateStatement(ifNode.elseBody));
-      thenBlocks.push(new IL.BasicBlock(endLabel, []));
-    } else {
-      thenBlocks.push(new IL.BasicBlock(elseLabel, []));
-    }
+     if (ifNode.elseBody) {
+       thenBlocks.push(new IL.BasicBlock(this.context.state.label('jmp'), [
+         new IL.JumpInstruction(endLabel)
+       ]));
+       thenBlocks.push(new IL.BasicBlock(elseLabel, []));
+       this.context.state.pushScope();
+       thenBlocks.push(...this.statementTranslator.translateStatement(ifNode.elseBody));
+       this.context.state.popScope();
+       thenBlocks.push(new IL.BasicBlock(endLabel, []));
+     } else {
+       thenBlocks.push(new IL.BasicBlock(elseLabel, []));
+     }
 
-    return [...condResult.blocks, ...thenBlocks];
-  }
-
-  /**
-   * Translate a while loop
-   * @param {AST.ControlFlowNode} whileNode - While loop
-   * @returns {IL.BasicBlock[]} Basic blocks
-   */
-  translateWhile(whileNode) {
-    const breakLabel = this.context.state.label('break');
-    const continueLabel = this.context.state.label('cond');
-    const prevBreak = this.context.state.loopBreakLabel;
-    const prevContinue = this.context.state.loopContinueLabel;
-
-    this.context.state.pushLoop(breakLabel, continueLabel);
-
-    const blocks = [];
-    blocks.push(new IL.BasicBlock(continueLabel, []));
-    const condResult = this.expressionTranslator.translateExpression(whileNode.condition);
-    blocks.push(...condResult.blocks);
-
-    const testBlock = condResult.blocks[condResult.blocks.length - 1];
-    testBlock.add(new IL.JumpIfInstruction('eq', condResult.result, breakLabel));
-
-    const bodyBlocks = this.statementTranslator.translateStatement(whileNode.body);
-    blocks.push(...bodyBlocks);
-    blocks.push(new IL.BasicBlock(this.context.state.label('loop'), [
-      new IL.JumpInstruction(continueLabel)
-    ]));
-    blocks.push(new IL.BasicBlock(breakLabel, []));
-
-    this.context.state.popLoop(prevBreak, prevContinue);
-
-    return blocks;
-  }
+     return [...condResult.blocks, ...thenBlocks];
+   }
 
   /**
-   * Translate a do-while loop
-   * @param {AST.ControlFlowNode} doNode - Do-while loop
-   * @returns {IL.BasicBlock[]} Basic blocks
-   */
-  translateDoWhile(doNode) {
-    const breakLabel = this.context.state.label('break');
-    const continueLabel = this.context.state.label('body');
-    const condLabel = this.context.state.label('cond');
-    const prevBreak = this.context.state.loopBreakLabel;
-    const prevContinue = this.context.state.loopContinueLabel;
+    * Translate a while loop
+    * @param {AST.ControlFlowNode} whileNode - While loop
+    * @returns {IL.BasicBlock[]} Basic blocks
+    */
+   translateWhile(whileNode) {
+     const breakLabel = this.context.state.label('break');
+     const continueLabel = this.context.state.label('cond');
+     const prevBreak = this.context.state.loopBreakLabel;
+     const prevContinue = this.context.state.loopContinueLabel;
 
-    this.context.state.pushLoop(breakLabel, continueLabel);
+     this.context.state.pushLoop(breakLabel, continueLabel);
 
-    const blocks = [];
-    blocks.push(new IL.BasicBlock(continueLabel, []));
-    const bodyBlocks = this.statementTranslator.translateStatement(doNode.body);
-    blocks.push(...bodyBlocks);
-    blocks.push(new IL.BasicBlock(this.context.state.label('loop'), [
-      new IL.JumpInstruction(condLabel)
-    ]));
+     const blocks = [];
+     blocks.push(new IL.BasicBlock(continueLabel, []));
+     const condResult = this.expressionTranslator.translateExpression(whileNode.condition);
+     blocks.push(...condResult.blocks);
 
-    blocks.push(new IL.BasicBlock(condLabel, []));
-    const condResult = this.expressionTranslator.translateExpression(doNode.condition);
-    blocks.push(...condResult.blocks);
+     const testBlock = condResult.blocks[condResult.blocks.length - 1];
+     testBlock.add(new IL.JumpIfInstruction('eq', condResult.result, breakLabel));
 
-    const testBlock = condResult.blocks[condResult.blocks.length - 1];
-    testBlock.add(new IL.JumpIfInstruction('ne', condResult.result, continueLabel));
-    blocks.push(new IL.BasicBlock(breakLabel, []));
+     this.context.state.pushScope();
+     const bodyBlocks = this.statementTranslator.translateStatement(whileNode.body);
+     this.context.state.popScope();
+     blocks.push(...bodyBlocks);
+     blocks.push(new IL.BasicBlock(this.context.state.label('loop'), [
+       new IL.JumpInstruction(continueLabel)
+     ]));
+     blocks.push(new IL.BasicBlock(breakLabel, []));
 
-    this.context.state.popLoop(prevBreak, prevContinue);
+     this.context.state.popLoop(prevBreak, prevContinue);
 
-    return blocks;
-  }
-
-  /**
-   * Translate a for loop
-   * @param {AST.ControlFlowNode} forNode - For loop
-   * @returns {IL.BasicBlock[]} Basic blocks
-   */
-  translateFor(forNode) {
-    const breakLabel = this.context.state.label('break');
-    const continueLabel = this.context.state.label('inc');
-    const condLabel = this.context.state.label('cond');
-    const bodyLabel = this.context.state.label('body');
-    const prevBreak = this.context.state.loopBreakLabel;
-    const prevContinue = this.context.state.loopContinueLabel;
-
-    this.context.state.pushLoop(breakLabel, continueLabel);
-
-    const blocks = [];
-
-    if (forNode.init) {
-      if (forNode.init instanceof AST.DeclNode) {
-        blocks.push(...this.statementTranslator.translateDeclStmt(forNode.init));
-      } else {
-        const initResult = this.expressionTranslator.translateExpression(forNode.init);
-        blocks.push(...initResult.blocks);
-      }
-    }
-
-    blocks.push(new IL.BasicBlock(condLabel, []));
-    if (forNode.condition) {
-      const condResult = this.expressionTranslator.translateExpression(forNode.condition);
-      blocks.push(...condResult.blocks);
-      const testBlock = condResult.blocks[condResult.blocks.length - 1];
-      testBlock.add(new IL.JumpIfInstruction('eq', condResult.result, breakLabel));
-    }
-
-    blocks.push(new IL.BasicBlock(bodyLabel, []));
-    const bodyBlocks = this.statementTranslator.translateStatement(forNode.body);
-    blocks.push(...bodyBlocks);
-
-    blocks.push(new IL.BasicBlock(continueLabel, []));
-    if (forNode.increment) {
-      const incResult = this.expressionTranslator.translateExpression(forNode.increment);
-      blocks.push(...incResult.blocks);
-    }
-    blocks.push(new IL.BasicBlock(this.context.state.label('loop'), [
-      new IL.JumpInstruction(condLabel)
-    ]));
-    blocks.push(new IL.BasicBlock(breakLabel, []));
-
-    this.context.state.popLoop(prevBreak, prevContinue);
-
-    return blocks;
-  }
+     return blocks;
+   }
 
   /**
-   * Translate a switch statement
-   * @param {AST.SwitchNode} switchNode - Switch statement
-   * @returns {IL.BasicBlock[]} Basic blocks
-   */
-  translateSwitch(switchNode) {
-    const endLabel = this.context.state.label('endswitch');
-    const prevBreak = this.context.state.loopBreakLabel;
-    this.context.state.pushLoop(endLabel, endLabel);
+    * Translate a do-while loop
+    * @param {AST.ControlFlowNode} doNode - Do-while loop
+    * @returns {IL.BasicBlock[]} Basic blocks
+    */
+   translateDoWhile(doNode) {
+     const breakLabel = this.context.state.label('break');
+     const continueLabel = this.context.state.label('body');
+     const condLabel = this.context.state.label('cond');
+     const prevBreak = this.context.state.loopBreakLabel;
+     const prevContinue = this.context.state.loopContinueLabel;
 
-    const blocks = [];
-    const condResult = this.expressionTranslator.translateExpression(switchNode.expression);
-    blocks.push(...condResult.blocks);
-    const switchValue = condResult.result;
+     this.context.state.pushLoop(breakLabel, continueLabel);
 
-    const caseLabels = [];
-    for (const clause of switchNode.cases) {
-      caseLabels.push(this.context.state.label('case'));
-    }
+     const blocks = [];
+     blocks.push(new IL.BasicBlock(continueLabel, []));
+     this.context.state.pushScope();
+     const bodyBlocks = this.statementTranslator.translateStatement(doNode.body);
+     this.context.state.popScope();
+     blocks.push(...bodyBlocks);
+     blocks.push(new IL.BasicBlock(this.context.state.label('loop'), [
+       new IL.JumpInstruction(condLabel)
+     ]));
 
-    if (switchNode.defaultClause) {
-      caseLabels.push(this.context.state.label('default'));
-    }
+     blocks.push(new IL.BasicBlock(condLabel, []));
+     const condResult = this.expressionTranslator.translateExpression(doNode.condition);
+     blocks.push(...condResult.blocks);
 
-    const defaultLabel = caseLabels[caseLabels.length - 1] || endLabel;
+     const testBlock = condResult.blocks[condResult.blocks.length - 1];
+     testBlock.add(new IL.JumpIfInstruction('ne', condResult.result, continueLabel));
+     blocks.push(new IL.BasicBlock(breakLabel, []));
 
-    for (let i = 0; i < switchNode.cases.length; i++) {
-      const clause = switchNode.cases[i];
-      const caseLabel = caseLabels[i];
+     this.context.state.popLoop(prevBreak, prevContinue);
 
-      const cmpBlock = new IL.BasicBlock(this.context.state.label('cmp'));
-      const temp = this.context.state.temp();
-      cmpBlock.add(new IL.LoadInstruction(temp, clause.value));
-      cmpBlock.add(new IL.BinaryOpInstruction(temp, 'eq', switchValue, temp));
-      cmpBlock.add(new IL.JumpIfInstruction('ne', temp, caseLabels[i + 1] || defaultLabel));
-      blocks.push(cmpBlock);
+     return blocks;
+   }
 
-      blocks.push(new IL.BasicBlock(caseLabel, []));
-      for (const stmt of clause.statements) {
-        blocks.push(...this.statementTranslator.translateStatement(stmt));
-      }
-    }
+  /**
+    * Translate a for loop
+    * @param {AST.ControlFlowNode} forNode - For loop
+    * @returns {IL.BasicBlock[]} Basic blocks
+    */
+   translateFor(forNode) {
+     const breakLabel = this.context.state.label('break');
+     const continueLabel = this.context.state.label('inc');
+     const condLabel = this.context.state.label('cond');
+     const bodyLabel = this.context.state.label('body');
+     const prevBreak = this.context.state.loopBreakLabel;
+     const prevContinue = this.context.state.loopContinueLabel;
 
-    if (switchNode.defaultClause) {
-      blocks.push(new IL.BasicBlock(defaultLabel, []));
-      blocks.push(...this.statementTranslator.translateStatement(switchNode.defaultClause));
-    }
+     this.context.state.pushLoop(breakLabel, continueLabel);
 
-    blocks.push(new IL.BasicBlock(endLabel, []));
-    this.context.state.popLoop(prevBreak, null);
+     const blocks = [];
 
-    return blocks;
-  }
+     if (forNode.init) {
+       this.context.state.pushScope();
+       if (forNode.init instanceof AST.DeclNode) {
+         blocks.push(...this.statementTranslator.translateDeclStmt(forNode.init));
+       } else {
+         const initResult = this.expressionTranslator.translateExpression(forNode.init);
+         blocks.push(...initResult.blocks);
+       }
+       this.context.state.popScope();
+     }
+
+     blocks.push(new IL.BasicBlock(condLabel, []));
+     if (forNode.condition) {
+       const condResult = this.expressionTranslator.translateExpression(forNode.condition);
+       blocks.push(...condResult.blocks);
+       const testBlock = condResult.blocks[condResult.blocks.length - 1];
+       testBlock.add(new IL.JumpIfInstruction('eq', condResult.result, breakLabel));
+     }
+
+     blocks.push(new IL.BasicBlock(bodyLabel, []));
+     this.context.state.pushScope();
+     const bodyBlocks = this.statementTranslator.translateStatement(forNode.body);
+     this.context.state.popScope();
+     blocks.push(...bodyBlocks);
+
+     blocks.push(new IL.BasicBlock(continueLabel, []));
+     if (forNode.increment) {
+       const incResult = this.expressionTranslator.translateExpression(forNode.increment);
+       blocks.push(...incResult.blocks);
+     }
+     blocks.push(new IL.BasicBlock(this.context.state.label('loop'), [
+       new IL.JumpInstruction(condLabel)
+     ]));
+     blocks.push(new IL.BasicBlock(breakLabel, []));
+
+     this.context.state.popLoop(prevBreak, prevContinue);
+
+     return blocks;
+   }
+
+  /**
+    * Translate a switch statement
+    * @param {AST.SwitchNode} switchNode - Switch statement
+    * @returns {IL.BasicBlock[]} Basic blocks
+    */
+   translateSwitch(switchNode) {
+     const endLabel = this.context.state.label('endswitch');
+     const prevBreak = this.context.state.loopBreakLabel;
+     this.context.state.pushLoop(endLabel, endLabel);
+
+     const blocks = [];
+     const condResult = this.expressionTranslator.translateExpression(switchNode.expression);
+     blocks.push(...condResult.blocks);
+     const switchValue = condResult.result;
+
+     const caseLabels = [];
+     for (const clause of switchNode.cases) {
+       caseLabels.push(this.context.state.label('case'));
+     }
+
+     if (switchNode.defaultClause) {
+       caseLabels.push(this.context.state.label('default'));
+     }
+
+     const defaultLabel = caseLabels[caseLabels.length - 1] || endLabel;
+
+     for (let i = 0; i < switchNode.cases.length; i++) {
+       const clause = switchNode.cases[i];
+       const caseLabel = caseLabels[i];
+
+       const cmpBlock = new IL.BasicBlock(this.context.state.label('cmp'));
+       const temp = this.context.state.temp();
+       cmpBlock.add(new IL.LoadInstruction(temp, clause.value));
+       cmpBlock.add(new IL.BinaryOpInstruction(temp, 'eq', switchValue, temp));
+       cmpBlock.add(new IL.JumpIfInstruction('ne', temp, caseLabels[i + 1] || defaultLabel));
+       blocks.push(cmpBlock);
+
+       blocks.push(new IL.BasicBlock(caseLabel, []));
+       this.context.state.pushScope();
+       for (const stmt of clause.statements) {
+         blocks.push(...this.statementTranslator.translateStatement(stmt));
+       }
+       this.context.state.popScope();
+     }
+
+     if (switchNode.defaultClause) {
+       blocks.push(new IL.BasicBlock(defaultLabel, []));
+       this.context.state.pushScope();
+       blocks.push(...this.statementTranslator.translateStatement(switchNode.defaultClause));
+       this.context.state.popScope();
+     }
+
+     blocks.push(new IL.BasicBlock(endLabel, []));
+     this.context.state.popLoop(prevBreak, null);
+
+     return blocks;
+   }
 
   /**
    * Translate a break or continue statement

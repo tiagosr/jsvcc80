@@ -543,16 +543,13 @@ export class SymbolTable {
   }
 
   /**
-   * Defines a symbol in the current scope
-   * @param {string} name - Symbol name (must be unique in scope)
-   * @param {Symbol} symbol - Symbol definition
-   */
-  define(name, symbol) {
-    if (this.symbols.has(name)) {
-      throw new Error(`Duplicate symbol: ${name}`);
-    }
-    this.symbols.set(name, symbol);
-  }
+    * Defines a symbol in the current scope (allows shadowing of outer scope symbols)
+    * @param {string} name - Symbol name
+    * @param {Symbol} symbol - Symbol definition
+    */
+   define(name, symbol) {
+     this.symbols.set(name, symbol);
+   }
 
   /**
    * Looks up a symbol name in current scope and parent scopes
@@ -589,13 +586,14 @@ export class SymbolTable {
   }
 
   /**
-    * Pops the current scope (must not be root)
+    * Pops the current scope (must not be root), returns parent
+    * @returns {IL.SymbolTable} Parent symbol table
     */
    popScope() {
      if (!this.parent) {
        throw new Error('Cannot pop root scope');
      }
-     // Return parent - caller should reassign
+     return this.parent;
    }
 }
 

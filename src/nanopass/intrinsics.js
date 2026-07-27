@@ -43,6 +43,13 @@ const IntrinsicMap = {
   '__ferror': { opcode: 'FERROR', argCount: 1 },
   '__fopen': { opcode: 'FOPEN', argCount: 2 },
   '__fclose': { opcode: 'FCLOSE', argCount: 1 },
+  '__serial_open': { opcode: 'SERIAL_OPEN', argCount: 1 },
+  '__serial_close': { opcode: 'SERIAL_CLOSE', argCount: 1 },
+  '__serial_read': { opcode: 'SERIAL_READ', argCount: 1 },
+  '__serial_write': { opcode: 'SERIAL_WRITE', argCount: 2 },
+  '__serial_available': { opcode: 'SERIAL_AVAILABLE', argCount: 1 },
+  '__terminal_open': { opcode: 'TERMINAL_OPEN', argCount: 0 },
+  '__terminal_close': { opcode: 'TERMINAL_CLOSE', argCount: 1 },
 };
 
 /**

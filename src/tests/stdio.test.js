@@ -16,55 +16,55 @@ describe('Stdio Intrinsics - FILE Struct Type', () => {
   it('should have correct FILE struct size', () => {
     const registry = new TypeRegistry();
     const fileDef = registry.structRegistry.get('FILE');
-    assert.strictEqual(fileDef.size, 8, 'FILE struct should be 8 bytes');
+    assert.strictEqual(fileDef.size, 12, 'FILE struct should be 12 bytes');
   });
 
   it('should have correct FILE struct field offsets', () => {
     const registry = new TypeRegistry();
     const fileDef = registry.structRegistry.get('FILE');
-    assert.strictEqual(fileDef.fieldOffsets.get('buffer'), 0, 'buffer offset should be 0');
-    assert.strictEqual(fileDef.fieldOffsets.get('bufSize'), 2, 'bufSize offset should be 2');
-    assert.strictEqual(fileDef.fieldOffsets.get('bufPos'), 4, 'bufPos offset should be 4');
-    assert.strictEqual(fileDef.fieldOffsets.get('flags'), 6, 'flags offset should be 6');
+    assert.strictEqual(fileDef.fieldOffsets.get('buffer'), 6, 'buffer offset should be 6');
+    assert.strictEqual(fileDef.fieldOffsets.get('bufSize'), 8, 'bufSize offset should be 8');
+    assert.strictEqual(fileDef.fieldOffsets.get('bufPos'), 10, 'bufPos offset should be 10');
+    assert.strictEqual(fileDef.fieldOffsets.get('flags'), 1, 'flags offset should be 1');
   });
 
   it('should have correct FILE struct field count', () => {
     const registry = new TypeRegistry();
     const fileDef = registry.structRegistry.get('FILE');
-    assert.strictEqual(fileDef.fields.length, 4, 'FILE struct should have 4 fields');
+    assert.strictEqual(fileDef.fields.length, 7, 'FILE struct should have 7 fields');
   });
 
   it('should have correct FILE struct field names', () => {
     const registry = new TypeRegistry();
     const fileDef = registry.structRegistry.get('FILE');
     const fieldNames = fileDef.fields.map(f => f.name.name);
-    assert.deepStrictEqual(fieldNames, ['buffer', 'bufSize', 'bufPos', 'flags']);
+    assert.deepStrictEqual(fieldNames, ['streamType', 'flags', 'port', 'device', 'buffer', 'bufSize', 'bufPos']);
   });
 });
 
-describe('Stdio Intrinsics - AST to IR', () => {
-  function compile(source) {
-    const lexer = new Lexer(source);
-    const tokens = lexer.tokenize();
-    const parser = new CPegParser();
-    const ast = parser.parse(tokens);
-    const translator = new AstToIr();
-    return translator.translate(ast);
-  }
+function compile(source) {
+  const lexer = new Lexer(source);
+  const tokens = lexer.tokenize();
+  const parser = new CPegParser();
+  const ast = parser.parse(tokens);
+  const translator = new AstToIr();
+  return translator.translate(ast);
+}
 
-  function findIntrinsic(ir, expectedOpcode) {
-    for (const func of ir.functions) {
-      for (const block of func.blocks) {
-        for (const instr of block.instructions) {
-          if (instr.opcode === 'INTRINSIC' && instr.operands[0] === expectedOpcode) {
-            return instr;
-          }
+function findIntrinsic(ir, expectedOpcode) {
+  for (const func of ir.functions) {
+    for (const block of func.blocks) {
+      for (const instr of block.instructions) {
+        if (instr.opcode === 'INTRINSIC' && instr.operands[0] === expectedOpcode) {
+          return instr;
         }
       }
     }
-    return null;
   }
+  return null;
+}
 
+describe('Stdio Intrinsics - AST to IR', () => {
   it('should translate __fputc(char, stream) to FPUTC intrinsic', () => {
     const ir = compile(`
       int main() {
@@ -252,18 +252,18 @@ describe('Stdio Intrinsics - AST to IR', () => {
   });
 });
 
-describe('Stdio Intrinsics - Z80 Codegen', () => {
-  function compileToAssembly(source) {
-    const lexer = new Lexer(source);
-    const tokens = lexer.tokenize();
-    const parser = new CPegParser();
-    const ast = parser.parse(tokens);
-    const translator = new AstToIr();
-    const ir = translator.translate(ast);
-    const codegen = new Z80Codegen();
-    return codegen.generate(ir);
-  }
+function compileToAssembly(source) {
+  const lexer = new Lexer(source);
+  const tokens = lexer.tokenize();
+  const parser = new CPegParser();
+  const ast = parser.parse(tokens);
+  const translator = new AstToIr();
+  const ir = translator.translate(ast);
+  const codegen = new Z80Codegen();
+  return codegen.generate(ir);
+}
 
+describe('Stdio Intrinsics - Z80 Codegen', () => {
   it('should generate fputc write sequence', () => {
     const asm = compileToAssembly(`
       int main() {
@@ -511,5 +511,401 @@ describe('Stdio Intrinsics - IntrinsicMap', () => {
     const map = IntrinsicHandler.getIntrinsicMap();
     assert.ok(map['__fputc'], '__fputc should be accessible via getIntrinsicMap');
     assert.ok(map['__fopen'], '__fopen should be accessible via getIntrinsicMap');
+  });
+});
+
+describe('OS Abstraction - FILE Struct Fields', () => {
+  it('should register FILE struct with streamType field', () => {
+    const registry = new TypeRegistry();
+    const fileDef = registry.structRegistry.get('FILE');
+    assert.strictEqual(fileDef.fields[0].name.name, 'streamType', 'first field should be streamType');
+  });
+
+  it('should register FILE struct with port field', () => {
+    const registry = new TypeRegistry();
+    const fileDef = registry.structRegistry.get('FILE');
+    assert.strictEqual(fileDef.fields[2].name.name, 'port', 'port field should be at offset 2');
+  });
+
+  it('should register FILE struct with device field', () => {
+    const registry = new TypeRegistry();
+    const fileDef = registry.structRegistry.get('FILE');
+    assert.strictEqual(fileDef.fields[3].name.name, 'device', 'device field should be at offset 4');
+  });
+
+  it('should have correct FILE struct size (12 bytes)', () => {
+    const registry = new TypeRegistry();
+    const fileDef = registry.structRegistry.get('FILE');
+    assert.strictEqual(fileDef.size, 12, 'FILE struct should be 12 bytes');
+  });
+
+  it('should have correct FILE struct field count (7 fields)', () => {
+    const registry = new TypeRegistry();
+    const fileDef = registry.structRegistry.get('FILE');
+    assert.strictEqual(fileDef.fields.length, 7, 'FILE struct should have 7 fields');
+  });
+
+  it('should have correct FILE struct field names', () => {
+    const registry = new TypeRegistry();
+    const fileDef = registry.structRegistry.get('FILE');
+    const fieldNames = fileDef.fields.map(f => f.name.name);
+    assert.deepStrictEqual(fieldNames, ['streamType', 'flags', 'port', 'device', 'buffer', 'bufSize', 'bufPos']);
+  });
+
+  it('should have correct FILE struct field offsets', () => {
+    const registry = new TypeRegistry();
+    const fileDef = registry.structRegistry.get('FILE');
+    assert.strictEqual(fileDef.fieldOffsets.get('streamType'), 0, 'streamType offset should be 0');
+    assert.strictEqual(fileDef.fieldOffsets.get('flags'), 1, 'flags offset should be 1');
+    assert.strictEqual(fileDef.fieldOffsets.get('port'), 2, 'port offset should be 2');
+    assert.strictEqual(fileDef.fieldOffsets.get('device'), 4, 'device offset should be 4');
+    assert.strictEqual(fileDef.fieldOffsets.get('buffer'), 6, 'buffer offset should be 6');
+    assert.strictEqual(fileDef.fieldOffsets.get('bufSize'), 8, 'bufSize offset should be 8');
+    assert.strictEqual(fileDef.fieldOffsets.get('bufPos'), 10, 'bufPos offset should be 10');
+  });
+});
+
+describe('OS Abstraction - Serial Intrinsics', () => {
+  it('should have __serial_open in IntrinsicMap', () => {
+    assert.ok(IntrinsicMap['__serial_open'], '__serial_open should be in IntrinsicMap');
+    assert.strictEqual(IntrinsicMap['__serial_open'].argCount, 1, '__serial_open should have 1 arg');
+    assert.strictEqual(IntrinsicMap['__serial_open'].opcode, 'SERIAL_OPEN');
+  });
+
+  it('should have __serial_close in IntrinsicMap', () => {
+    assert.ok(IntrinsicMap['__serial_close'], '__serial_close should be in IntrinsicMap');
+    assert.strictEqual(IntrinsicMap['__serial_close'].argCount, 1, '__serial_close should have 1 arg');
+    assert.strictEqual(IntrinsicMap['__serial_close'].opcode, 'SERIAL_CLOSE');
+  });
+
+  it('should have __serial_read in IntrinsicMap', () => {
+    assert.ok(IntrinsicMap['__serial_read'], '__serial_read should be in IntrinsicMap');
+    assert.strictEqual(IntrinsicMap['__serial_read'].argCount, 1, '__serial_read should have 1 arg');
+    assert.strictEqual(IntrinsicMap['__serial_read'].opcode, 'SERIAL_READ');
+  });
+
+  it('should have __serial_write in IntrinsicMap', () => {
+    assert.ok(IntrinsicMap['__serial_write'], '__serial_write should be in IntrinsicMap');
+    assert.strictEqual(IntrinsicMap['__serial_write'].argCount, 2, '__serial_write should have 2 args');
+    assert.strictEqual(IntrinsicMap['__serial_write'].opcode, 'SERIAL_WRITE');
+  });
+
+  it('should have __serial_available in IntrinsicMap', () => {
+    assert.ok(IntrinsicMap['__serial_available'], '__serial_available should be in IntrinsicMap');
+    assert.strictEqual(IntrinsicMap['__serial_available'].argCount, 1, '__serial_available should have 1 arg');
+    assert.strictEqual(IntrinsicMap['__serial_available'].opcode, 'SERIAL_AVAILABLE');
+  });
+
+  it('should have __terminal_open in IntrinsicMap', () => {
+    assert.ok(IntrinsicMap['__terminal_open'], '__terminal_open should be in IntrinsicMap');
+    assert.strictEqual(IntrinsicMap['__terminal_open'].argCount, 0, '__terminal_open should have 0 args');
+    assert.strictEqual(IntrinsicMap['__terminal_open'].opcode, 'TERMINAL_OPEN');
+  });
+
+  it('should have __terminal_close in IntrinsicMap', () => {
+    assert.ok(IntrinsicMap['__terminal_close'], '__terminal_close should be in IntrinsicMap');
+    assert.strictEqual(IntrinsicMap['__terminal_close'].argCount, 1, '__terminal_close should have 1 arg');
+    assert.strictEqual(IntrinsicMap['__terminal_close'].opcode, 'TERMINAL_CLOSE');
+  });
+
+  it('should translate __serial_open(port) to SERIAL_OPEN intrinsic', () => {
+    const ir = compile(`
+      int main() {
+        FILE *serial = __serial_open(0x60);
+        return 0;
+      }
+    `);
+    const instr = findIntrinsic(ir, 'SERIAL_OPEN');
+    assert.ok(instr !== null, 'SERIAL_OPEN intrinsic should be present');
+    assert.strictEqual(instr.operands.length, 2, 'SERIAL_OPEN should have port operand');
+  });
+
+  it('should translate __serial_close(stream) to SERIAL_CLOSE intrinsic', () => {
+    const ir = compile(`
+      int main() {
+        FILE *serial;
+        __serial_close(serial);
+        return 0;
+      }
+    `);
+    const instr = findIntrinsic(ir, 'SERIAL_CLOSE');
+    assert.ok(instr !== null, 'SERIAL_CLOSE intrinsic should be present');
+    assert.strictEqual(instr.operands.length, 2, 'SERIAL_CLOSE should have file pointer operand');
+  });
+
+  it('should translate __serial_read(stream) to SERIAL_READ intrinsic', () => {
+    const ir = compile(`
+      int main() {
+        FILE *serial;
+        int c = __serial_read(serial);
+        return c;
+      }
+    `);
+    const instr = findIntrinsic(ir, 'SERIAL_READ');
+    assert.ok(instr !== null, 'SERIAL_READ intrinsic should be present');
+    assert.strictEqual(instr.operands.length, 2, 'SERIAL_READ should have file pointer operand');
+  });
+
+  it('should translate __serial_write(char, stream) to SERIAL_WRITE intrinsic', () => {
+    const ir = compile(`
+      int main() {
+        FILE *serial;
+        __serial_write(65, serial);
+        return 0;
+      }
+    `);
+    const instr = findIntrinsic(ir, 'SERIAL_WRITE');
+    assert.ok(instr !== null, 'SERIAL_WRITE intrinsic should be present');
+    assert.strictEqual(instr.operands.length, 3, 'SERIAL_WRITE should have char and file pointer operands');
+  });
+
+  it('should translate __serial_available(stream) to SERIAL_AVAILABLE intrinsic', () => {
+    const ir = compile(`
+      int main() {
+        FILE *serial;
+        int avail = __serial_available(serial);
+        return avail;
+      }
+    `);
+    const instr = findIntrinsic(ir, 'SERIAL_AVAILABLE');
+    assert.ok(instr !== null, 'SERIAL_AVAILABLE intrinsic should be present');
+    assert.strictEqual(instr.operands.length, 2, 'SERIAL_AVAILABLE should have file pointer operand');
+  });
+
+  it('should translate __terminal_open to TERMINAL_OPEN intrinsic', () => {
+    const ir = compile(`
+      int main() {
+        FILE *term = __terminal_open();
+        return 0;
+      }
+    `);
+    const instr = findIntrinsic(ir, 'TERMINAL_OPEN');
+    assert.ok(instr !== null, 'TERMINAL_OPEN intrinsic should be present');
+  });
+
+  it('should translate __terminal_close(stream) to TERMINAL_CLOSE intrinsic', () => {
+    const ir = compile(`
+      int main() {
+        FILE *term;
+        __terminal_close(term);
+        return 0;
+      }
+    `);
+    const instr = findIntrinsic(ir, 'TERMINAL_CLOSE');
+    assert.ok(instr !== null, 'TERMINAL_CLOSE intrinsic should be present');
+    assert.strictEqual(instr.operands.length, 2, 'TERMINAL_CLOSE should have file pointer operand');
+  });
+
+  it('should compile serial read/write loop', () => {
+    const ir = compile(`
+      int main() {
+        FILE *serial = __serial_open(0x60);
+        int c;
+        while ((c = __serial_read(serial)) != 255) {
+          __serial_write(c, serial);
+        }
+        __serial_close(serial);
+        return 0;
+      }
+    `);
+    const serialOpenInstr = findIntrinsic(ir, 'SERIAL_OPEN');
+    const serialReadInstr = findIntrinsic(ir, 'SERIAL_READ');
+    const serialWriteInstr = findIntrinsic(ir, 'SERIAL_WRITE');
+    const serialCloseInstr = findIntrinsic(ir, 'SERIAL_CLOSE');
+    assert.ok(serialOpenInstr !== null, 'SERIAL_OPEN should be present');
+    assert.ok(serialReadInstr !== null, 'SERIAL_READ should be present');
+    assert.ok(serialWriteInstr !== null, 'SERIAL_WRITE should be present');
+    assert.ok(serialCloseInstr !== null, 'SERIAL_CLOSE should be present');
+  });
+
+  it('should compile serial available check', () => {
+    const ir = compile(`
+      int main() {
+        FILE *serial = __serial_open(0x60);
+        while (!__serial_available(serial)) {
+          // wait
+        }
+        __serial_close(serial);
+        return 0;
+      }
+    `);
+    const serialOpenInstr = findIntrinsic(ir, 'SERIAL_OPEN');
+    const serialAvailableInstr = findIntrinsic(ir, 'SERIAL_AVAILABLE');
+    const serialCloseInstr = findIntrinsic(ir, 'SERIAL_CLOSE');
+    assert.ok(serialOpenInstr !== null, 'SERIAL_OPEN should be present');
+    assert.ok(serialAvailableInstr !== null, 'SERIAL_AVAILABLE should be present');
+    assert.ok(serialCloseInstr !== null, 'SERIAL_CLOSE should be present');
+  });
+});
+
+describe('OS Abstraction - Z80 Codegen', () => {
+  it('should generate serial_open sequence', () => {
+    const asm = compileToAssembly(`
+      int main() {
+        FILE *serial = __serial_open(0x60);
+        return 0;
+      }
+    `);
+    assert.ok(asm.includes('call serial_open'), 'Assembly should call serial_open');
+    assert.ok(asm.includes('ld (hl), 1'), 'Assembly should set streamType=1');
+  });
+
+  it('should generate serial_close sequence', () => {
+    const asm = compileToAssembly(`
+      int main() {
+        FILE *serial;
+        __serial_close(serial);
+        return 0;
+      }
+    `);
+    assert.ok(asm.includes('ld hl,'), 'Assembly should load file pointer');
+    assert.ok(asm.includes('xor a'), 'Assembly should return 0');
+  });
+
+  it('should generate serial_read sequence with IN instruction', () => {
+    const asm = compileToAssembly(`
+      int main() {
+        FILE *serial;
+        int c = __serial_read(serial);
+        return c;
+      }
+    `);
+    assert.ok(asm.includes('in a, (c)'), 'Assembly should use IN port instruction');
+  });
+
+  it('should generate serial_write sequence with OUT instruction', () => {
+    const asm = compileToAssembly(`
+      int main() {
+        FILE *serial;
+        __serial_write(65, serial);
+        return 0;
+      }
+    `);
+    assert.ok(asm.includes('out (c), a'), 'Assembly should use OUT port instruction');
+  });
+
+  it('should generate serial_available sequence', () => {
+    const asm = compileToAssembly(`
+      int main() {
+        FILE *serial;
+        int avail = __serial_available(serial);
+        return avail;
+      }
+    `);
+    assert.ok(asm.includes('in a, (c)'), 'Assembly should peek at port');
+    assert.ok(asm.includes('ld a, 1'), 'Assembly should return 1 for available');
+  });
+
+  it('should generate terminal_open sequence', () => {
+    const asm = compileToAssembly(`
+      int main() {
+        FILE *term = __terminal_open();
+        return 0;
+      }
+    `);
+    assert.ok(asm.includes('call terminal_open'), 'Assembly should call terminal_open');
+    assert.ok(asm.includes('ld (hl), 2'), 'Assembly should set streamType=2');
+  });
+
+  it('should generate terminal_close sequence', () => {
+    const asm = compileToAssembly(`
+      int main() {
+        FILE *term;
+        __terminal_close(term);
+        return 0;
+      }
+    `);
+    assert.ok(asm.includes('ld hl,'), 'Assembly should load file pointer');
+    assert.ok(asm.includes('xor a'), 'Assembly should return 0');
+  });
+
+  it('should compile complete serial communication program', () => {
+    const asm = compileToAssembly(`
+      int main() {
+        FILE *serial = __serial_open(0x60);
+        __serial_write(65, serial);
+        int c = __serial_read(serial);
+        __serial_close(serial);
+        return c;
+      }
+    `);
+    assert.ok(asm.includes('call serial_open'), 'Assembly should contain serial_open');
+    assert.ok(asm.includes('out (c), a'), 'Assembly should contain serial_write');
+    assert.ok(asm.includes('in a, (c)'), 'Assembly should contain serial_read');
+    assert.ok(asm.includes('call serial_close') || asm.includes('ld (hl), 0'), 'Assembly should contain serial_close');
+  });
+
+  it('should compile terminal echo program', () => {
+    const asm = compileToAssembly(`
+      int main() {
+        FILE *term = __terminal_open();
+        __serial_write(65, term);
+        __terminal_close(term);
+        return 0;
+      }
+    `);
+    assert.ok(asm.includes('call terminal_open'), 'Assembly should contain terminal_open');
+    assert.ok(asm.includes('out (c), a'), 'Assembly should contain write');
+  });
+});
+
+describe('OS Abstraction - IR Serialization', () => {
+  it('should serialize SERIAL_OPEN IntrinsicInstruction to JSON', () => {
+    const instr = new IL.IntrinsicInstruction('SERIAL_OPEN', ['t0']);
+    const json = instr.toJSON();
+    assert.strictEqual(json.opcode, 'INTRINSIC');
+    assert.deepStrictEqual(json.operands, ['SERIAL_OPEN', 't0']);
+  });
+
+  it('should serialize SERIAL_CLOSE IntrinsicInstruction to JSON', () => {
+    const instr = new IL.IntrinsicInstruction('SERIAL_CLOSE', ['t0']);
+    const json = instr.toJSON();
+    assert.strictEqual(json.opcode, 'INTRINSIC');
+    assert.deepStrictEqual(json.operands, ['SERIAL_CLOSE', 't0']);
+  });
+
+  it('should serialize SERIAL_READ IntrinsicInstruction to JSON', () => {
+    const instr = new IL.IntrinsicInstruction('SERIAL_READ', ['t0']);
+    const json = instr.toJSON();
+    assert.strictEqual(json.opcode, 'INTRINSIC');
+    assert.deepStrictEqual(json.operands, ['SERIAL_READ', 't0']);
+  });
+
+  it('should serialize SERIAL_WRITE IntrinsicInstruction to JSON', () => {
+    const instr = new IL.IntrinsicInstruction('SERIAL_WRITE', ['t0', 't1']);
+    const json = instr.toJSON();
+    assert.strictEqual(json.opcode, 'INTRINSIC');
+    assert.deepStrictEqual(json.operands, ['SERIAL_WRITE', 't0', 't1']);
+  });
+
+  it('should serialize SERIAL_AVAILABLE IntrinsicInstruction to JSON', () => {
+    const instr = new IL.IntrinsicInstruction('SERIAL_AVAILABLE', ['t0']);
+    const json = instr.toJSON();
+    assert.strictEqual(json.opcode, 'INTRINSIC');
+    assert.deepStrictEqual(json.operands, ['SERIAL_AVAILABLE', 't0']);
+  });
+
+  it('should serialize TERMINAL_OPEN IntrinsicInstruction to JSON', () => {
+    const instr = new IL.IntrinsicInstruction('TERMINAL_OPEN', []);
+    const json = instr.toJSON();
+    assert.strictEqual(json.opcode, 'INTRINSIC');
+    assert.deepStrictEqual(json.operands, ['TERMINAL_OPEN']);
+  });
+
+  it('should serialize TERMINAL_CLOSE IntrinsicInstruction to JSON', () => {
+    const instr = new IL.IntrinsicInstruction('TERMINAL_CLOSE', ['t0']);
+    const json = instr.toJSON();
+    assert.strictEqual(json.opcode, 'INTRINSIC');
+    assert.deepStrictEqual(json.operands, ['TERMINAL_CLOSE', 't0']);
+  });
+
+  it('should have correct string representation for SERIAL_OPEN', () => {
+    const instr = new IL.IntrinsicInstruction('SERIAL_OPEN', ['t0']);
+    assert.strictEqual(instr.toString(), 'INTRINSIC SERIAL_OPEN, t0');
+  });
+
+  it('should have correct string representation for SERIAL_WRITE', () => {
+    const instr = new IL.IntrinsicInstruction('SERIAL_WRITE', ['t0', 't1']);
+    assert.strictEqual(instr.toString(), 'INTRINSIC SERIAL_WRITE, t0, t1');
   });
 });

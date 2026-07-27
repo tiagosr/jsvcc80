@@ -19,9 +19,9 @@ Use this skill to analyze decisions about implementing on and around the Z80 pro
 | `L` | General purpose, lower byte of pair `HL` |
 | `A` | Main accumulator, general purpose, upper byte of pair `AF` |
 | `F` | Flags register, lower byte of pair `AF` |
-| `BC` | General purpose, register pair of `B` and `C` |
-| `DE` | General purpose, register pair of `D` and `E` |
-| `HL` | General purpose, register pair of `H` and `L` |
+| `BC` | General purpose, pair of `B` and `C` |
+| `DE` | General purpose, pair of `D` and `E` |
+| `HL` | General purpose, pair of `H` and `L` |
 | `SP` | Stack pointer |
 | `PC` | Program counter |
 | `IX` | Index register |

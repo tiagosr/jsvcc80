@@ -10,6 +10,32 @@ import { CallAndMemoryTranslator } from './call-memory.js';
 import { TypeQueryHandler } from './type-queries.js';
 
 /**
+ * Extracts calling convention from function attributes
+ * @param {AST.AttributeNode[]} attributes - Attribute nodes
+ * @returns {string} Calling convention or default
+ */
+function extractCallingConventionFromAttributes(attributes) {
+  if (!attributes || attributes.length === 0) {
+    return IL.CALLING_CONVENTION_DEFAULT;
+  }
+  for (const attr of attributes) {
+    if (attr.name === 'cdecl') {
+      return IL.CALLING_CONVENTION_CDECL;
+    }
+    if (attr.name === 'fastcall') {
+      return IL.CALLING_CONVENTION_FASTCALL;
+    }
+    if (attr.name === 'callee') {
+      return IL.CALLING_CONVENTION_CALLEE;
+    }
+    if (attr.name === 'new_sdcc') {
+      return IL.CALLING_CONVENTION_NEW_Sdcc;
+    }
+  }
+  return IL.CALLING_CONVENTION_DEFAULT;
+}
+
+/**
  * Composes all sub-handlers for AST-to-IR translation orchestration.
  * Manages the three-pass approach: collect typedefs, collect structs, translate.
  */
@@ -21,6 +47,7 @@ export class TranslationContext {
     this.typeRegistry = new TypeRegistry();
     this.stringCollector = new StringLiteralCollector();
     this.state = new TranslationState();
+    this.functionRegistry = new Map();
 
     this.expressionTranslator = null;
     this.statementTranslator = null;
@@ -81,6 +108,9 @@ export class TranslationContext {
       if (node instanceof AST.FunctionNode) {
         const funcIr = this.translateFunction(node);
         program.addFunction(funcIr);
+      } else if (node instanceof AST.AnnotatedDeclNode && node.declaration instanceof AST.FunctionNode) {
+        const funcIr = this.translateFunction(node.declaration, node.attributes);
+        program.addFunction(funcIr);
       } else if (node instanceof AST.DeclNode && node.kind !== 'typedef') {
         globals.push(this.translateDecl(node));
       }
@@ -99,47 +129,60 @@ export class TranslationContext {
   }
 
   /**
-   * Translate a function definition
-   * @param {AST.FunctionNode} func - Function AST node
-   * @returns {IL.FunctionIR} IR function
-   */
-  translateFunction(func) {
-    this.state.resetForFunction(func.name.name);
+    * Translate a function definition
+    * @param {AST.FunctionNode} func - Function AST node
+    * @param {AST.AttributeNode[]} [attributes] - Optional attributes for calling convention
+    * @returns {IL.FunctionIR} IR function
+    */
+   translateFunction(func, attributes) {
+     this.state.resetForFunction(func.name.name);
 
-    const resolvedReturn = this.typeRegistry.resolveType(func.returnType);
+     const resolvedReturn = this.typeRegistry.resolveType(func.returnType);
+     const callingConvention = extractCallingConventionFromAttributes(attributes);
 
-    for (const param of func.parameters) {
-      if (param.name) {
-        const resolvedParam = this.typeRegistry.resolveType(param.type);
-        const paramSymbol = {
-          name: param.name,
-          kind: 'variable',
-          type: resolvedParam.baseType,
-          offset: 0
-        };
-        // Track function pointer parameters
-        if (resolvedParam.isFunctionPointer) {
-          paramSymbol.isFunctionPointer = true;
-          paramSymbol.functionReturnType = resolvedParam.functionReturnType;
-          paramSymbol.functionParams = resolvedParam.functionParams;
-        }
-        this.state.symbolTable.define(param.name, paramSymbol);
-      }
-    }
+     for (const param of func.parameters) {
+       if (param.name) {
+         const resolvedParam = this.typeRegistry.resolveType(param.type);
+         const paramSymbol = {
+           name: param.name,
+           kind: 'variable',
+           type: resolvedParam.baseType,
+           offset: 0
+         };
+         // Track function pointer parameters
+         if (resolvedParam.isFunctionPointer) {
+           paramSymbol.isFunctionPointer = true;
+           paramSymbol.functionReturnType = resolvedParam.functionReturnType;
+           paramSymbol.functionParams = resolvedParam.functionParams;
+         }
+         this.state.symbolTable.define(param.name, paramSymbol);
+       }
+     }
 
-    const blocks = this.statementTranslator.translateStatement(func.body);
-    const funcIr = new IL.FunctionIR(
-      func.name.name,
-      blocks,
-      {
-        returnType: resolvedReturn.baseType,
-        parameters: func.parameters.filter(p => p.name && !p.isVariadic).map(p => p.name),
-        isVariadic: func.isVariadic
-      }
-    );
+     const blocks = this.statementTranslator.translateStatement(func.body);
+      const paramTypes = func.parameters.filter(p => p.name && !p.isVariadic).map(p => {
+        const resolved = this.typeRegistry.resolveType(p.type);
+        return { name: p.name, size: resolved.getSize(), baseType: resolved.baseType };
+      });
+      const funcIr = new IL.FunctionIR(
+        func.name.name,
+        blocks,
+        {
+          returnType: resolvedReturn.baseType,
+          parameters: func.parameters.filter(p => p.name && !p.isVariadic).map(p => p.name),
+          paramTypes,
+          isVariadic: func.isVariadic
+        },
+        callingConvention
+      );
 
-    return funcIr;
-  }
+      this.functionRegistry.set(func.name.name, {
+        callingConvention,
+        paramTypes
+      });
+
+      return funcIr;
+   }
 
   /**
    * Translate a global variable declaration
@@ -169,5 +212,20 @@ export class TranslationContext {
       type: resolved.baseType,
       initial: decl.init ? this.expressionTranslator.translateExpressionValue(decl.init) : null
     };
-  }
+   }
+
+  /**
+    * Looks up a function's calling convention from the function registry
+    * @param {string} funcName - Function name
+    * @returns {string} Calling convention or default
+    */
+    getFunctionCallingConvention(funcName) {
+      const info = this.functionRegistry.get(funcName);
+      return info?.callingConvention || IL.CALLING_CONVENTION_DEFAULT;
+    }
+
+    getFunctionParamTypes(funcName) {
+      const info = this.functionRegistry.get(funcName);
+      return info?.paramTypes || [];
+    }
 }

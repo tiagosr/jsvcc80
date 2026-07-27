@@ -1,7 +1,8 @@
 ### 🧪 Test Results
-- 818 passing tests
+- 853 passing tests
 
 ### ✅ Completed
+- **Function calling conventions** - `__attribute__(__cdecl__("name"))`, `__attribute__(__fastcall__))`, `__attribute__(__callee__))`, `__attribute__(__new_sdcc__))` parsing, IR metadata, Z80 codegen for cdecl (stack push, caller clears), fastcall (single arg on registers), callee (stack push, callee clears), new_sdcc (register spillover up to 2 args), 35 new tests
 - Preprocessor/lexer with pragma support (`#pragma once`, `#pragma pack`)
 - PEG parser combinator framework (seq, alt, many, some, opt, lit, any, pred, lazy, map)
 - AST node definitions for full C syntax

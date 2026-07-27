@@ -1,4 +1,13 @@
 /**
+ * Calling convention constants for function calls
+ */
+export const CALLING_CONVENTION_CDECL = 'cdecl';
+export const CALLING_CONVENTION_FASTCALL = 'fastcall';
+export const CALLING_CONVENTION_CALLEE = 'callee';
+export const CALLING_CONVENTION_NEW_Sdcc = 'new_sdcc';
+export const CALLING_CONVENTION_DEFAULT = CALLING_CONVENTION_CDECL;
+
+/**
  * Base class for all IL instructions
  */
 export class Instruction {
@@ -106,14 +115,16 @@ export class UnaryOpInstruction extends Instruction {
  */
 export class CallInstruction extends Instruction {
   /**
-   * Creates a call instruction
-   * @param {string} func - Function label or address
-   * @param {string[]} args - Arguments (registers or immediates)
-   * @returns {CallInstruction}
-   */
-  constructor(func, args = []) {
-    super('CALL', [func, ...args]);
-  }
+    * Creates a call instruction
+    * @param {string} func - Function label or address
+    * @param {string[]} args - Arguments (registers or immediates)
+    * @param {string} [callingConvention] - Calling convention for the call
+    * @returns {CallInstruction}
+    */
+   constructor(func, args = [], callingConvention = CALLING_CONVENTION_DEFAULT) {
+     super('CALL', [func, ...args]);
+     this.callingConvention = callingConvention;
+   }
 }
 
 /**
@@ -328,14 +339,16 @@ export class IndexedStoreInstruction extends Instruction {
  */
 export class CallIndirectInstruction extends Instruction {
   /**
-   * Creates a call indirect instruction
-   * @param {string} ptr - Address of the function pointer variable (holds pointer to function address)
-   * @param {string[]} args - Arguments (registers or immediates)
-   * @returns {CallIndirectInstruction}
-   */
-  constructor(ptr, args = []) {
-    super('CALL_INDIRECT', [ptr, ...args]);
-  }
+    * Creates a call indirect instruction
+    * @param {string} ptr - Address of the function pointer variable (holds pointer to function address)
+    * @param {string[]} args - Arguments (registers or immediates)
+    * @param {string} [callingConvention] - Calling convention for the indirect call
+    * @returns {CallIndirectInstruction}
+    */
+   constructor(ptr, args = [], callingConvention = CALLING_CONVENTION_DEFAULT) {
+     super('CALL_INDIRECT', [ptr, ...args]);
+     this.callingConvention = callingConvention;
+   }
 }
 
 /**
@@ -395,16 +408,18 @@ export class BasicBlock {
  */
 export class FunctionIR {
   /**
-   * Creates an IR function representation
-   * @param {string} name - Function name
-   * @param {BasicBlock[]} blocks - Basic blocks in the function
-   * @param {Object} [metadata] - Function metadata (return type, parameters, etc.)
-   */
-  constructor(name, blocks = [], metadata = {}) {
-    this.name = name;
-    this.blocks = blocks;
-    this.metadata = metadata;
-  }
+    * Creates an IR function representation
+    * @param {string} name - Function name
+    * @param {BasicBlock[]} blocks - Basic blocks in the function
+    * @param {Object} [metadata] - Function metadata (return type, parameters, etc.)
+    * @param {string} [callingConvention] - Calling convention ('cdecl', 'fastcall', 'callee', 'new_sdcc')
+    */
+   constructor(name, blocks = [], metadata = {}, callingConvention = CALLING_CONVENTION_DEFAULT) {
+     this.name = name;
+     this.blocks = blocks;
+     this.metadata = metadata;
+     this.callingConvention = callingConvention;
+   }
 
   /**
    * Adds a basic block to the function
@@ -437,16 +452,17 @@ export class FunctionIR {
   }
 
   /**
-   * Returns a JSON representation of the function
-   * @returns {Object}
-   */
-  toJSON() {
-    return {
-      name: this.name,
-      metadata: this.metadata,
-      blocks: this.blocks.map(b => b.toJSON())
-    };
-  }
+    * Returns a JSON representation of the function
+    * @returns {Object}
+    */
+   toJSON() {
+     return {
+       name: this.name,
+       metadata: this.metadata,
+       callingConvention: this.callingConvention,
+       blocks: this.blocks.map(b => b.toJSON())
+     };
+   }
 }
 
 /**
@@ -573,12 +589,26 @@ export class SymbolTable {
   }
 
   /**
-   * Pops the current scope (must not be root)
-   */
-  popScope() {
-    if (!this.parent) {
-      throw new Error('Cannot pop root scope');
-    }
-    // Return parent - caller should reassign
+    * Pops the current scope (must not be root)
+    */
+   popScope() {
+     if (!this.parent) {
+       throw new Error('Cannot pop root scope');
+     }
+     // Return parent - caller should reassign
+   }
+}
+
+/**
+ * Looks up a function's calling convention from a ProgramIR
+ * @param {IL.ProgramIR} program - Program IR to search
+ * @param {string} funcName - Function name to look up
+ * @returns {string} Calling convention or default if not found
+ */
+export function getFunctionCallingConvention(program, funcName) {
+  const func = program.getFunction(funcName);
+  if (func) {
+    return func.callingConvention;
   }
+  return CALLING_CONVENTION_DEFAULT;
 }

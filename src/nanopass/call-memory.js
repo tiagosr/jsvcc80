@@ -24,10 +24,10 @@ export class CallAndMemoryTranslator {
    * @param {AST.CallNode} call - Function call
    * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
    */
-  translateCall(call) {
+   translateCall(call) {
     const blocks = [];
     const callTarget = call.callee.name || call.callee;
-    const args = Array.isArray(call.args) ? call.args : [];
+    const args = call.args ? (Array.isArray(call.args) ? call.args : [call.args]) : [];
 
     if (IntrinsicMap[callTarget]) {
       return IntrinsicHandler.translateIntrinsic(callTarget, args, blocks,
@@ -36,6 +36,52 @@ export class CallAndMemoryTranslator {
         this.context.state.temp.bind(this.context.state));
     }
 
+    const callingConvention = this.context.getFunctionCallingConvention(callTarget);
+    const paramTypes = this.context.getFunctionParamTypes(callTarget);
+
+    // For new_sdcc, determine which args go in registers vs stack
+    if (callingConvention === IL.CALLING_CONVENTION_NEW_Sdcc) {
+      const argTypes = paramTypes.map(p => p?.size || 1);
+      const registerArgs = [];
+      const stackArgs = [];
+
+      for (let i = 0; i < args.length; i++) {
+        const argResult = this.expressionTranslator.translateExpression(args[i]);
+        blocks.push(...argResult.blocks);
+
+        if (i < 2) {
+          const regName = this.context.state.temp();
+          const size = argTypes[i] || 1;
+          if (size === 2) {
+            blocks.push(new IL.BasicBlock(this.context.state.label('reg'), [
+              new IL.BinaryOpInstruction('h', 'mov', regName, 0),
+              new IL.UnaryOpInstruction('l', 'mov', regName, 0)
+            ]));
+          } else {
+            blocks.push(new IL.BasicBlock(this.context.state.label('reg'), [
+              new IL.UnaryOpInstruction('a', 'mov', regName, 0)
+            ]));
+          }
+          registerArgs.push(regName);
+        } else {
+          blocks.push(new IL.BasicBlock(this.context.state.label('arg'), [
+            new IL.PushInstruction(argResult.result)
+          ]));
+          stackArgs.push(argResult.result);
+        }
+      }
+
+      const dest = this.context.state.temp();
+      const block = new IL.BasicBlock(this.context.state.label('call'));
+      block.add(new IL.CallInstruction(callTarget, registerArgs, callingConvention));
+      if (stackArgs.length > 0) {
+        block.add(new IL.BinaryOpInstruction('stack_args', 'count', stackArgs.length, 0));
+      }
+      block.add(new IL.LoadInstruction(dest, 'ret_val'));
+      return { blocks: [...blocks, block], result: dest };
+    }
+
+    // Standard convention (cdecl, fastcall, callee): push all args on stack
     for (const arg of args) {
       const argResult = this.expressionTranslator.translateExpression(arg);
       blocks.push(...argResult.blocks);
@@ -50,7 +96,7 @@ export class CallAndMemoryTranslator {
     for (let i = 0; i < args.length; i++) {
       pushedRegs.push(`arg${i}`);
     }
-    block.add(new IL.CallInstruction(callTarget, pushedRegs));
+    block.add(new IL.CallInstruction(callTarget, pushedRegs, callingConvention));
     block.add(new IL.LoadInstruction(dest, 'ret_val'));
     return { blocks: [...blocks, block], result: dest };
   }
@@ -60,9 +106,9 @@ export class CallAndMemoryTranslator {
    * @param {AST.FunctionPointerCallNode} fpCall - Function pointer call
    * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
    */
-  translateFuncPtrCall(fpCall) {
+   translateFuncPtrCall(fpCall) {
     const blocks = [];
-    const args = Array.isArray(fpCall.args) ? fpCall.args : [];
+    const args = fpCall.args ? (Array.isArray(fpCall.args) ? fpCall.args : [fpCall.args]) : [];
 
     const pointerResult = this.expressionTranslator.translateExpression(fpCall.pointer);
     blocks.push(...pointerResult.blocks);
@@ -81,7 +127,7 @@ export class CallAndMemoryTranslator {
       pushedRegs.push(`arg${i}`);
     }
     const block = new IL.BasicBlock(this.context.state.label('funcptrcall'));
-    block.add(new IL.CallIndirectInstruction(pointerResult.result, pushedRegs));
+    block.add(new IL.CallIndirectInstruction(pointerResult.result, pushedRegs, IL.CALLING_CONVENTION_DEFAULT));
     block.add(new IL.LoadInstruction(dest, 'ret_val'));
     return { blocks: [...blocks, block], result: dest };
   }
@@ -104,9 +150,9 @@ export class CallAndMemoryTranslator {
    * @param {AST.CallNode} call - Call node with IndexNode callee
    * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
    */
-  translateFuncPtrCallForIndexCall(call) {
+   translateFuncPtrCallForIndexCall(call) {
     const blocks = [];
-    const args = Array.isArray(call.args) ? call.args : [];
+    const args = call.args ? (Array.isArray(call.args) ? call.args : [call.args]) : [];
 
     // Translate the index expression (e.g., fp[0]) to get the function pointer address
     const indexResult = this.expressionTranslator.translateExpression(call.callee);
@@ -128,7 +174,7 @@ export class CallAndMemoryTranslator {
       pushedRegs.push(`arg${i}`);
     }
     const block = new IL.BasicBlock(this.context.state.label('funcptrcall'));
-    block.add(new IL.CallIndirectInstruction(indexResult.result, pushedRegs));
+    block.add(new IL.CallIndirectInstruction(indexResult.result, pushedRegs, IL.CALLING_CONVENTION_DEFAULT));
     block.add(new IL.LoadInstruction(dest, 'ret_val'));
     return { blocks: [...blocks, block], result: dest };
   }
@@ -200,7 +246,7 @@ export class CallAndMemoryTranslator {
     }
 
     if (fieldOffset === 0) {
-      block.add(new IL.BinaryOpInstruction(dest, '.', objResult.result, fieldName));
+      block.add(new IL.BinaryOpInstruction(dest, 'member', objResult.result, fieldName));
     } else {
       // Load base address, add offset, dereference
       const addrTemp = this.context.state.temp();
@@ -295,7 +341,7 @@ export class CallAndMemoryTranslator {
     }
 
     if (fieldOffset === 0) {
-      block.add(new IL.BinaryOpInstruction(dest, '->', ptrResult.result, fieldName));
+      block.add(new IL.BinaryOpInstruction(dest, 'pmember', ptrResult.result, fieldName));
     } else {
       const addrTemp = this.context.state.temp();
       block.add(new IL.BinaryOpInstruction(addrTemp, 'add', ptrResult.result, fieldOffset));

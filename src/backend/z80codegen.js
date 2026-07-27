@@ -7,7 +7,8 @@ import {
   CallInstruction, ReturnInstruction, JumpIfInstruction, JumpInstruction,
   LabelInstruction, AllocStackInstruction, FreeStackInstruction, PushInstruction, PopInstruction,
   IntrinsicInstruction, LoadAddrInstruction, DerefLoadInstruction, DerefStoreInstruction,
-  IndexedLoadInstruction, IndexedStoreInstruction, CallIndirectInstruction
+  IndexedLoadInstruction, IndexedStoreInstruction, CallIndirectInstruction,
+  CALLING_CONVENTION_CDECL, CALLING_CONVENTION_FASTCALL, CALLING_CONVENTION_CALLEE, CALLING_CONVENTION_NEW_Sdcc, CALLING_CONVENTION_DEFAULT
 } from '../nanopass/il.js';
 
 /**
@@ -576,27 +577,224 @@ export class Z80Codegen {
     */
     generateCall(instr) {
       const [func, ...args] = instr.operands;
+      const callingConvention = instr.callingConvention;
+      const calleeFunc = this.currentFunctions?.get(func);
+      const paramTypes = calleeFunc?.metadata?.paramTypes || [];
 
-      // Push arguments onto stack (right-to-left for Z80 convention)
+      switch (callingConvention) {
+        case CALLING_CONVENTION_CDECL:
+          for (const line of this.generateCdeclCall(args, func, paramTypes)) {
+            this.codeLines.push(line);
+          }
+          break;
+        case CALLING_CONVENTION_FASTCALL:
+          for (const line of this.generateFastcallCall(args, func, paramTypes)) {
+            this.codeLines.push(line);
+          }
+          break;
+        case CALLING_CONVENTION_CALLEE:
+          for (const line of this.generateCalleeCall(args, func, paramTypes)) {
+            this.codeLines.push(line);
+          }
+          break;
+        case CALLING_CONVENTION_NEW_Sdcc:
+          for (const line of this.generateNewSdccCall(args, func, paramTypes)) {
+            this.codeLines.push(line);
+          }
+          break;
+        default:
+          for (const line of this.generateCdeclCall(args, func, paramTypes)) {
+            this.codeLines.push(line);
+          }
+          break;
+      }
+    }
+
+    generateCdeclCall(args, funcName, paramTypes = []) {
+      const codeLines = [];
+
       for (const arg of args.reverse()) {
-        this.codeLines.push(`  ld a, ${arg}`);
-        this.codeLines.push('  push af');
+        codeLines.push(`  ld a, ${arg}`);
+        codeLines.push('  push af');
       }
 
-      // Perform the call - func is always a label for regular (non-pointer) functions
-      // Function pointer calls use CallIndirectInstruction instead
-      this.codeLines.push(`  call ${func}`);
+      codeLines.push(`  call ${funcName}`);
 
-      // Clean up stack arguments (each argument pushed as AF = 2 bytes)
-      // Variadic functions don't clean up - caller is responsible for cleanup
-      if (args.length > 0 && !this.isVariadicFunction(func)) {
+      if (args.length > 0 && !this.isVariadicFunction(funcName)) {
         const bytes = args.length * 2;
-        this.codeLines.push(`  ld hl, sp`);
-        this.codeLines.push(`  ld de, ${bytes}`);
-        this.codeLines.push('  add hl, de');
-        this.codeLines.push('  ld sp, l');
-        this.codeLines.push('  ld sp, h');
+        codeLines.push(`  ld hl, sp`);
+        codeLines.push(`  ld de, ${bytes}`);
+        codeLines.push('  add hl, de');
+        codeLines.push('  ld sp, l');
+        codeLines.push('  ld sp, h');
       }
+
+      codeLines.push('  ld a, l');
+
+      return codeLines;
+    }
+
+    generateFastcallCall(args, funcName, paramTypes = []) {
+      const codeLines = [];
+
+      if (args.length === 1) {
+        const arg = args[0];
+        const argSize = paramTypes[0]?.size || 1;
+
+        if (argSize === 2) {
+          codeLines.push(`  ld h, ${arg}`);
+          codeLines.push('  ld l, 0');
+        } else {
+          codeLines.push(`  ld l, ${arg}`);
+        }
+
+        codeLines.push(`  call ${funcName}`);
+        codeLines.push('  ld a, l');
+      } else {
+        return this.generateCdeclCall(args, funcName, paramTypes);
+      }
+
+      return codeLines;
+    }
+
+    generateCalleeCall(args, funcName, paramTypes = []) {
+      const codeLines = [];
+
+      for (const arg of args.reverse()) {
+        codeLines.push(`  ld a, ${arg}`);
+        codeLines.push('  push af');
+      }
+
+      codeLines.push(`  call ${funcName}`);
+
+      if (args.length > 0) {
+        const bytes = args.length * 2;
+        codeLines.push(`  ld hl, sp`);
+        codeLines.push(`  ld de, ${bytes}`);
+        codeLines.push('  add hl, de');
+        codeLines.push('  ld sp, l');
+        codeLines.push('  ld sp, h');
+      }
+
+      codeLines.push('  ld a, l');
+
+      return codeLines;
+    }
+
+    generateNewSdccCall(args, funcName, paramTypes = []) {
+      const codeLines = [];
+      const argTypes = paramTypes.map(p => p?.size || 1);
+
+      if (args.length === 0) {
+        codeLines.push(`  call ${funcName}`);
+        codeLines.push('  ld a, l');
+        return codeLines;
+      }
+
+      if (args.length === 1) {
+        const argSize = argTypes[0] || 1;
+        const arg = args[0];
+
+        if (argSize === 2) {
+          codeLines.push(`  ld h, ${arg}`);
+          codeLines.push('  ld l, 0');
+        } else {
+          codeLines.push(`  ld a, ${arg}`);
+        }
+
+        codeLines.push(`  call ${funcName}`);
+
+        if (argSize === 2) {
+          codeLines.push('  ld a, d');
+        } else {
+          codeLines.push('  ld a, a');
+        }
+
+        return codeLines;
+      }
+
+      if (args.length === 2) {
+        const size1 = argTypes[0] || 1;
+        const size2 = argTypes[1] || 1;
+        const arg1 = args[0];
+        const arg2 = args[1];
+
+        if (size1 === 1 && size2 === 1) {
+          codeLines.push(`  ld a, ${arg1}`);
+          codeLines.push(`  ld l, ${arg2}`);
+        } else if (size1 === 2 && size2 === 2) {
+          codeLines.push(`  ld h, ${arg1}`);
+          codeLines.push('  ld l, 0');
+          codeLines.push(`  ld d, ${arg2}`);
+          codeLines.push('  ld e, 0');
+        } else if (size1 === 1 && size2 === 2) {
+          codeLines.push(`  ld l, ${arg1}`);
+          codeLines.push(`  ld d, ${arg2}`);
+          codeLines.push('  ld e, 0');
+        } else if (size1 === 2 && size2 === 1) {
+          codeLines.push(`  ld h, ${arg1}`);
+          codeLines.push('  ld l, 0');
+          codeLines.push(`  ld e, ${arg2}`);
+        }
+
+        codeLines.push(`  call ${funcName}`);
+
+        if (size1 === 2 && size2 === 2) {
+          codeLines.push('  ld a, d');
+        } else {
+          codeLines.push('  ld a, a');
+        }
+
+        return codeLines;
+      }
+
+      const firstArg = args[0];
+      const secondArg = args[1];
+      const size1 = argTypes[0] || 1;
+      const size2 = argTypes[1] || 1;
+      const remainingArgs = args.slice(2).reverse();
+
+      if (size1 === 1 && size2 === 1) {
+        codeLines.push(`  ld a, ${firstArg}`);
+        codeLines.push(`  ld l, ${secondArg}`);
+      } else if (size1 === 2 && size2 === 2) {
+        codeLines.push(`  ld h, ${firstArg}`);
+        codeLines.push('  ld l, 0');
+        codeLines.push(`  ld d, ${secondArg}`);
+        codeLines.push('  ld e, 0');
+      } else if (size1 === 1 && size2 === 2) {
+        codeLines.push(`  ld l, ${firstArg}`);
+        codeLines.push(`  ld d, ${secondArg}`);
+        codeLines.push('  ld e, 0');
+      } else if (size1 === 2 && size2 === 1) {
+        codeLines.push(`  ld h, ${firstArg}`);
+        codeLines.push('  ld l, 0');
+        codeLines.push(`  ld e, ${secondArg}`);
+      }
+
+      for (const arg of remainingArgs) {
+        codeLines.push(`  ld a, ${arg}`);
+        codeLines.push('  push af');
+      }
+
+      codeLines.push(`  call ${funcName}`);
+
+      if (remainingArgs.length > 0) {
+        const bytes = remainingArgs.length * 2;
+        codeLines.push(`  ld hl, sp`);
+        codeLines.push(`  ld de, ${bytes}`);
+        codeLines.push('  add hl, de');
+        codeLines.push('  ld sp, l');
+        codeLines.push('  ld sp, h');
+      }
+
+      if (size1 === 2 && size2 === 2) {
+        codeLines.push('  ld a, d');
+      } else {
+        codeLines.push('  ld a, a');
+      }
+
+      return codeLines;
     }
 
   /**
@@ -607,20 +805,34 @@ export class Z80Codegen {
     */
     generateCallIndirect(instr) {
       const [ptr, ...args] = instr.operands;
+      const callingConvention = instr.callingConvention;
 
-      // Push arguments onto stack (right-to-left for Z80 convention)
+      switch (callingConvention) {
+        case CALLING_CONVENTION_CDECL:
+        case CALLING_CONVENTION_CALLEE:
+          this.generateCdeclCallIndirect(ptr, args, callingConvention);
+          break;
+        case CALLING_CONVENTION_FASTCALL:
+          this.generateFastcallCallIndirect(ptr, args);
+          break;
+        case CALLING_CONVENTION_NEW_Sdcc:
+          this.generateNewSdccCallIndirect(ptr, args);
+          break;
+        default:
+          this.generateCdeclCallIndirect(ptr, args, CALLING_CONVENTION_DEFAULT);
+          break;
+      }
+    }
+
+    generateCdeclCallIndirect(ptr, args, callingConvention) {
       for (const arg of args.reverse()) {
         this.codeLines.push(`  ld a, ${arg}`);
         this.codeLines.push('  push af');
       }
 
-      // ptr is a register (e.g., t4) that already holds the function address
-      // (loaded by LOAD_ADDR + DEREF_LOAD in translateLoadFunctionPointer)
-      // Move the function address from ptr register to HL for the call
       this.codeLines.push(`  ld hl, ${ptr}`);
       this.codeLines.push('  call hl');
 
-      // Clean up stack arguments (each argument pushed as AF = 2 bytes)
       if (args.length > 0) {
         const bytes = args.length * 2;
         this.codeLines.push(`  ld hl, sp`);
@@ -629,6 +841,61 @@ export class Z80Codegen {
         this.codeLines.push('  ld sp, l');
         this.codeLines.push('  ld sp, h');
       }
+    }
+
+    generateFastcallCallIndirect(ptr, args) {
+      if (args.length === 1) {
+        const arg = args[0];
+        this.codeLines.push(`  ld l, ${arg}`);
+      } else {
+        for (const arg of args.reverse()) {
+          this.codeLines.push(`  ld a, ${arg}`);
+          this.codeLines.push('  push af');
+        }
+      }
+
+      this.codeLines.push(`  ld hl, ${ptr}`);
+      this.codeLines.push('  call hl');
+
+      if (args.length > 1) {
+        const bytes = args.length * 2;
+        this.codeLines.push(`  ld hl, sp`);
+        this.codeLines.push(`  ld de, ${bytes}`);
+        this.codeLines.push('  add hl, de');
+        this.codeLines.push('  ld sp, l');
+        this.codeLines.push('  ld sp, h');
+      }
+    }
+
+    generateNewSdccCallIndirect(ptr, args) {
+      if (args.length === 0) {
+        this.codeLines.push(`  ld hl, ${ptr}`);
+        this.codeLines.push('  call hl');
+        return;
+      }
+
+      if (args.length === 1) {
+        this.codeLines.push(`  ld a, ${args[0]}`);
+      } else if (args.length === 2) {
+        this.codeLines.push(`  ld a, ${args[0]}`);
+        this.codeLines.push(`  ld l, ${args[1]}`);
+      } else {
+        this.codeLines.push(`  ld a, ${args[0]}`);
+        this.codeLines.push(`  ld l, ${args[1]}`);
+        for (const arg of args.slice(2).reverse()) {
+          this.codeLines.push(`  ld a, ${arg}`);
+          this.codeLines.push('  push af');
+        }
+        const bytes = (args.length - 2) * 2;
+        this.codeLines.push(`  ld hl, sp`);
+        this.codeLines.push(`  ld de, ${bytes}`);
+        this.codeLines.push('  add hl, de');
+        this.codeLines.push('  ld sp, l');
+        this.codeLines.push('  ld sp, h');
+      }
+
+      this.codeLines.push(`  ld hl, ${ptr}`);
+      this.codeLines.push('  call hl');
     }
 
   /**

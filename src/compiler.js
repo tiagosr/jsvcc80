@@ -14,6 +14,7 @@ import { Linker, LinkerOptions } from './linker/linker.js';
 import { loadObjectFile, saveObjectFile } from './linker/objectfile_loader.js';
 import { loadArchive, Archive } from './linker/archive.js';
 import './nanopass/register_passes.js';
+import './plugins/register_attributes.js';
 
 /**
  * Compiler options and configuration
@@ -318,14 +319,110 @@ export class Compiler {
     }
   }
 
-  /**
-   * Semantic analysis stage - type checking and symbol resolution
-   * @param {ASTNode} ast - AST to analyze
-   * @returns {ASTNode} Analyzed AST
-   */
-  analyze(ast) {
-    return ast;
-  }
+   /**
+    * Semantic analysis stage - type checking and symbol resolution
+    * @param {ASTNode} ast - AST to analyze
+    * @returns {ASTNode} Analyzed AST
+    */
+   analyze(ast) {
+     const symbolMap = new Map();
+     const functionConventionMap = new Map();
+     
+     function processNode(node) {
+       if (!node) return node;
+       
+       if (node.type === 'Function') {
+          const funcName = node.name ? node.name.name : null;
+         const conventions = [];
+         
+         if (node.attributes && node.attributes.length > 0) {
+           for (const attr of node.attributes) {
+             const handler = globalRegistry.getPlugin('attribute', attr.name);
+             if (handler && handler.handle) {
+               const result = handler.handle(attr, node, { symbolMap, functionConventionMap });
+               if (result.valid && result.metadata) {
+                 conventions.push(result.metadata);
+               }
+             }
+           }
+         }
+         
+         if (conventions.length > 0) {
+           functionConventionMap.set(funcName, conventions);
+         }
+         
+         symbolMap.set(funcName, {
+           kind: 'function',
+           type: node.returnType,
+           parameters: node.parameters,
+           conventions: conventions
+         });
+         
+         return node;
+       }
+       
+       if (node.type === 'AnnotatedDecl') {
+         const decl = node.declaration;
+         if (decl && decl.name) {
+            const name = decl.name.name;
+           const conventions = [];
+           
+           if (node.attributes && node.attributes.length > 0) {
+             for (const attr of node.attributes) {
+               const handler = globalRegistry.getPlugin('attribute', attr.name);
+               if (handler && handler.handle) {
+                 const result = handler.handle(attr, decl, { symbolMap, functionConventionMap });
+                 if (result.valid && result.metadata) {
+                   conventions.push(result.metadata);
+                 }
+               }
+             }
+           }
+           
+           if (conventions.length > 0) {
+             functionConventionMap.set(name, conventions);
+           }
+           
+           symbolMap.set(name, {
+             kind: 'variable',
+             type: decl.type,
+             conventions: conventions
+           });
+         }
+         
+         return node;
+       }
+       
+       if (node.type === 'Decl') {
+         if (node.name) {
+            const name = node.name.name;
+           symbolMap.set(name, {
+             kind: 'variable',
+             type: node.type,
+             storageClass: node.storageClass
+           });
+         }
+         
+         return node;
+       }
+       
+       if (node.type === 'Compound') {
+         if (node.statements) {
+           node.statements = node.statements.map(s => processNode(s));
+         }
+         return node;
+       }
+       
+       return node;
+     }
+     
+     const analyzed = processNode(ast);
+     analyzed.meta = analyzed.meta || {};
+     analyzed.meta.symbolMap = symbolMap;
+     analyzed.meta.functionConventionMap = functionConventionMap;
+     
+     return analyzed;
+   }
 
   /**
    * IR generation stage - translates AST to intermediate representation

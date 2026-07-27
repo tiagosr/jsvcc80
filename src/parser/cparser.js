@@ -303,6 +303,26 @@ export class CPegParser {
       )
     );
 
+    const attributeParser = map(
+      seq(
+        pred(t => t.type === 'IDENTIFIER' && t.value === '__attribute__'),
+        lit('('),
+        lit('('),
+        pred(t => t.type === 'IDENTIFIER'),
+        opt(seq(
+          lit('('),
+          pred(t => t.type === 'STRING'),
+          lit(')')
+        )),
+        lit(')'),
+        lit(')')
+      ),
+      ([ident, , , nameIdent, argOpt, , ]) => {
+        const argValue = argOpt ? argOpt[1] : null;
+        return new AST.AttributeNode(nameIdent.value, argValue, locFromToken(ident));
+      }
+    );
+
     const functionDef = map(
       seq(
         lazy(() => this.ruleRefs.typeSpecifier),
@@ -311,9 +331,10 @@ export class CPegParser {
         lit('('),
         opt(alt(paramList, voidParam)),
         lit(')'),
+        many(attributeParser),
         this.ruleRefs.statement
       ),
-      ([returnType, stars, name, , params, , body]) => {
+      ([returnType, stars, name, , params, , attrs, body]) => {
         // Merge pointer depth into return type
         const pointerDepth = stars.length;
         let mergedReturnType = returnType;
@@ -340,12 +361,14 @@ export class CPegParser {
         if (params !== undefined && Array.isArray(params)) {
           paramNodes = params;
         }
+        const attributes = Array.isArray(attrs) ? attrs : [];
         return new AST.FunctionNode(
           new AST.IdentifierNode(name.value, locFromToken(name)),
           mergedReturnType,
           paramNodes,
           body,
-          locFromToken(returnType)
+          locFromToken(returnType),
+          attributes
         );
       }
     );
@@ -388,9 +411,10 @@ export class CPegParser {
           opt(kw('register')),
           lazy(() => this.ruleRefs.typeSpecifier),
           this.ruleRefs.funcPointerDeclarator,
+          opt(attributeParser),
           lit(';')
         ),
-        ([regKw, typeSpec, fpDecl]) => {
+        ([regKw, typeSpec, fpDecl, attrOpt]) => {
           const stars = fpDecl.stars || [];
           const pointerDepth = stars.length;
           const name = fpDecl.name ? fpDecl.name.value : null;
@@ -399,9 +423,15 @@ export class CPegParser {
           const funcPtrType = createFunctionPointerType(returnBase, params, locFromToken(fpDecl.name || fpDecl.stars[0]));
           const mergedType = mergeDeclaratorType(funcPtrType, pointerDepth, []);
           const ident = name ? new AST.IdentifierNode(name, locFromToken(fpDecl.name)) : null;
-          return new AST.DeclNode('var', mergedType,
-            ident, null, locFromToken(typeSpec),
-            regKw ? 'register' : null);
+          const attributes = attrOpt ? [attrOpt] : [];
+          const annotatedDecl = new AST.AnnotatedDeclNode(
+            new AST.DeclNode('var', mergedType,
+              ident, null, locFromToken(typeSpec),
+              regKw ? 'register' : null),
+            attributes,
+            locFromToken(typeSpec)
+          );
+          return annotatedDecl;
         }
       ),
       variableDecl

@@ -535,13 +535,15 @@ export class FunctionNode extends ASTNode {
    * @param {ParameterList[]} parameters - Function parameters
    * @param {StatementNode} body - Function body
    * @param {SourceLocation} location - Source location
+   * @param {AttributeNode[]} [attributes] - Optional attribute annotations
    */
-  constructor(name, returnType, parameters, body, location) {
+  constructor(name, returnType, parameters, body, location, attributes = []) {
     super('Function', location);
     this.name = name;
     this.returnType = returnType;
     this.parameters = parameters;
     this.body = body;
+    this.attributes = attributes;
     this.isVariadic = parameters.some(p => p && p.isVariadic);
   }
 
@@ -555,7 +557,8 @@ export class FunctionNode extends ASTNode {
       name: this.name ? this.name.value : null,
       returnType: this.returnType.toJSON ? this.returnType.toJSON() : 'unknown',
       parameters: this.parameters.map(p => p.toJSON ? p.toJSON() : p),
-      isVariadic: this.isVariadic
+      isVariadic: this.isVariadic,
+      attributes: this.attributes.map(a => a.toJSON ? a.toJSON() : a)
     };
   }
 }

@@ -14,6 +14,26 @@ export class TypeRegistry {
     this.typedefs = new Map();
     /** @type {Map<string, {name: string, kind: string, fields: AST.StructFieldNode[], size: number, fieldOffsets: Map<string, number>}>} */
     this.structRegistry = new Map();
+    this._registerBuiltInStructs();
+  }
+
+  /**
+   * Registers built-in struct types (FILE, etc.)
+   */
+  _registerBuiltInStructs() {
+    const fileFields = [
+      new AST.StructFieldNode(new AST.TypeSpecNode('char', true, false, false, null, null, 1), new AST.IdentifierNode('buffer', null)),
+      new AST.StructFieldNode(new AST.TypeSpecNode('int', true, false, false, null, null), new AST.IdentifierNode('bufSize', null)),
+      new AST.StructFieldNode(new AST.TypeSpecNode('int', true, false, false, null, null), new AST.IdentifierNode('bufPos', null)),
+      new AST.StructFieldNode(new AST.TypeSpecNode('int', true, false, false, null, null), new AST.IdentifierNode('flags', null)),
+    ];
+    this.structRegistry.set('FILE', {
+      name: 'FILE',
+      kind: 'struct',
+      fields: fileFields,
+      size: 8,
+      fieldOffsets: new Map([['buffer', 0], ['bufSize', 2], ['bufPos', 4], ['flags', 6]])
+    });
   }
 
   /**

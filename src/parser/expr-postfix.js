@@ -64,7 +64,7 @@ function buildPostfixExpr(ctx) {
 
   ctx.ruleRefs.postfixExpr = map(
     seq(
-      ctx.ruleRefs.unaryExpr,
+      lazy(() => ctx.ruleRefs.unaryExpr),
       many(postfixOp)
     ),
     ([base, ops]) => {

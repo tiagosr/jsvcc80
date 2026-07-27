@@ -37,6 +37,12 @@ const IntrinsicMap = {
   '__setjmp': { opcode: 'SETJMP', argCount: 1 },
   '__longjmp': { opcode: 'LONGJMP', argCount: 2 },
   '__alloca': { opcode: 'ALLOCA', argCount: 1 },
+  '__fputc': { opcode: 'FPUTC', argCount: 2 },
+  '__fgetc': { opcode: 'FGETC', argCount: 1 },
+  '__feof': { opcode: 'FEOF', argCount: 1 },
+  '__ferror': { opcode: 'FERROR', argCount: 1 },
+  '__fopen': { opcode: 'FOPEN', argCount: 2 },
+  '__fclose': { opcode: 'FCLOSE', argCount: 1 },
 };
 
 /**

@@ -16,7 +16,7 @@ function buildUnaryExpr(ctx) {
   const unaryPrefix = map(
     seq(
       some(pred(t => ['++', '--', '+', '-', '~', '!'].includes(t.type))),
-      lazy(() => ctx.ruleRefs.unaryExpr)
+      lazy(() => ctx.ruleRefs.postfixExpr)
     ),
     ([operators, operand]) => {
       let node = operand;
@@ -35,7 +35,7 @@ function buildUnaryExpr(ctx) {
   const addressOf = map(
     seq(
       pred(t => t.type === '&'),
-      lazy(() => ctx.ruleRefs.unaryExpr)
+      lazy(() => ctx.ruleRefs.postfixExpr)
     ),
     ([amp, operand]) => {
       return new AST.AddressOfNode(operand, locFromToken(amp));
@@ -50,7 +50,7 @@ function buildUnaryExpr(ctx) {
       lazy(() => ctx.ruleRefs.typeSpecifier),
       many(lit('*')),
       lit(')'),
-      lazy(() => ctx.ruleRefs.unaryExpr)
+      lazy(() => ctx.ruleRefs.postfixExpr)
     ),
     ([_, typeSpec, stars, , operand]) => {
       const pointerDepth = stars.length;

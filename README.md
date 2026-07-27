@@ -16,10 +16,9 @@ See [CHANGELOG.md](CHANGELOG.md)
 - Nothing at the moment
 
 ### 🔜 Next Steps
-1. Add file stream abstractions to the C standard library (`FILE`, `putc`, `getc`, `fprintf`, `fscanf`, etc.)
-2. Implement symbol map compiling and exporting for debugging
-3. Implement `unsigned:n` bit fields
-4. Implement object file viewer
+1. Implement symbol map compiling and exporting for debugging
+2. Implement `unsigned:n` bit fields
+3. Implement object file viewer
 
 
 ### 📔 Backlog (issues identified during implementation for later priorization)

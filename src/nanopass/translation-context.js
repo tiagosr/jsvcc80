@@ -101,6 +101,9 @@ export class TranslationContext {
       if (node instanceof AST.StructNode) {
         this.typeRegistry.registerStruct(node);
       }
+      if (node instanceof AST.DeclNode && node.kind === 'typedef' && node.structNode) {
+        this.typeRegistry.registerStruct(node.structNode);
+      }
     }
 
     // Third pass: translate functions and globals

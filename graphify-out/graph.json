@@ -45,37 +45,169 @@
   },
   "nodes": [
     {
-      "label": "CHANGELOG.md",
+      "label": "SKILL.md",
       "file_type": "document",
-      "source_file": "CHANGELOG.md",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "changelog",
-      "community": 45,
-      "community_name": "Current Implementation Status",
-      "norm_label": "changelog.md"
+      "id": "opencode_skills_z80_coder_skill",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "skill.md"
     },
     {
-      "label": "\ud83e\uddea Test Results",
+      "label": "Z80 Coder",
       "file_type": "document",
-      "source_file": "CHANGELOG.md",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill_z80_coder",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "z80 coder"
+    },
+    {
+      "label": "Registers",
+      "file_type": "document",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill_registers",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "registers"
+    },
+    {
+      "label": "Implicit uses",
+      "file_type": "document",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L37",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill_implicit_uses",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "implicit uses"
+    },
+    {
+      "label": "Instruction set",
+      "file_type": "document",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L55",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill_instruction_set",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "instruction set"
+    },
+    {
+      "label": "Unprefixed instructions (`0x00`\u2013`0xFF`)",
+      "file_type": "document",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L78",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill_unprefixed_instructions_0x00_0xff",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "unprefixed instructions (`0x00`\u2013`0xff`)"
+    },
+    {
+      "label": "`CB`-prefixed instructions (bit operations)",
+      "file_type": "document",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L149",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill_cb_prefixed_instructions_bit_operations",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "`cb`-prefixed instructions (bit operations)"
+    },
+    {
+      "label": "`ED`-prefixed instructions (extended)",
+      "file_type": "document",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L172",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill_ed_prefixed_instructions_extended",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "`ed`-prefixed instructions (extended)"
+    },
+    {
+      "label": "`IX`/`IY`-indexed instructions (`0xDD`/`0xFD`)",
+      "file_type": "document",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L222",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill_ix_iy_indexed_instructions_0xdd_0xfd",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "`ix`/`iy`-indexed instructions (`0xdd`/`0xfd`)"
+    },
+    {
+      "label": "Flags effect legend",
+      "file_type": "document",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L303",
+      "_origin": "ast",
+      "id": "opencode_skills_z80_coder_skill_flags_effect_legend",
+      "community": 20,
+      "community_name": "Object File Format",
+      "norm_label": "flags effect legend"
+    },
+    {
+      "label": "FINDINGS.md",
+      "file_type": "document",
+      "source_file": "FINDINGS.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "changelog_test_results",
+      "id": "findings",
       "community": 45,
       "community_name": "Current Implementation Status",
-      "norm_label": "\ud83e\uddea test results"
+      "norm_label": "findings.md"
     },
     {
-      "label": "\u2705 Completed",
+      "label": "Philosophical findings",
       "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L4",
+      "source_file": "FINDINGS.md",
+      "source_location": "L6",
       "_origin": "ast",
-      "id": "changelog_completed",
+      "id": "findings_philosophical_findings",
       "community": 45,
       "community_name": "Current Implementation Status",
-      "norm_label": "\u2705 completed"
+      "norm_label": "philosophical findings"
+    },
+    {
+      "label": "Software design issues",
+      "file_type": "document",
+      "source_file": "FINDINGS.md",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "findings_software_design_issues",
+      "community": 45,
+      "community_name": "Current Implementation Status",
+      "norm_label": "software design issues"
+    },
+    {
+      "label": "Context scale issues",
+      "file_type": "document",
+      "source_file": "FINDINGS.md",
+      "source_location": "L17",
+      "_origin": "ast",
+      "id": "findings_context_scale_issues",
+      "community": 45,
+      "community_name": "Current Implementation Status",
+      "norm_label": "context scale issues"
+    },
+    {
+      "label": "Tooling issues",
+      "file_type": "document",
+      "source_file": "FINDINGS.md",
+      "source_location": "L21",
+      "_origin": "ast",
+      "id": "findings_tooling_issues",
+      "community": 45,
+      "community_name": "Current Implementation Status",
+      "norm_label": "tooling issues"
     },
     {
       "label": "README.md",
@@ -136,7 +268,7 @@
       "label": "\ud83d\udcd4 Backlog (issues identified during implementation for later priorization)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L22",
+      "source_location": "L23",
       "_origin": "ast",
       "id": "readme_backlog_issues_identified_during_implementation_for_later_priorization",
       "community": 45,
@@ -144,15 +276,48 @@
       "norm_label": "\ud83d\udcd4 backlog (issues identified during implementation for later priorization)"
     },
     {
+      "label": "CHANGELOG.md",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 40,
+      "community_name": "GotoNode",
+      "norm_label": "changelog.md",
+      "id": "changelog"
+    },
+    {
+      "label": "\ud83e\uddea Test Results",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "community": 40,
+      "community_name": "GotoNode",
+      "norm_label": "\ud83e\uddea test results",
+      "id": "changelog_test_results"
+    },
+    {
+      "label": "\u2705 Completed",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L4",
+      "_origin": "ast",
+      "community": 40,
+      "community_name": "GotoNode",
+      "norm_label": "\u2705 completed",
+      "id": "changelog_completed"
+    },
+    {
       "label": "nodes.js",
       "file_type": "code",
       "source_file": "src/ast/nodes.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_ast_nodes",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "nodes.js"
+      "norm_label": "nodes.js",
+      "id": "src_ast_nodes"
     },
     {
       "label": "ASTNode",
@@ -160,10 +325,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L4",
       "_origin": "ast",
-      "id": "src_ast_nodes_astnode",
       "community": 33,
       "community_name": "TypeSpecNode",
-      "norm_label": "astnode"
+      "norm_label": "astnode",
+      "id": "src_ast_nodes_astnode"
     },
     {
       "label": ".constructor()",
@@ -171,10 +336,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L11",
       "_origin": "ast",
-      "id": "src_ast_nodes_astnode_constructor",
       "community": 33,
       "community_name": "TypeSpecNode",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_astnode_constructor"
     },
     {
       "label": ".toJSON()",
@@ -182,10 +347,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L21",
       "_origin": "ast",
-      "id": "src_ast_nodes_astnode_tojson",
       "community": 33,
       "community_name": "TypeSpecNode",
-      "norm_label": ".tojson()"
+      "norm_label": ".tojson()",
+      "id": "src_ast_nodes_astnode_tojson"
     },
     {
       "label": ".toString()",
@@ -193,10 +358,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L49",
       "_origin": "ast",
-      "id": "src_ast_nodes_astnode_tostring",
       "community": 33,
       "community_name": "TypeSpecNode",
-      "norm_label": ".tostring()"
+      "norm_label": ".tostring()",
+      "id": "src_ast_nodes_astnode_tostring"
     },
     {
       "label": "BinaryOpNode",
@@ -204,10 +369,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L57",
       "_origin": "ast",
-      "id": "src_ast_nodes_binaryopnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "binaryopnode"
+      "norm_label": "binaryopnode",
+      "id": "src_ast_nodes_binaryopnode"
     },
     {
       "label": ".constructor()",
@@ -215,10 +380,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L58",
       "_origin": "ast",
-      "id": "src_ast_nodes_binaryopnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_binaryopnode_constructor"
     },
     {
       "label": "UnaryOpNode",
@@ -226,10 +391,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L69",
       "_origin": "ast",
-      "id": "src_ast_nodes_unaryopnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "unaryopnode"
+      "norm_label": "unaryopnode",
+      "id": "src_ast_nodes_unaryopnode"
     },
     {
       "label": ".constructor()",
@@ -237,10 +402,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L70",
       "_origin": "ast",
-      "id": "src_ast_nodes_unaryopnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_unaryopnode_constructor"
     },
     {
       "label": "AddressOfNode",
@@ -248,10 +413,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L80",
       "_origin": "ast",
-      "id": "src_ast_nodes_addressofnode",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "addressofnode"
+      "norm_label": "addressofnode",
+      "id": "src_ast_nodes_addressofnode"
     },
     {
       "label": ".constructor()",
@@ -259,10 +424,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L86",
       "_origin": "ast",
-      "id": "src_ast_nodes_addressofnode_constructor",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_addressofnode_constructor"
     },
     {
       "label": "DerefNode",
@@ -270,10 +435,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L95",
       "_origin": "ast",
-      "id": "src_ast_nodes_derefnode",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "derefnode"
+      "norm_label": "derefnode",
+      "id": "src_ast_nodes_derefnode"
     },
     {
       "label": ".constructor()",
@@ -281,10 +446,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L101",
       "_origin": "ast",
-      "id": "src_ast_nodes_derefnode_constructor",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_derefnode_constructor"
     },
     {
       "label": "LiteralNode",
@@ -292,10 +457,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L110",
       "_origin": "ast",
-      "id": "src_ast_nodes_literalnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "literalnode"
+      "norm_label": "literalnode",
+      "id": "src_ast_nodes_literalnode"
     },
     {
       "label": ".constructor()",
@@ -303,10 +468,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L117",
       "_origin": "ast",
-      "id": "src_ast_nodes_literalnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_literalnode_constructor"
     },
     {
       "label": "IdentifierNode",
@@ -314,10 +479,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L127",
       "_origin": "ast",
-      "id": "src_ast_nodes_identifiernode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "identifiernode"
+      "norm_label": "identifiernode",
+      "id": "src_ast_nodes_identifiernode"
     },
     {
       "label": ".constructor()",
@@ -325,10 +490,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L133",
       "_origin": "ast",
-      "id": "src_ast_nodes_identifiernode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_identifiernode_constructor"
     },
     {
       "label": "CallNode",
@@ -336,10 +501,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L142",
       "_origin": "ast",
-      "id": "src_ast_nodes_callnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "callnode"
+      "norm_label": "callnode",
+      "id": "src_ast_nodes_callnode"
     },
     {
       "label": ".constructor()",
@@ -347,10 +512,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L149",
       "_origin": "ast",
-      "id": "src_ast_nodes_callnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_callnode_constructor"
     },
     {
       "label": "FunctionPointerCallNode",
@@ -358,10 +523,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L159",
       "_origin": "ast",
-      "id": "src_ast_nodes_functionpointercallnode",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "functionpointercallnode"
+      "norm_label": "functionpointercallnode",
+      "id": "src_ast_nodes_functionpointercallnode"
     },
     {
       "label": ".constructor()",
@@ -369,10 +534,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L166",
       "_origin": "ast",
-      "id": "src_ast_nodes_functionpointercallnode_constructor",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_functionpointercallnode_constructor"
     },
     {
       "label": "IndexNode",
@@ -380,10 +545,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L176",
       "_origin": "ast",
-      "id": "src_ast_nodes_indexnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "indexnode"
+      "norm_label": "indexnode",
+      "id": "src_ast_nodes_indexnode"
     },
     {
       "label": ".constructor()",
@@ -391,10 +556,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L183",
       "_origin": "ast",
-      "id": "src_ast_nodes_indexnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_indexnode_constructor"
     },
     {
       "label": "MemberNode",
@@ -402,10 +567,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L193",
       "_origin": "ast",
-      "id": "src_ast_nodes_membernode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "membernode"
+      "norm_label": "membernode",
+      "id": "src_ast_nodes_membernode"
     },
     {
       "label": ".constructor()",
@@ -413,10 +578,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L200",
       "_origin": "ast",
-      "id": "src_ast_nodes_membernode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_membernode_constructor"
     },
     {
       "label": "PointerMemberNode",
@@ -424,10 +589,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L210",
       "_origin": "ast",
-      "id": "src_ast_nodes_pointermembernode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "pointermembernode"
+      "norm_label": "pointermembernode",
+      "id": "src_ast_nodes_pointermembernode"
     },
     {
       "label": ".constructor()",
@@ -435,10 +600,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L217",
       "_origin": "ast",
-      "id": "src_ast_nodes_pointermembernode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_pointermembernode_constructor"
     },
     {
       "label": "DeclNode",
@@ -446,10 +611,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L227",
       "_origin": "ast",
-      "id": "src_ast_nodes_declnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "declnode"
+      "norm_label": "declnode",
+      "id": "src_ast_nodes_declnode"
     },
     {
       "label": ".constructor()",
@@ -457,10 +622,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L237",
       "_origin": "ast",
-      "id": "src_ast_nodes_declnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_declnode_constructor"
     },
     {
       "label": "ControlFlowNode",
@@ -468,10 +633,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L250",
       "_origin": "ast",
-      "id": "src_ast_nodes_controlflownode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "controlflownode"
+      "norm_label": "controlflownode",
+      "id": "src_ast_nodes_controlflownode"
     },
     {
       "label": ".constructor()",
@@ -479,10 +644,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L261",
       "_origin": "ast",
-      "id": "src_ast_nodes_controlflownode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_controlflownode_constructor"
     },
     {
       "label": "SwitchNode",
@@ -490,10 +655,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L275",
       "_origin": "ast",
-      "id": "src_ast_nodes_switchnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "switchnode"
+      "norm_label": "switchnode",
+      "id": "src_ast_nodes_switchnode"
     },
     {
       "label": ".constructor()",
@@ -501,10 +666,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L283",
       "_origin": "ast",
-      "id": "src_ast_nodes_switchnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_switchnode_constructor"
     },
     {
       "label": "CaseClauseNode",
@@ -512,10 +677,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L294",
       "_origin": "ast",
-      "id": "src_ast_nodes_caseclausenode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "caseclausenode"
+      "norm_label": "caseclausenode",
+      "id": "src_ast_nodes_caseclausenode"
     },
     {
       "label": ".constructor()",
@@ -523,10 +688,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L301",
       "_origin": "ast",
-      "id": "src_ast_nodes_caseclausenode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_caseclausenode_constructor"
     },
     {
       "label": "ReturnNode",
@@ -534,10 +699,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L311",
       "_origin": "ast",
-      "id": "src_ast_nodes_returnnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "returnnode"
+      "norm_label": "returnnode",
+      "id": "src_ast_nodes_returnnode"
     },
     {
       "label": ".constructor()",
@@ -545,10 +710,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L317",
       "_origin": "ast",
-      "id": "src_ast_nodes_returnnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_returnnode_constructor"
     },
     {
       "label": "JumpNode",
@@ -556,10 +721,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L326",
       "_origin": "ast",
-      "id": "src_ast_nodes_jumpnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "jumpnode"
+      "norm_label": "jumpnode",
+      "id": "src_ast_nodes_jumpnode"
     },
     {
       "label": ".constructor()",
@@ -567,10 +732,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L332",
       "_origin": "ast",
-      "id": "src_ast_nodes_jumpnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_jumpnode_constructor"
     },
     {
       "label": "LabelNode",
@@ -578,10 +743,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L341",
       "_origin": "ast",
-      "id": "src_ast_nodes_labelnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "labelnode"
+      "norm_label": "labelnode",
+      "id": "src_ast_nodes_labelnode"
     },
     {
       "label": ".constructor()",
@@ -589,10 +754,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L348",
       "_origin": "ast",
-      "id": "src_ast_nodes_labelnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_labelnode_constructor"
     },
     {
       "label": "GotoNode",
@@ -600,10 +765,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L358",
       "_origin": "ast",
-      "id": "src_ast_nodes_gotonode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "gotonode"
+      "norm_label": "gotonode",
+      "id": "src_ast_nodes_gotonode"
     },
     {
       "label": ".constructor()",
@@ -611,10 +776,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L364",
       "_origin": "ast",
-      "id": "src_ast_nodes_gotonode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_gotonode_constructor"
     },
     {
       "label": "CompoundNode",
@@ -622,10 +787,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L373",
       "_origin": "ast",
-      "id": "src_ast_nodes_compoundnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "compoundnode"
+      "norm_label": "compoundnode",
+      "id": "src_ast_nodes_compoundnode"
     },
     {
       "label": ".constructor()",
@@ -633,10 +798,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L379",
       "_origin": "ast",
-      "id": "src_ast_nodes_compoundnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_compoundnode_constructor"
     },
     {
       "label": "ExprStmtNode",
@@ -644,10 +809,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L388",
       "_origin": "ast",
-      "id": "src_ast_nodes_exprstmtnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "exprstmtnode"
+      "norm_label": "exprstmtnode",
+      "id": "src_ast_nodes_exprstmtnode"
     },
     {
       "label": ".constructor()",
@@ -655,10 +820,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L394",
       "_origin": "ast",
-      "id": "src_ast_nodes_exprstmtnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_exprstmtnode_constructor"
     },
     {
       "label": "TypeSpecNode",
@@ -666,10 +831,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L403",
       "_origin": "ast",
-      "id": "src_ast_nodes_typespecnode",
       "community": 17,
       "community_name": "IR to Object File",
-      "norm_label": "typespecnode"
+      "norm_label": "typespecnode",
+      "id": "src_ast_nodes_typespecnode"
     },
     {
       "label": ".constructor()",
@@ -677,10 +842,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L434",
       "_origin": "ast",
-      "id": "src_ast_nodes_typespecnode_constructor",
       "community": 17,
       "community_name": "IR to Object File",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_typespecnode_constructor"
     },
     {
       "label": ".getSize()",
@@ -688,10 +853,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L459",
       "_origin": "ast",
-      "id": "src_ast_nodes_typespecnode_getsize",
       "community": 17,
       "community_name": "IR to Object File",
-      "norm_label": ".getsize()"
+      "norm_label": ".getsize()",
+      "id": "src_ast_nodes_typespecnode_getsize"
     },
     {
       "label": ".getElementSize()",
@@ -699,10 +864,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L484",
       "_origin": "ast",
-      "id": "src_ast_nodes_typespecnode_getelementsize",
       "community": 17,
       "community_name": "IR to Object File",
-      "norm_label": ".getelementsize()"
+      "norm_label": ".getelementsize()",
+      "id": "src_ast_nodes_typespecnode_getelementsize"
     },
     {
       "label": ".typeString()",
@@ -710,10 +875,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L504",
       "_origin": "ast",
-      "id": "src_ast_nodes_typespecnode_typestring",
       "community": 17,
       "community_name": "IR to Object File",
-      "norm_label": ".typestring()"
+      "norm_label": ".typestring()",
+      "id": "src_ast_nodes_typespecnode_typestring"
     },
     {
       "label": "FunctionNode",
@@ -721,10 +886,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L539",
       "_origin": "ast",
-      "id": "src_ast_nodes_functionnode",
       "community": 33,
       "community_name": "TypeSpecNode",
-      "norm_label": "functionnode"
+      "norm_label": "functionnode",
+      "id": "src_ast_nodes_functionnode"
     },
     {
       "label": ".constructor()",
@@ -732,10 +897,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L549",
       "_origin": "ast",
-      "id": "src_ast_nodes_functionnode_constructor",
       "community": 33,
       "community_name": "TypeSpecNode",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_functionnode_constructor"
     },
     {
       "label": ".toJSON()",
@@ -743,10 +908,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L563",
       "_origin": "ast",
-      "id": "src_ast_nodes_functionnode_tojson",
       "community": 33,
       "community_name": "TypeSpecNode",
-      "norm_label": ".tojson()"
+      "norm_label": ".tojson()",
+      "id": "src_ast_nodes_functionnode_tojson"
     },
     {
       "label": "ParameterNode",
@@ -754,10 +919,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L578",
       "_origin": "ast",
-      "id": "src_ast_nodes_parameternode",
       "community": 33,
       "community_name": "TypeSpecNode",
-      "norm_label": "parameternode"
+      "norm_label": "parameternode",
+      "id": "src_ast_nodes_parameternode"
     },
     {
       "label": ".constructor()",
@@ -765,10 +930,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L587",
       "_origin": "ast",
-      "id": "src_ast_nodes_parameternode_constructor",
       "community": 33,
       "community_name": "TypeSpecNode",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_parameternode_constructor"
     },
     {
       "label": ".toJSON()",
@@ -776,10 +941,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L599",
       "_origin": "ast",
-      "id": "src_ast_nodes_parameternode_tojson",
       "community": 33,
       "community_name": "TypeSpecNode",
-      "norm_label": ".tojson()"
+      "norm_label": ".tojson()",
+      "id": "src_ast_nodes_parameternode_tojson"
     },
     {
       "label": "StructNode",
@@ -787,10 +952,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L613",
       "_origin": "ast",
-      "id": "src_ast_nodes_structnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "structnode"
+      "norm_label": "structnode",
+      "id": "src_ast_nodes_structnode"
     },
     {
       "label": ".constructor()",
@@ -798,10 +963,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L621",
       "_origin": "ast",
-      "id": "src_ast_nodes_structnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_structnode_constructor"
     },
     {
       "label": "StructFieldNode",
@@ -809,10 +974,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L632",
       "_origin": "ast",
-      "id": "src_ast_nodes_structfieldnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "structfieldnode"
+      "norm_label": "structfieldnode",
+      "id": "src_ast_nodes_structfieldnode"
     },
     {
       "label": ".constructor()",
@@ -820,10 +985,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L640",
       "_origin": "ast",
-      "id": "src_ast_nodes_structfieldnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_structfieldnode_constructor"
     },
     {
       "label": "EnumNode",
@@ -831,10 +996,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L651",
       "_origin": "ast",
-      "id": "src_ast_nodes_enumnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "enumnode"
+      "norm_label": "enumnode",
+      "id": "src_ast_nodes_enumnode"
     },
     {
       "label": ".constructor()",
@@ -842,10 +1007,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L658",
       "_origin": "ast",
-      "id": "src_ast_nodes_enumnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_enumnode_constructor"
     },
     {
       "label": "EnumValueNode",
@@ -853,10 +1018,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L668",
       "_origin": "ast",
-      "id": "src_ast_nodes_enumvaluenode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "enumvaluenode"
+      "norm_label": "enumvaluenode",
+      "id": "src_ast_nodes_enumvaluenode"
     },
     {
       "label": ".constructor()",
@@ -864,10 +1029,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L675",
       "_origin": "ast",
-      "id": "src_ast_nodes_enumvaluenode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_enumvaluenode_constructor"
     },
     {
       "label": "PreprocNode",
@@ -875,10 +1040,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L685",
       "_origin": "ast",
-      "id": "src_ast_nodes_preprocnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "preprocnode"
+      "norm_label": "preprocnode",
+      "id": "src_ast_nodes_preprocnode"
     },
     {
       "label": ".constructor()",
@@ -886,10 +1051,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L692",
       "_origin": "ast",
-      "id": "src_ast_nodes_preprocnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_preprocnode_constructor"
     },
     {
       "label": "PragmacNode",
@@ -897,10 +1062,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L702",
       "_origin": "ast",
-      "id": "src_ast_nodes_pragmacnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "pragmacnode"
+      "norm_label": "pragmacnode",
+      "id": "src_ast_nodes_pragmacnode"
     },
     {
       "label": ".constructor()",
@@ -908,10 +1073,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L709",
       "_origin": "ast",
-      "id": "src_ast_nodes_pragmacnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_pragmacnode_constructor"
     },
     {
       "label": "InlineAsmNode",
@@ -919,10 +1084,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L719",
       "_origin": "ast",
-      "id": "src_ast_nodes_inlineasmnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "inlineasmnode"
+      "norm_label": "inlineasmnode",
+      "id": "src_ast_nodes_inlineasmnode"
     },
     {
       "label": ".constructor()",
@@ -930,10 +1095,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L727",
       "_origin": "ast",
-      "id": "src_ast_nodes_inlineasmnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_inlineasmnode_constructor"
     },
     {
       "label": "SizeOfNode",
@@ -941,10 +1106,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L738",
       "_origin": "ast",
-      "id": "src_ast_nodes_sizeofnode",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "sizeofnode"
+      "norm_label": "sizeofnode",
+      "id": "src_ast_nodes_sizeofnode"
     },
     {
       "label": ".constructor()",
@@ -952,10 +1117,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L744",
       "_origin": "ast",
-      "id": "src_ast_nodes_sizeofnode_constructor",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_sizeofnode_constructor"
     },
     {
       "label": "OffsetOfNode",
@@ -963,10 +1128,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L753",
       "_origin": "ast",
-      "id": "src_ast_nodes_offsetofnode",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "offsetofnode"
+      "norm_label": "offsetofnode",
+      "id": "src_ast_nodes_offsetofnode"
     },
     {
       "label": ".constructor()",
@@ -974,10 +1139,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L760",
       "_origin": "ast",
-      "id": "src_ast_nodes_offsetofnode_constructor",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_offsetofnode_constructor"
     },
     {
       "label": "TypeOfNode",
@@ -985,10 +1150,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L770",
       "_origin": "ast",
-      "id": "src_ast_nodes_typeofnode",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "typeofnode"
+      "norm_label": "typeofnode",
+      "id": "src_ast_nodes_typeofnode"
     },
     {
       "label": ".constructor()",
@@ -996,10 +1161,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L776",
       "_origin": "ast",
-      "id": "src_ast_nodes_typeofnode_constructor",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_typeofnode_constructor"
     },
     {
       "label": "AttributeNode",
@@ -1007,10 +1172,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L785",
       "_origin": "ast",
-      "id": "src_ast_nodes_attributenode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "attributenode"
+      "norm_label": "attributenode",
+      "id": "src_ast_nodes_attributenode"
     },
     {
       "label": ".constructor()",
@@ -1018,10 +1183,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L792",
       "_origin": "ast",
-      "id": "src_ast_nodes_attributenode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_attributenode_constructor"
     },
     {
       "label": "AnnotatedDeclNode",
@@ -1029,10 +1194,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L802",
       "_origin": "ast",
-      "id": "src_ast_nodes_annotateddeclnode",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": "annotateddeclnode"
+      "norm_label": "annotateddeclnode",
+      "id": "src_ast_nodes_annotateddeclnode"
     },
     {
       "label": ".constructor()",
@@ -1040,10 +1205,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L809",
       "_origin": "ast",
-      "id": "src_ast_nodes_annotateddeclnode_constructor",
       "community": 0,
       "community_name": "AST Node Definitions",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_annotateddeclnode_constructor"
     },
     {
       "label": "CastNode",
@@ -1051,10 +1216,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L819",
       "_origin": "ast",
-      "id": "src_ast_nodes_castnode",
       "community": 33,
       "community_name": "TypeSpecNode",
-      "norm_label": "castnode"
+      "norm_label": "castnode",
+      "id": "src_ast_nodes_castnode"
     },
     {
       "label": ".constructor()",
@@ -1062,10 +1227,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L826",
       "_origin": "ast",
-      "id": "src_ast_nodes_castnode_constructor",
       "community": 33,
       "community_name": "TypeSpecNode",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_ast_nodes_castnode_constructor"
     },
     {
       "label": ".toJSON()",
@@ -1073,10 +1238,10 @@
       "source_file": "src/ast/nodes.js",
       "source_location": "L836",
       "_origin": "ast",
-      "id": "src_ast_nodes_castnode_tojson",
       "community": 33,
       "community_name": "TypeSpecNode",
-      "norm_label": ".tojson()"
+      "norm_label": ".tojson()",
+      "id": "src_ast_nodes_castnode_tojson"
     },
     {
       "label": "function-pointers.js",
@@ -1084,10 +1249,10 @@
       "source_file": "src/parser/function-pointers.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_parser_function_pointers",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "function-pointers.js"
+      "norm_label": "function-pointers.js",
+      "id": "src_parser_function_pointers"
     },
     {
       "label": "kw()",
@@ -1095,10 +1260,10 @@
       "source_file": "src/parser/function-pointers.js",
       "source_location": "L9",
       "_origin": "ast",
-      "id": "src_parser_function_pointers_kw",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "kw()"
+      "norm_label": "kw()",
+      "id": "src_parser_function_pointers_kw"
     },
     {
       "label": "locFromToken()",
@@ -1106,10 +1271,10 @@
       "source_file": "src/parser/function-pointers.js",
       "source_location": "L14",
       "_origin": "ast",
-      "id": "src_parser_function_pointers_locfromtoken",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "locfromtoken()"
+      "norm_label": "locfromtoken()",
+      "id": "src_parser_function_pointers_locfromtoken"
     },
     {
       "label": "buildParamList()",
@@ -1117,10 +1282,10 @@
       "source_file": "src/parser/function-pointers.js",
       "source_location": "L20",
       "_origin": "ast",
-      "id": "src_parser_function_pointers_buildparamlist",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "buildparamlist()"
+      "norm_label": "buildparamlist()",
+      "id": "src_parser_function_pointers_buildparamlist"
     },
     {
       "label": "basicFuncPointerPattern",
@@ -1128,10 +1293,10 @@
       "source_file": "src/parser/function-pointers.js",
       "source_location": "L60",
       "_origin": "ast",
-      "id": "src_parser_function_pointers_basicfuncpointerpattern",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "basicfuncpointerpattern"
+      "norm_label": "basicfuncpointerpattern",
+      "id": "src_parser_function_pointers_basicfuncpointerpattern"
     },
     {
       "label": "arrayDimParser",
@@ -1139,10 +1304,10 @@
       "source_file": "src/parser/function-pointers.js",
       "source_location": "L73",
       "_origin": "ast",
-      "id": "src_parser_function_pointers_arraydimparser",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "arraydimparser"
+      "norm_label": "arraydimparser",
+      "id": "src_parser_function_pointers_arraydimparser"
     },
     {
       "label": "FunctionPointerDeclaratorParser",
@@ -1150,10 +1315,10 @@
       "source_file": "src/parser/function-pointers.js",
       "source_location": "L88",
       "_origin": "ast",
-      "id": "src_parser_function_pointers_functionpointerdeclaratorparser",
       "community": 86,
       "community_name": "FunctionPointerDeclaratorParser",
-      "norm_label": "functionpointerdeclaratorparser"
+      "norm_label": "functionpointerdeclaratorparser",
+      "id": "src_parser_function_pointers_functionpointerdeclaratorparser"
     },
     {
       "label": ".constructor()",
@@ -1161,10 +1326,10 @@
       "source_file": "src/parser/function-pointers.js",
       "source_location": "L89",
       "_origin": "ast",
-      "id": "src_parser_function_pointers_functionpointerdeclaratorparser_constructor",
       "community": 86,
       "community_name": "FunctionPointerDeclaratorParser",
-      "norm_label": ".constructor()"
+      "norm_label": ".constructor()",
+      "id": "src_parser_function_pointers_functionpointerdeclaratorparser_constructor"
     },
     {
       "label": ".parse()",
@@ -1172,10 +1337,10 @@
       "source_file": "src/parser/function-pointers.js",
       "source_location": "L94",
       "_origin": "ast",
-      "id": "src_parser_function_pointers_functionpointerdeclaratorparser_parse",
       "community": 86,
       "community_name": "FunctionPointerDeclaratorParser",
-      "norm_label": ".parse()"
+      "norm_label": ".parse()",
+      "id": "src_parser_function_pointers_functionpointerdeclaratorparser_parse"
     },
     {
       "label": "buildFunctionPointerDeclarator()",
@@ -1183,10 +1348,10 @@
       "source_file": "src/parser/function-pointers.js",
       "source_location": "L191",
       "_origin": "ast",
-      "id": "src_parser_function_pointers_buildfunctionpointerdeclarator",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "buildfunctionpointerdeclarator()"
+      "norm_label": "buildfunctionpointerdeclarator()",
+      "id": "src_parser_function_pointers_buildfunctionpointerdeclarator"
     },
     {
       "label": "buildExtendedTypeSpecifier()",
@@ -1194,10 +1359,10 @@
       "source_file": "src/parser/function-pointers.js",
       "source_location": "L205",
       "_origin": "ast",
-      "id": "src_parser_function_pointers_buildextendedtypespecifier",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "buildextendedtypespecifier()"
+      "norm_label": "buildextendedtypespecifier()",
+      "id": "src_parser_function_pointers_buildextendedtypespecifier"
     },
     {
       "label": "buildRecursiveFuncPointerParam()",
@@ -1205,10 +1370,10 @@
       "source_file": "src/parser/function-pointers.js",
       "source_location": "L281",
       "_origin": "ast",
-      "id": "src_parser_function_pointers_buildrecursivefuncpointerparam",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "buildrecursivefuncpointerparam()"
+      "norm_label": "buildrecursivefuncpointerparam()",
+      "id": "src_parser_function_pointers_buildrecursivefuncpointerparam"
     },
     {
       "label": "type-system.js",
@@ -1216,10 +1381,10 @@
       "source_file": "src/parser/type-system.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_parser_type_system",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "type-system.js"
+      "norm_label": "type-system.js",
+      "id": "src_parser_type_system"
     },
     {
       "label": "kw()",
@@ -1227,10 +1392,10 @@
       "source_file": "src/parser/type-system.js",
       "source_location": "L9",
       "_origin": "ast",
-      "id": "src_parser_type_system_kw",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "kw()"
+      "norm_label": "kw()",
+      "id": "src_parser_type_system_kw"
     },
     {
       "label": "locFromToken()",
@@ -1238,10 +1403,10 @@
       "source_file": "src/parser/type-system.js",
       "source_location": "L14",
       "_origin": "ast",
-      "id": "src_parser_type_system_locfromtoken",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "locfromtoken()"
+      "norm_label": "locfromtoken()",
+      "id": "src_parser_type_system_locfromtoken"
     },
     {
       "label": "TypeInfos",
@@ -1249,10 +1414,10 @@
       "source_file": "src/parser/type-system.js",
       "source_location": "L20",
       "_origin": "ast",
-      "id": "src_parser_type_system_typeinfos",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "typeinfos"
+      "norm_label": "typeinfos",
+      "id": "src_parser_type_system_typeinfos"
     },
     {
       "label": "createTypeSpec()",
@@ -1260,10 +1425,10 @@
       "source_file": "src/parser/type-system.js",
       "source_location": "L40",
       "_origin": "ast",
-      "id": "src_parser_type_system_createtypespec",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "createtypespec()"
+      "norm_label": "createtypespec()",
+      "id": "src_parser_type_system_createtypespec"
     },
     {
       "label": "mergeDeclaratorType()",
@@ -1271,10 +1436,10 @@
       "source_file": "src/parser/type-system.js",
       "source_location": "L56",
       "_origin": "ast",
-      "id": "src_parser_type_system_mergedeclaratortype",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "mergedeclaratortype()"
+      "norm_label": "mergedeclaratortype()",
+      "id": "src_parser_type_system_mergedeclaratortype"
     },
     {
       "label": "createFunctionPointerType()",
@@ -1282,10 +1447,10 @@
       "source_file": "src/parser/type-system.js",
       "source_location": "L105",
       "_origin": "ast",
-      "id": "src_parser_type_system_createfunctionpointertype",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "createfunctionpointertype()"
+      "norm_label": "createfunctionpointertype()",
+      "id": "src_parser_type_system_createfunctionpointertype"
     },
     {
       "label": "buildTypeSpecifier()",
@@ -1293,10 +1458,10 @@
       "source_file": "src/parser/type-system.js",
       "source_location": "L140",
       "_origin": "ast",
-      "id": "src_parser_type_system_buildtypespecifier",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "buildtypespecifier()"
+      "norm_label": "buildtypespecifier()",
+      "id": "src_parser_type_system_buildtypespecifier"
     },
     {
       "label": "buildStructTypeRef()",
@@ -1304,10 +1469,10 @@
       "source_file": "src/parser/type-system.js",
       "source_location": "L196",
       "_origin": "ast",
-      "id": "src_parser_type_system_buildstructtyperef",
       "community": 29,
       "community_name": "IR Instruction Base",
-      "norm_label": "buildstructtyperef()"
+      "norm_label": "buildstructtyperef()",
+      "id": "src_parser_type_system_buildstructtyperef"
     },
     {
       "label": "bitfields.test.js",
@@ -1315,10 +1480,10 @@
       "source_file": "src/tests/bitfields.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_bitfields_test",
       "community": 87,
       "community_name": "bitfields.test.js",
-      "norm_label": "bitfields.test.js"
+      "norm_label": "bitfields.test.js",
+      "id": "src_tests_bitfields_test"
     },
     {
       "label": "parse()",
@@ -1326,10 +1491,10 @@
       "source_file": "src/tests/bitfields.test.js",
       "source_location": "L12",
       "_origin": "ast",
-      "id": "src_tests_bitfields_test_parse",
       "community": 87,
       "community_name": "bitfields.test.js",
-      "norm_label": "parse()"
+      "norm_label": "parse()",
+      "id": "src_tests_bitfields_test_parse"
     },
     {
       "label": "toIr()",
@@ -1337,10 +1502,10 @@
       "source_file": "src/tests/bitfields.test.js",
       "source_location": "L22",
       "_origin": "ast",
-      "id": "src_tests_bitfields_test_toir",
       "community": 87,
       "community_name": "bitfields.test.js",
-      "norm_label": "toir()"
+      "norm_label": "toir()",
+      "id": "src_tests_bitfields_test_toir"
     },
     {
       "label": "vcc80.js",
@@ -1425,8 +1590,8 @@
       "source_file": "src/linker/linker.js",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 18,
-      "community_name": "Object File & Relocations",
+      "community": 14,
+      "community_name": "Linker Core",
       "norm_label": "linkeroptions",
       "id": "src_linker_linker_linkeroptions"
     },
@@ -1436,8 +1601,8 @@
       "source_file": "src/linker/linker.js",
       "source_location": "L18",
       "_origin": "ast",
-      "community": 18,
-      "community_name": "Object File & Relocations",
+      "community": 14,
+      "community_name": "Linker Core",
       "norm_label": ".constructor()",
       "id": "src_linker_linker_linkeroptions_constructor"
     },
@@ -1447,8 +1612,8 @@
       "source_file": "src/linker/linker.js",
       "source_location": "L36",
       "_origin": "ast",
-      "community": 14,
-      "community_name": "Linker Core",
+      "community": 51,
+      "community_name": "._executeOpcode",
       "norm_label": "resolvedsymbol",
       "id": "src_linker_linker_resolvedsymbol"
     },
@@ -1458,8 +1623,8 @@
       "source_file": "src/linker/linker.js",
       "source_location": "L47",
       "_origin": "ast",
-      "community": 14,
-      "community_name": "Linker Core",
+      "community": 51,
+      "community_name": "._executeOpcode",
       "norm_label": ".constructor()",
       "id": "src_linker_linker_resolvedsymbol_constructor"
     },
@@ -1469,8 +1634,8 @@
       "source_file": "src/linker/linker.js",
       "source_location": "L61",
       "_origin": "ast",
-      "community": 14,
-      "community_name": "Linker Core",
+      "community": 51,
+      "community_name": "._executeOpcode",
       "norm_label": ".tojson()",
       "id": "src_linker_linker_resolvedsymbol_tojson"
     },
@@ -2316,8 +2481,8 @@
       "source_file": "src/linker/objectfile.js",
       "source_location": "L284",
       "_origin": "ast",
-      "community": 51,
-      "community_name": "._executeOpcode",
+      "community": 34,
+      "community_name": "CompoundNode",
       "norm_label": "irtoobjectfile",
       "id": "src_linker_objectfile_irtoobjectfile"
     },
@@ -2327,8 +2492,8 @@
       "source_file": "src/linker/objectfile.js",
       "source_location": "L289",
       "_origin": "ast",
-      "community": 51,
-      "community_name": "._executeOpcode",
+      "community": 34,
+      "community_name": "CompoundNode",
       "norm_label": ".constructor()",
       "id": "src_linker_objectfile_irtoobjectfile_constructor"
     },
@@ -2338,8 +2503,8 @@
       "source_file": "src/linker/objectfile.js",
       "source_location": "L301",
       "_origin": "ast",
-      "community": 51,
-      "community_name": "._executeOpcode",
+      "community": 34,
+      "community_name": "CompoundNode",
       "norm_label": ".convert()",
       "id": "src_linker_objectfile_irtoobjectfile_convert"
     },
@@ -2349,8 +2514,8 @@
       "source_file": "src/linker/objectfile.js",
       "source_location": "L319",
       "_origin": "ast",
-      "community": 51,
-      "community_name": "._executeOpcode",
+      "community": 34,
+      "community_name": "CompoundNode",
       "norm_label": ".convertfunction()",
       "id": "src_linker_objectfile_irtoobjectfile_convertfunction"
     },
@@ -2360,8 +2525,8 @@
       "source_file": "src/linker/objectfile.js",
       "source_location": "L346",
       "_origin": "ast",
-      "community": 51,
-      "community_name": "._executeOpcode",
+      "community": 34,
+      "community_name": "CompoundNode",
       "norm_label": ".convertblock()",
       "id": "src_linker_objectfile_irtoobjectfile_convertblock"
     },
@@ -2371,8 +2536,8 @@
       "source_file": "src/linker/objectfile.js",
       "source_location": "L356",
       "_origin": "ast",
-      "community": 51,
-      "community_name": "._executeOpcode",
+      "community": 34,
+      "community_name": "CompoundNode",
       "norm_label": ".convertinstruction()",
       "id": "src_linker_objectfile_irtoobjectfile_convertinstruction"
     },
@@ -2382,8 +2547,8 @@
       "source_file": "src/linker/objectfile.js",
       "source_location": "L400",
       "_origin": "ast",
-      "community": 51,
-      "community_name": "._executeOpcode",
+      "community": 34,
+      "community_name": "CompoundNode",
       "norm_label": ".convertload()",
       "id": "src_linker_objectfile_irtoobjectfile_convertload"
     },
@@ -2393,8 +2558,8 @@
       "source_file": "src/linker/objectfile.js",
       "source_location": "L421",
       "_origin": "ast",
-      "community": 51,
-      "community_name": "._executeOpcode",
+      "community": 34,
+      "community_name": "CompoundNode",
       "norm_label": ".convertstore()",
       "id": "src_linker_objectfile_irtoobjectfile_convertstore"
     },
@@ -2404,8 +2569,8 @@
       "source_file": "src/linker/objectfile.js",
       "source_location": "L429",
       "_origin": "ast",
-      "community": 51,
-      "community_name": "._executeOpcode",
+      "community": 34,
+      "community_name": "CompoundNode",
       "norm_label": ".convertbinop()",
       "id": "src_linker_objectfile_irtoobjectfile_convertbinop"
     },
@@ -2415,8 +2580,8 @@
       "source_file": "src/linker/objectfile.js",
       "source_location": "L457",
       "_origin": "ast",
-      "community": 51,
-      "community_name": "._executeOpcode",
+      "community": 34,
+      "community_name": "CompoundNode",
       "norm_label": ".convertunop()",
       "id": "src_linker_objectfile_irtoobjectfile_convertunop"
     },
@@ -2426,8 +2591,8 @@
       "source_file": "src/linker/objectfile.js",
       "source_location": "L477",
       "_origin": "ast",
-      "community": 51,
-      "community_name": "._executeOpcode",
+      "community": 34,
+      "community_name": "CompoundNode",
       "norm_label": ".convertcall()",
       "id": "src_linker_objectfile_irtoobjectfile_convertcall"
     },
@@ -2437,8 +2602,8 @@
       "source_file": "src/linker/objectfile.js",
       "source_location": "L493",
       "_origin": "ast",
-      "community": 51,
-      "community_name": "._executeOpcode",
+      "community": 34,
+      "community_name": "CompoundNode",
       "norm_label": ".convertret()",
       "id": "src_linker_objectfile_irtoobjectfile_convertret"
     },
@@ -2448,8 +2613,8 @@
       "source_file": "src/linker/objectfile.js",
       "source_location": "L501",
       "_origin": "ast",
-      "community": 51,
-      "community_name": "._executeOpcode",
+      "community": 34,
+      "community_name": "CompoundNode",
       "norm_label": ".convertjump()",
       "id": "src_linker_objectfile_irtoobjectfile_convertjump"
     },
@@ -2459,8 +2624,8 @@
       "source_file": "src/linker/objectfile.js",
       "source_location": "L517",
       "_origin": "ast",
-      "community": 51,
-      "community_name": "._executeOpcode",
+      "community": 34,
+      "community_name": "CompoundNode",
       "norm_label": ".convertjumpif()",
       "id": "src_linker_objectfile_irtoobjectfile_convertjumpif"
     },
@@ -2470,8 +2635,8 @@
       "source_file": "src/linker/objectfile.js",
       "source_location": "L533",
       "_origin": "ast",
-      "community": 51,
-      "community_name": "._executeOpcode",
+      "community": 34,
+      "community_name": "CompoundNode",
       "norm_label": ".convertpush()",
       "id": "src_linker_objectfile_irtoobjectfile_convertpush"
     },
@@ -2481,8 +2646,8 @@
       "source_file": "src/linker/objectfile.js",
       "source_location": "L541",
       "_origin": "ast",
-      "community": 51,
-      "community_name": "._executeOpcode",
+      "community": 34,
+      "community_name": "CompoundNode",
       "norm_label": ".convertpop()",
       "id": "src_linker_objectfile_irtoobjectfile_convertpop"
     },
@@ -2492,8 +2657,8 @@
       "source_file": "src/linker/objectfile.js",
       "source_location": "L549",
       "_origin": "ast",
-      "community": 51,
-      "community_name": "._executeOpcode",
+      "community": 34,
+      "community_name": "CompoundNode",
       "norm_label": ".convertglobal()",
       "id": "src_linker_objectfile_irtoobjectfile_convertglobal"
     },
@@ -2855,8 +3020,8 @@
       "source_file": "src/linker/objectfile_loader.js",
       "source_location": "L394",
       "_origin": "ast",
-      "community": 23,
-      "community_name": "Binary Reader",
+      "community": 65,
+      "community_name": "serializeObjectFile",
       "norm_label": "saveobjectfile()",
       "id": "src_linker_objectfile_loader_saveobjectfile"
     },
@@ -3515,8 +3680,8 @@
       "source_file": "src/nanopass/intrinsics.js",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 8,
-      "community_name": "Z80 Code Generator",
+      "community": 38,
+      "community_name": "EnumValueNode",
       "norm_label": "intrinsics.js",
       "id": "src_nanopass_intrinsics"
     },
@@ -3526,8 +3691,8 @@
       "source_file": "src/nanopass/intrinsics.js",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 8,
-      "community_name": "Z80 Code Generator",
+      "community": 38,
+      "community_name": "EnumValueNode",
       "norm_label": "intrinsicmap",
       "id": "src_nanopass_intrinsics_intrinsicmap"
     },
@@ -3537,8 +3702,8 @@
       "source_file": "src/nanopass/intrinsics.js",
       "source_location": "L58",
       "_origin": "ast",
-      "community": 8,
-      "community_name": "Z80 Code Generator",
+      "community": 38,
+      "community_name": "EnumValueNode",
       "norm_label": "intrinsichandler",
       "id": "src_nanopass_intrinsics_intrinsichandler"
     },
@@ -3548,8 +3713,8 @@
       "source_file": "src/nanopass/intrinsics.js",
       "source_location": "L63",
       "_origin": "ast",
-      "community": 8,
-      "community_name": "Z80 Code Generator",
+      "community": 38,
+      "community_name": "EnumValueNode",
       "norm_label": ".getintrinsicmap()",
       "id": "src_nanopass_intrinsics_intrinsichandler_getintrinsicmap"
     },
@@ -3559,8 +3724,8 @@
       "source_file": "src/nanopass/intrinsics.js",
       "source_location": "L77",
       "_origin": "ast",
-      "community": 8,
-      "community_name": "Z80 Code Generator",
+      "community": 38,
+      "community_name": "EnumValueNode",
       "norm_label": ".translateintrinsic()",
       "id": "src_nanopass_intrinsics_intrinsichandler_translateintrinsic"
     },
@@ -3570,8 +3735,8 @@
       "source_file": "src/nanopass/type-registry.js",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 8,
-      "community_name": "Z80 Code Generator",
+      "community": 38,
+      "community_name": "EnumValueNode",
       "norm_label": "type-registry.js",
       "id": "src_nanopass_type_registry"
     },
@@ -3581,8 +3746,8 @@
       "source_file": "src/nanopass/type-registry.js",
       "source_location": "L8",
       "_origin": "ast",
-      "community": 8,
-      "community_name": "Z80 Code Generator",
+      "community": 38,
+      "community_name": "EnumValueNode",
       "norm_label": "typeregistry",
       "id": "src_nanopass_type_registry_typeregistry"
     },
@@ -3592,8 +3757,8 @@
       "source_file": "src/nanopass/type-registry.js",
       "source_location": "L12",
       "_origin": "ast",
-      "community": 8,
-      "community_name": "Z80 Code Generator",
+      "community": 38,
+      "community_name": "EnumValueNode",
       "norm_label": ".constructor()",
       "id": "src_nanopass_type_registry_typeregistry_constructor"
     },
@@ -3603,8 +3768,8 @@
       "source_file": "src/nanopass/type-registry.js",
       "source_location": "L23",
       "_origin": "ast",
-      "community": 8,
-      "community_name": "Z80 Code Generator",
+      "community": 38,
+      "community_name": "EnumValueNode",
       "norm_label": "._registerbuiltinstructs()",
       "id": "src_nanopass_type_registry_typeregistry_registerbuiltinstructs"
     },
@@ -3614,8 +3779,8 @@
       "source_file": "src/nanopass/type-registry.js",
       "source_location": "L46",
       "_origin": "ast",
-      "community": 8,
-      "community_name": "Z80 Code Generator",
+      "community": 38,
+      "community_name": "EnumValueNode",
       "norm_label": ".registertypedef()",
       "id": "src_nanopass_type_registry_typeregistry_registertypedef"
     },
@@ -3625,8 +3790,8 @@
       "source_file": "src/nanopass/type-registry.js",
       "source_location": "L57",
       "_origin": "ast",
-      "community": 8,
-      "community_name": "Z80 Code Generator",
+      "community": 38,
+      "community_name": "EnumValueNode",
       "norm_label": ".registerstruct()",
       "id": "src_nanopass_type_registry_typeregistry_registerstruct"
     },
@@ -3636,8 +3801,8 @@
       "source_file": "src/nanopass/type-registry.js",
       "source_location": "L79",
       "_origin": "ast",
-      "community": 8,
-      "community_name": "Z80 Code Generator",
+      "community": 38,
+      "community_name": "EnumValueNode",
       "norm_label": ".resolvetype()",
       "id": "src_nanopass_type_registry_typeregistry_resolvetype"
     },
@@ -3647,8 +3812,8 @@
       "source_file": "src/nanopass/type-registry.js",
       "source_location": "L100",
       "_origin": "ast",
-      "community": 8,
-      "community_name": "Z80 Code Generator",
+      "community": 38,
+      "community_name": "EnumValueNode",
       "norm_label": "computestructsize()",
       "id": "src_nanopass_type_registry_computestructsize"
     },
@@ -3658,8 +3823,8 @@
       "source_file": "src/nanopass/type-registry.js",
       "source_location": "L125",
       "_origin": "ast",
-      "community": 8,
-      "community_name": "Z80 Code Generator",
+      "community": 38,
+      "community_name": "EnumValueNode",
       "norm_label": "computefieldoffsets()",
       "id": "src_nanopass_type_registry_computefieldoffsets"
     },
@@ -3669,8 +3834,8 @@
       "source_file": "src/tests/stdio.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 8,
-      "community_name": "Z80 Code Generator",
+      "community": 38,
+      "community_name": "EnumValueNode",
       "norm_label": "stdio.test.js",
       "id": "src_tests_stdio_test"
     },
@@ -3680,8 +3845,8 @@
       "source_file": "src/tests/stdio.test.js",
       "source_location": "L45",
       "_origin": "ast",
-      "community": 8,
-      "community_name": "Z80 Code Generator",
+      "community": 38,
+      "community_name": "EnumValueNode",
       "norm_label": "compile()",
       "id": "src_tests_stdio_test_compile"
     },
@@ -3691,8 +3856,8 @@
       "source_file": "src/tests/stdio.test.js",
       "source_location": "L54",
       "_origin": "ast",
-      "community": 8,
-      "community_name": "Z80 Code Generator",
+      "community": 38,
+      "community_name": "EnumValueNode",
       "norm_label": "findintrinsic()",
       "id": "src_tests_stdio_test_findintrinsic"
     },
@@ -3702,8 +3867,8 @@
       "source_file": "src/tests/stdio.test.js",
       "source_location": "L255",
       "_origin": "ast",
-      "community": 8,
-      "community_name": "Z80 Code Generator",
+      "community": 38,
+      "community_name": "EnumValueNode",
       "norm_label": "compiletoassembly()",
       "id": "src_tests_stdio_test_compiletoassembly"
     },
@@ -6122,8 +6287,8 @@
       "source_file": "src/compiler.js",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 38,
-      "community_name": "EnumValueNode",
+      "community": 55,
+      "community_name": "CaseClauseNode",
       "norm_label": "compiler.js",
       "id": "src_compiler"
     },
@@ -6364,8 +6529,8 @@
       "source_file": "src/compiler.js",
       "source_location": "L432",
       "_origin": "ast",
-      "community": 34,
-      "community_name": "CompoundNode",
+      "community": 55,
+      "community_name": "CaseClauseNode",
       "norm_label": ".generateir()",
       "id": "src_compiler_compiler_generateir"
     },
@@ -6419,8 +6584,8 @@
       "source_file": "src/compiler.js",
       "source_location": "L527",
       "_origin": "ast",
-      "community": 34,
-      "community_name": "CompoundNode",
+      "community": 65,
+      "community_name": "serializeObjectFile",
       "norm_label": ".writeobjectfile()",
       "id": "src_compiler_compiler_writeobjectfile"
     },
@@ -6474,8 +6639,8 @@
       "source_file": "src/core/errors.js",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 38,
-      "community_name": "EnumValueNode",
+      "community": 96,
+      "community_name": "preprocessor.test.js",
       "norm_label": "errors.js",
       "id": "src_core_errors"
     },
@@ -6518,8 +6683,8 @@
       "source_file": "src/core/errors.js",
       "source_location": "L29",
       "_origin": "ast",
-      "community": 38,
-      "community_name": "EnumValueNode",
+      "community": 96,
+      "community_name": "preprocessor.test.js",
       "norm_label": "lexererror",
       "id": "src_core_errors_lexererror"
     },
@@ -6529,8 +6694,8 @@
       "source_file": "src/core/errors.js",
       "source_location": "L30",
       "_origin": "ast",
-      "community": 38,
-      "community_name": "EnumValueNode",
+      "community": 96,
+      "community_name": "preprocessor.test.js",
       "norm_label": ".constructor()",
       "id": "src_core_errors_lexererror_constructor"
     },
@@ -6540,8 +6705,8 @@
       "source_file": "src/core/errors.js",
       "source_location": "L39",
       "_origin": "ast",
-      "community": 38,
-      "community_name": "EnumValueNode",
+      "community": 29,
+      "community_name": "IR Instruction Base",
       "norm_label": "parsererror",
       "id": "src_core_errors_parsererror"
     },
@@ -6551,8 +6716,8 @@
       "source_file": "src/core/errors.js",
       "source_location": "L40",
       "_origin": "ast",
-      "community": 38,
-      "community_name": "EnumValueNode",
+      "community": 29,
+      "community_name": "IR Instruction Base",
       "norm_label": ".constructor()",
       "id": "src_core_errors_parsererror_constructor"
     },
@@ -7145,8 +7310,8 @@
       "source_file": "src/linker/wladxcodegen.js",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 83,
-      "community_name": "wladxcodegen.js",
+      "community": 18,
+      "community_name": "Object File & Relocations",
       "norm_label": "wladxcodegen.js",
       "id": "src_linker_wladxcodegen"
     },
@@ -7156,8 +7321,8 @@
       "source_file": "src/linker/wladxcodegen.js",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 83,
-      "community_name": "wladxcodegen.js",
+      "community": 18,
+      "community_name": "Object File & Relocations",
       "norm_label": "wladxsectiontype",
       "id": "src_linker_wladxcodegen_wladxsectiontype"
     },
@@ -7167,8 +7332,8 @@
       "source_file": "src/linker/wladxcodegen.js",
       "source_location": "L19",
       "_origin": "ast",
-      "community": 83,
-      "community_name": "wladxcodegen.js",
+      "community": 18,
+      "community_name": "Object File & Relocations",
       "norm_label": "z80opcodes",
       "id": "src_linker_wladxcodegen_z80opcodes"
     },
@@ -9015,8 +9180,8 @@
       "source_file": "src/parser/combinators.js",
       "source_location": "L275",
       "_origin": "ast",
-      "community": 53,
-      "community_name": "LoadAddrInstruction",
+      "community": 29,
+      "community_name": "IR Instruction Base",
       "norm_label": "locationparser",
       "id": "src_parser_combinators_locationparser"
     },
@@ -9026,8 +9191,8 @@
       "source_file": "src/parser/combinators.js",
       "source_location": "L276",
       "_origin": "ast",
-      "community": 53,
-      "community_name": "LoadAddrInstruction",
+      "community": 29,
+      "community_name": "IR Instruction Base",
       "norm_label": ".constructor()",
       "id": "src_parser_combinators_locationparser_constructor"
     },
@@ -9037,8 +9202,8 @@
       "source_file": "src/parser/combinators.js",
       "source_location": "L281",
       "_origin": "ast",
-      "community": 53,
-      "community_name": "LoadAddrInstruction",
+      "community": 29,
+      "community_name": "IR Instruction Base",
       "norm_label": ".parse()",
       "id": "src_parser_combinators_locationparser_parse"
     },
@@ -10544,8 +10709,8 @@
       "source_file": "src/preprocessor/directives.js",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 38,
-      "community_name": "EnumValueNode",
+      "community": 96,
+      "community_name": "preprocessor.test.js",
       "norm_label": "directives.js",
       "id": "src_preprocessor_directives"
     },
@@ -10720,8 +10885,8 @@
       "source_file": "src/preprocessor/lexer-core.js",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 38,
-      "community_name": "EnumValueNode",
+      "community": 96,
+      "community_name": "preprocessor.test.js",
       "norm_label": "lexer-core.js",
       "id": "src_preprocessor_lexer_core"
     },
@@ -10995,8 +11160,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L16",
       "_origin": "ast",
-      "community": 96,
-      "community_name": "preprocessor.test.js",
+      "community": 44,
+      "community_name": "objectfile_loader.js",
       "norm_label": "lexer",
       "id": "src_preprocessor_lexer_lexer"
     },
@@ -11006,8 +11171,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L22",
       "_origin": "ast",
-      "community": 96,
-      "community_name": "preprocessor.test.js",
+      "community": 44,
+      "community_name": "objectfile_loader.js",
       "norm_label": ".constructor()",
       "id": "src_preprocessor_lexer_lexer_constructor"
     },
@@ -11017,8 +11182,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L35",
       "_origin": "ast",
-      "community": 96,
-      "community_name": "preprocessor.test.js",
+      "community": 44,
+      "community_name": "objectfile_loader.js",
       "norm_label": "._expandmacro()",
       "id": "src_preprocessor_lexer_lexer_expandmacro"
     },
@@ -11028,8 +11193,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L45",
       "_origin": "ast",
-      "community": 96,
-      "community_name": "preprocessor.test.js",
+      "community": 44,
+      "community_name": "objectfile_loader.js",
       "norm_label": "._expandargtokens()",
       "id": "src_preprocessor_lexer_lexer_expandargtokens"
     },
@@ -11039,8 +11204,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L58",
       "_origin": "ast",
-      "community": 96,
-      "community_name": "preprocessor.test.js",
+      "community": 44,
+      "community_name": "objectfile_loader.js",
       "norm_label": "._substituteparamstokens()",
       "id": "src_preprocessor_lexer_lexer_substituteparamstokens"
     },
@@ -11050,8 +11215,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L68",
       "_origin": "ast",
-      "community": 96,
-      "community_name": "preprocessor.test.js",
+      "community": 44,
+      "community_name": "objectfile_loader.js",
       "norm_label": "._expandtokensmacros()",
       "id": "src_preprocessor_lexer_lexer_expandtokensmacros"
     },
@@ -11061,8 +11226,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L78",
       "_origin": "ast",
-      "community": 96,
-      "community_name": "preprocessor.test.js",
+      "community": 44,
+      "community_name": "objectfile_loader.js",
       "norm_label": "._collectargsfromtokens()",
       "id": "src_preprocessor_lexer_lexer_collectargsfromtokens"
     },
@@ -11072,8 +11237,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L86",
       "_origin": "ast",
-      "community": 96,
-      "community_name": "preprocessor.test.js",
+      "community": 44,
+      "community_name": "objectfile_loader.js",
       "norm_label": "._parsemacroargs()",
       "id": "src_preprocessor_lexer_lexer_parsemacroargs"
     },
@@ -11094,8 +11259,8 @@
       "source_file": "src/preprocessor/lexer.js",
       "source_location": "L103",
       "_origin": "ast",
-      "community": 96,
-      "community_name": "preprocessor.test.js",
+      "community": 44,
+      "community_name": "objectfile_loader.js",
       "norm_label": "._evaluateconstantexpression()",
       "id": "src_preprocessor_lexer_lexer_evaluateconstantexpression"
     },
@@ -11237,8 +11402,8 @@
       "source_file": "src/preprocessor/preprocessed-source.js",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 38,
-      "community_name": "EnumValueNode",
+      "community": 96,
+      "community_name": "preprocessor.test.js",
       "norm_label": "preprocessed-source.js",
       "id": "src_preprocessor_preprocessed_source"
     },
@@ -11479,8 +11644,8 @@
       "source_file": "src/preprocessor/tokenTypes.js",
       "source_location": "L85",
       "_origin": "ast",
-      "community": 38,
-      "community_name": "EnumValueNode",
+      "community": 96,
+      "community_name": "preprocessor.test.js",
       "norm_label": "keywords",
       "id": "src_preprocessor_tokentypes_keywords"
     },
@@ -12777,8 +12942,8 @@
       "source_file": "src/tests/calling_convention_parsing.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 38,
-      "community_name": "EnumValueNode",
+      "community": 55,
+      "community_name": "CaseClauseNode",
       "norm_label": "calling_convention_parsing.test.js",
       "id": "src_tests_calling_convention_parsing_test"
     },
@@ -12799,8 +12964,8 @@
       "source_file": "src/tests/cparser.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 55,
-      "community_name": "CaseClauseNode",
+      "community": 44,
+      "community_name": "objectfile_loader.js",
       "norm_label": "cparser.test.js",
       "id": "src_tests_cparser_test"
     },
@@ -12821,8 +12986,8 @@
       "source_file": "src/tests/function_pointer.test.js",
       "source_location": "L83",
       "_origin": "ast",
-      "community": 55,
-      "community_name": "CaseClauseNode",
+      "community": 8,
+      "community_name": "Z80 Code Generator",
       "norm_label": "compile()",
       "id": "src_tests_function_pointer_test_compile"
     },
@@ -13239,8 +13404,8 @@
       "source_file": "src/tests/qualifiers.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "community": 55,
-      "community_name": "CaseClauseNode",
+      "community": 44,
+      "community_name": "objectfile_loader.js",
       "norm_label": "qualifiers.test.js",
       "id": "src_tests_qualifiers_test"
     },
@@ -13250,8 +13415,8 @@
       "source_file": "src/tests/qualifiers.test.js",
       "source_location": "L9",
       "_origin": "ast",
-      "community": 55,
-      "community_name": "CaseClauseNode",
+      "community": 44,
+      "community_name": "objectfile_loader.js",
       "norm_label": "parse()",
       "id": "src_tests_qualifiers_test_parse"
     },
@@ -13309,160 +13474,6 @@
       "community_name": "WatchManager",
       "norm_label": "simulator.watcher.test.js",
       "id": "src_tests_simulator_watcher_test"
-    },
-    {
-      "label": "SKILL.md",
-      "file_type": "document",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
-      "norm_label": "skill.md",
-      "id": "opencode_skills_z80_coder_skill"
-    },
-    {
-      "label": "Z80 Coder",
-      "file_type": "document",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L6",
-      "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
-      "norm_label": "z80 coder",
-      "id": "opencode_skills_z80_coder_skill_z80_coder"
-    },
-    {
-      "label": "Registers",
-      "file_type": "document",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L10",
-      "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
-      "norm_label": "registers",
-      "id": "opencode_skills_z80_coder_skill_registers"
-    },
-    {
-      "label": "Implicit uses",
-      "file_type": "document",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L37",
-      "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
-      "norm_label": "implicit uses",
-      "id": "opencode_skills_z80_coder_skill_implicit_uses"
-    },
-    {
-      "label": "Instruction set",
-      "file_type": "document",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L55",
-      "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
-      "norm_label": "instruction set",
-      "id": "opencode_skills_z80_coder_skill_instruction_set"
-    },
-    {
-      "label": "Unprefixed instructions (`0x00`\u2013`0xFF`)",
-      "file_type": "document",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L78",
-      "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
-      "norm_label": "unprefixed instructions (`0x00`\u2013`0xff`)",
-      "id": "opencode_skills_z80_coder_skill_unprefixed_instructions_0x00_0xff"
-    },
-    {
-      "label": "`CB`-prefixed instructions (bit operations)",
-      "file_type": "document",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L149",
-      "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
-      "norm_label": "`cb`-prefixed instructions (bit operations)",
-      "id": "opencode_skills_z80_coder_skill_cb_prefixed_instructions_bit_operations"
-    },
-    {
-      "label": "`ED`-prefixed instructions (extended)",
-      "file_type": "document",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L172",
-      "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
-      "norm_label": "`ed`-prefixed instructions (extended)",
-      "id": "opencode_skills_z80_coder_skill_ed_prefixed_instructions_extended"
-    },
-    {
-      "label": "`IX`/`IY`-indexed instructions (`0xDD`/`0xFD`)",
-      "file_type": "document",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L222",
-      "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
-      "norm_label": "`ix`/`iy`-indexed instructions (`0xdd`/`0xfd`)",
-      "id": "opencode_skills_z80_coder_skill_ix_iy_indexed_instructions_0xdd_0xfd"
-    },
-    {
-      "label": "Flags effect legend",
-      "file_type": "document",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L303",
-      "_origin": "ast",
-      "community": 20,
-      "community_name": "Object File Format",
-      "norm_label": "flags effect legend",
-      "id": "opencode_skills_z80_coder_skill_flags_effect_legend"
-    },
-    {
-      "label": "FINDINGS.md",
-      "file_type": "document",
-      "source_file": "FINDINGS.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 40,
-      "community_name": "GotoNode",
-      "norm_label": "findings.md",
-      "id": "findings"
-    },
-    {
-      "label": "Software design issues",
-      "file_type": "document",
-      "source_file": "FINDINGS.md",
-      "source_location": "L6",
-      "_origin": "ast",
-      "community": 40,
-      "community_name": "GotoNode",
-      "norm_label": "software design issues",
-      "id": "findings_software_design_issues"
-    },
-    {
-      "label": "Context scale issues",
-      "file_type": "document",
-      "source_file": "FINDINGS.md",
-      "source_location": "L14",
-      "_origin": "ast",
-      "community": 40,
-      "community_name": "GotoNode",
-      "norm_label": "context scale issues",
-      "id": "findings_context_scale_issues"
-    },
-    {
-      "label": "Tooling issues",
-      "file_type": "document",
-      "source_file": "FINDINGS.md",
-      "source_location": "L18",
-      "_origin": "ast",
-      "community": 40,
-      "community_name": "GotoNode",
-      "norm_label": "tooling issues",
-      "id": "findings_tooling_issues"
     },
     {
       "label": "CDECL.md",
@@ -13992,34 +14003,155 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L4",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "changelog",
-      "target": "changelog_completed",
+      "source": "opencode_skills_z80_coder_skill",
+      "target": "opencode_skills_z80_coder_skill_z80_coder",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L1",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L37",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "changelog",
-      "target": "changelog_test_results",
+      "source": "opencode_skills_z80_coder_skill_z80_coder",
+      "target": "opencode_skills_z80_coder_skill_implicit_uses",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L55",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "opencode_skills_z80_coder_skill_z80_coder",
+      "target": "opencode_skills_z80_coder_skill_instruction_set",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "opencode_skills_z80_coder_skill_z80_coder",
+      "target": "opencode_skills_z80_coder_skill_registers",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L149",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "opencode_skills_z80_coder_skill_instruction_set",
+      "target": "opencode_skills_z80_coder_skill_cb_prefixed_instructions_bit_operations",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L172",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "opencode_skills_z80_coder_skill_instruction_set",
+      "target": "opencode_skills_z80_coder_skill_ed_prefixed_instructions_extended",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L222",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "opencode_skills_z80_coder_skill_instruction_set",
+      "target": "opencode_skills_z80_coder_skill_ix_iy_indexed_instructions_0xdd_0xfd",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L78",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "opencode_skills_z80_coder_skill_instruction_set",
+      "target": "opencode_skills_z80_coder_skill_unprefixed_instructions_0x00_0xff",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": ".opencode/skills/z80-coder/SKILL.md",
+      "source_location": "L303",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "opencode_skills_z80_coder_skill_ix_iy_indexed_instructions_0xdd_0xfd",
+      "target": "opencode_skills_z80_coder_skill_flags_effect_legend",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "FINDINGS.md",
+      "source_location": "L17",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "findings",
+      "target": "findings_context_scale_issues",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "FINDINGS.md",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "findings",
+      "target": "findings_philosophical_findings",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "FINDINGS.md",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "findings",
+      "target": "findings_software_design_issues",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "FINDINGS.md",
+      "source_location": "L21",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "findings",
+      "target": "findings_tooling_issues",
       "confidence_score": 1.0
     },
     {
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L13",
+      "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme",
-      "target": "changelog",
+      "target": "findings",
       "confidence_score": 1.0
     },
     {
@@ -14037,7 +14169,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L22",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_current_implementation_status",
@@ -14080,13 +14212,35 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "changelog",
+      "target": "changelog_completed"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "confidence_score": 1.0,
+      "source": "changelog",
+      "target": "changelog_test_results"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "src/ast/nodes.js",
       "source_location": "L80",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_addressofnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_addressofnode"
     },
     {
       "relation": "contains",
@@ -14095,9 +14249,9 @@
       "source_location": "L802",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_annotateddeclnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_annotateddeclnode"
     },
     {
       "relation": "contains",
@@ -14106,9 +14260,9 @@
       "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_astnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_astnode"
     },
     {
       "relation": "contains",
@@ -14117,9 +14271,9 @@
       "source_location": "L785",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_attributenode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_attributenode"
     },
     {
       "relation": "contains",
@@ -14128,9 +14282,9 @@
       "source_location": "L57",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_binaryopnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_binaryopnode"
     },
     {
       "relation": "contains",
@@ -14139,9 +14293,9 @@
       "source_location": "L142",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_callnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_callnode"
     },
     {
       "relation": "contains",
@@ -14150,9 +14304,9 @@
       "source_location": "L294",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_caseclausenode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_caseclausenode"
     },
     {
       "relation": "contains",
@@ -14161,9 +14315,9 @@
       "source_location": "L819",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_castnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_castnode"
     },
     {
       "relation": "contains",
@@ -14172,9 +14326,9 @@
       "source_location": "L373",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_compoundnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_compoundnode"
     },
     {
       "relation": "contains",
@@ -14183,9 +14337,9 @@
       "source_location": "L250",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_controlflownode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_controlflownode"
     },
     {
       "relation": "contains",
@@ -14194,9 +14348,9 @@
       "source_location": "L227",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_declnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_declnode"
     },
     {
       "relation": "contains",
@@ -14205,9 +14359,9 @@
       "source_location": "L95",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_derefnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_derefnode"
     },
     {
       "relation": "contains",
@@ -14216,9 +14370,9 @@
       "source_location": "L651",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_enumnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_enumnode"
     },
     {
       "relation": "contains",
@@ -14227,9 +14381,9 @@
       "source_location": "L668",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_enumvaluenode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_enumvaluenode"
     },
     {
       "relation": "contains",
@@ -14238,9 +14392,9 @@
       "source_location": "L388",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_exprstmtnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_exprstmtnode"
     },
     {
       "relation": "contains",
@@ -14249,9 +14403,9 @@
       "source_location": "L539",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_functionnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_functionnode"
     },
     {
       "relation": "contains",
@@ -14260,9 +14414,9 @@
       "source_location": "L159",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_functionpointercallnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_functionpointercallnode"
     },
     {
       "relation": "contains",
@@ -14271,9 +14425,9 @@
       "source_location": "L358",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_gotonode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_gotonode"
     },
     {
       "relation": "contains",
@@ -14282,9 +14436,9 @@
       "source_location": "L127",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_identifiernode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_identifiernode"
     },
     {
       "relation": "contains",
@@ -14293,9 +14447,9 @@
       "source_location": "L176",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_indexnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_indexnode"
     },
     {
       "relation": "contains",
@@ -14304,9 +14458,9 @@
       "source_location": "L719",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_inlineasmnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_inlineasmnode"
     },
     {
       "relation": "contains",
@@ -14315,9 +14469,9 @@
       "source_location": "L326",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_jumpnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_jumpnode"
     },
     {
       "relation": "contains",
@@ -14326,9 +14480,9 @@
       "source_location": "L341",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_labelnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_labelnode"
     },
     {
       "relation": "contains",
@@ -14337,9 +14491,9 @@
       "source_location": "L110",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_literalnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_literalnode"
     },
     {
       "relation": "contains",
@@ -14348,9 +14502,9 @@
       "source_location": "L193",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_membernode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_membernode"
     },
     {
       "relation": "contains",
@@ -14359,9 +14513,9 @@
       "source_location": "L753",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_offsetofnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_offsetofnode"
     },
     {
       "relation": "contains",
@@ -14370,9 +14524,9 @@
       "source_location": "L578",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_parameternode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_parameternode"
     },
     {
       "relation": "contains",
@@ -14381,9 +14535,9 @@
       "source_location": "L210",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_pointermembernode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_pointermembernode"
     },
     {
       "relation": "contains",
@@ -14392,9 +14546,9 @@
       "source_location": "L702",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_pragmacnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_pragmacnode"
     },
     {
       "relation": "contains",
@@ -14403,9 +14557,9 @@
       "source_location": "L685",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_preprocnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_preprocnode"
     },
     {
       "relation": "contains",
@@ -14414,9 +14568,9 @@
       "source_location": "L311",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_returnnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_returnnode"
     },
     {
       "relation": "contains",
@@ -14425,9 +14579,9 @@
       "source_location": "L738",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_sizeofnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_sizeofnode"
     },
     {
       "relation": "contains",
@@ -14436,9 +14590,9 @@
       "source_location": "L632",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_structfieldnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_structfieldnode"
     },
     {
       "relation": "contains",
@@ -14447,9 +14601,9 @@
       "source_location": "L613",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_structnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_structnode"
     },
     {
       "relation": "contains",
@@ -14458,9 +14612,9 @@
       "source_location": "L275",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_switchnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_switchnode"
     },
     {
       "relation": "contains",
@@ -14469,9 +14623,9 @@
       "source_location": "L770",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_typeofnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_typeofnode"
     },
     {
       "relation": "contains",
@@ -14480,9 +14634,9 @@
       "source_location": "L403",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_typespecnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_typespecnode"
     },
     {
       "relation": "contains",
@@ -14491,9 +14645,9 @@
       "source_location": "L69",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes",
-      "target": "src_ast_nodes_unaryopnode",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_unaryopnode"
     },
     {
       "relation": "re_exports",
@@ -14707,9 +14861,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers",
-      "target": "src_ast_nodes",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes"
     },
     {
       "relation": "imports_from",
@@ -14743,9 +14897,9 @@
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_type_system",
-      "target": "src_ast_nodes",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes"
     },
     {
       "relation": "imports_from",
@@ -14755,9 +14909,9 @@
       "source_location": "L5",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_bitfields_test",
-      "target": "src_ast_nodes",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes"
     },
     {
       "relation": "imports_from",
@@ -14826,9 +14980,9 @@
       "source_location": "L11",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_astnode",
-      "target": "src_ast_nodes_astnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_astnode_constructor"
     },
     {
       "relation": "method",
@@ -14837,9 +14991,9 @@
       "source_location": "L21",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_astnode",
-      "target": "src_ast_nodes_astnode_tojson",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_astnode_tojson"
     },
     {
       "relation": "method",
@@ -14848,9 +15002,9 @@
       "source_location": "L49",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_astnode",
-      "target": "src_ast_nodes_astnode_tostring",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_astnode_tostring"
     },
     {
       "relation": "re_exports",
@@ -14872,9 +15026,9 @@
       "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_astnode_tojson",
-      "target": "src_ast_nodes_castnode_tojson",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_castnode_tojson"
     },
     {
       "relation": "calls",
@@ -14884,9 +15038,9 @@
       "source_location": "L50",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_astnode_tostring",
-      "target": "src_ast_nodes_castnode_tojson",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_castnode_tojson"
     },
     {
       "relation": "method",
@@ -14895,9 +15049,9 @@
       "source_location": "L58",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_binaryopnode",
-      "target": "src_ast_nodes_binaryopnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_binaryopnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -14918,9 +15072,9 @@
       "source_location": "L70",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_unaryopnode",
-      "target": "src_ast_nodes_unaryopnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_unaryopnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -14941,9 +15095,9 @@
       "source_location": "L86",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_addressofnode",
-      "target": "src_ast_nodes_addressofnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_addressofnode_constructor"
     },
     {
       "relation": "method",
@@ -14952,9 +15106,9 @@
       "source_location": "L101",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_derefnode",
-      "target": "src_ast_nodes_derefnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_derefnode_constructor"
     },
     {
       "relation": "method",
@@ -14963,9 +15117,9 @@
       "source_location": "L117",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_literalnode",
-      "target": "src_ast_nodes_literalnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_literalnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -14986,9 +15140,9 @@
       "source_location": "L133",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_identifiernode",
-      "target": "src_ast_nodes_identifiernode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_identifiernode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15009,9 +15163,9 @@
       "source_location": "L149",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_callnode",
-      "target": "src_ast_nodes_callnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_callnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15032,9 +15186,9 @@
       "source_location": "L166",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_functionpointercallnode",
-      "target": "src_ast_nodes_functionpointercallnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_functionpointercallnode_constructor"
     },
     {
       "relation": "method",
@@ -15043,9 +15197,9 @@
       "source_location": "L183",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_indexnode",
-      "target": "src_ast_nodes_indexnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_indexnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15066,9 +15220,9 @@
       "source_location": "L200",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_membernode",
-      "target": "src_ast_nodes_membernode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_membernode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15089,9 +15243,9 @@
       "source_location": "L217",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_pointermembernode",
-      "target": "src_ast_nodes_pointermembernode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_pointermembernode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15112,9 +15266,9 @@
       "source_location": "L237",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_declnode",
-      "target": "src_ast_nodes_declnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_declnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15135,9 +15289,9 @@
       "source_location": "L261",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_controlflownode",
-      "target": "src_ast_nodes_controlflownode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_controlflownode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15158,9 +15312,9 @@
       "source_location": "L283",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_switchnode",
-      "target": "src_ast_nodes_switchnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_switchnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15181,9 +15335,9 @@
       "source_location": "L301",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_caseclausenode",
-      "target": "src_ast_nodes_caseclausenode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_caseclausenode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15204,9 +15358,9 @@
       "source_location": "L317",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_returnnode",
-      "target": "src_ast_nodes_returnnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_returnnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15227,9 +15381,9 @@
       "source_location": "L332",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_jumpnode",
-      "target": "src_ast_nodes_jumpnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_jumpnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15250,9 +15404,9 @@
       "source_location": "L348",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_labelnode",
-      "target": "src_ast_nodes_labelnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_labelnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15273,9 +15427,9 @@
       "source_location": "L364",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_gotonode",
-      "target": "src_ast_nodes_gotonode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_gotonode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15296,9 +15450,9 @@
       "source_location": "L379",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_compoundnode",
-      "target": "src_ast_nodes_compoundnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_compoundnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15319,9 +15473,9 @@
       "source_location": "L394",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_exprstmtnode",
-      "target": "src_ast_nodes_exprstmtnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_exprstmtnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15342,9 +15496,9 @@
       "source_location": "L434",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_typespecnode",
-      "target": "src_ast_nodes_typespecnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_typespecnode_constructor"
     },
     {
       "relation": "method",
@@ -15353,9 +15507,9 @@
       "source_location": "L484",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_typespecnode",
-      "target": "src_ast_nodes_typespecnode_getelementsize",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_typespecnode_getelementsize"
     },
     {
       "relation": "method",
@@ -15364,9 +15518,9 @@
       "source_location": "L459",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_typespecnode",
-      "target": "src_ast_nodes_typespecnode_getsize",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_typespecnode_getsize"
     },
     {
       "relation": "method",
@@ -15375,9 +15529,9 @@
       "source_location": "L504",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_typespecnode",
-      "target": "src_ast_nodes_typespecnode_typestring",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_typespecnode_typestring"
     },
     {
       "relation": "re_exports",
@@ -15398,9 +15552,9 @@
       "source_location": "L549",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_functionnode",
-      "target": "src_ast_nodes_functionnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_functionnode_constructor"
     },
     {
       "relation": "method",
@@ -15409,9 +15563,9 @@
       "source_location": "L563",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_functionnode",
-      "target": "src_ast_nodes_functionnode_tojson",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_functionnode_tojson"
     },
     {
       "relation": "re_exports",
@@ -15433,9 +15587,9 @@
       "source_location": "L565",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_functionnode_tojson",
-      "target": "src_ast_nodes_castnode_tojson",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_castnode_tojson"
     },
     {
       "relation": "method",
@@ -15444,9 +15598,9 @@
       "source_location": "L587",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_parameternode",
-      "target": "src_ast_nodes_parameternode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_parameternode_constructor"
     },
     {
       "relation": "method",
@@ -15455,9 +15609,9 @@
       "source_location": "L599",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_parameternode",
-      "target": "src_ast_nodes_parameternode_tojson",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_parameternode_tojson"
     },
     {
       "relation": "re_exports",
@@ -15479,9 +15633,9 @@
       "source_location": "L601",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_parameternode_tojson",
-      "target": "src_ast_nodes_castnode_tojson",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_castnode_tojson"
     },
     {
       "relation": "method",
@@ -15490,9 +15644,9 @@
       "source_location": "L621",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_structnode",
-      "target": "src_ast_nodes_structnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_structnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15513,9 +15667,9 @@
       "source_location": "L640",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_structfieldnode",
-      "target": "src_ast_nodes_structfieldnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_structfieldnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15536,9 +15690,9 @@
       "source_location": "L658",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_enumnode",
-      "target": "src_ast_nodes_enumnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_enumnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15559,9 +15713,9 @@
       "source_location": "L675",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_enumvaluenode",
-      "target": "src_ast_nodes_enumvaluenode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_enumvaluenode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15582,9 +15736,9 @@
       "source_location": "L692",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_preprocnode",
-      "target": "src_ast_nodes_preprocnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_preprocnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15605,9 +15759,9 @@
       "source_location": "L709",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_pragmacnode",
-      "target": "src_ast_nodes_pragmacnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_pragmacnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15628,9 +15782,9 @@
       "source_location": "L727",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_inlineasmnode",
-      "target": "src_ast_nodes_inlineasmnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_inlineasmnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15651,9 +15805,9 @@
       "source_location": "L744",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_sizeofnode",
-      "target": "src_ast_nodes_sizeofnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_sizeofnode_constructor"
     },
     {
       "relation": "method",
@@ -15662,9 +15816,9 @@
       "source_location": "L760",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_offsetofnode",
-      "target": "src_ast_nodes_offsetofnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_offsetofnode_constructor"
     },
     {
       "relation": "method",
@@ -15673,9 +15827,9 @@
       "source_location": "L776",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_typeofnode",
-      "target": "src_ast_nodes_typeofnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_typeofnode_constructor"
     },
     {
       "relation": "method",
@@ -15684,9 +15838,9 @@
       "source_location": "L792",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_attributenode",
-      "target": "src_ast_nodes_attributenode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_attributenode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15707,9 +15861,9 @@
       "source_location": "L809",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_annotateddeclnode",
-      "target": "src_ast_nodes_annotateddeclnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_annotateddeclnode_constructor"
     },
     {
       "relation": "re_exports",
@@ -15730,9 +15884,9 @@
       "source_location": "L826",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_castnode",
-      "target": "src_ast_nodes_castnode_constructor",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_castnode_constructor"
     },
     {
       "relation": "method",
@@ -15741,9 +15895,9 @@
       "source_location": "L836",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_ast_nodes_castnode",
-      "target": "src_ast_nodes_castnode_tojson",
-      "confidence_score": 1.0
+      "target": "src_ast_nodes_castnode_tojson"
     },
     {
       "relation": "imports_from",
@@ -15764,9 +15918,9 @@
       "source_location": "L73",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers",
-      "target": "src_parser_function_pointers_arraydimparser",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_arraydimparser"
     },
     {
       "relation": "contains",
@@ -15775,9 +15929,9 @@
       "source_location": "L60",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers",
-      "target": "src_parser_function_pointers_basicfuncpointerpattern",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_basicfuncpointerpattern"
     },
     {
       "relation": "contains",
@@ -15786,9 +15940,9 @@
       "source_location": "L205",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers",
-      "target": "src_parser_function_pointers_buildextendedtypespecifier",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_buildextendedtypespecifier"
     },
     {
       "relation": "contains",
@@ -15797,9 +15951,9 @@
       "source_location": "L191",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers",
-      "target": "src_parser_function_pointers_buildfunctionpointerdeclarator",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_buildfunctionpointerdeclarator"
     },
     {
       "relation": "contains",
@@ -15808,9 +15962,9 @@
       "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers",
-      "target": "src_parser_function_pointers_buildparamlist",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_buildparamlist"
     },
     {
       "relation": "contains",
@@ -15819,9 +15973,9 @@
       "source_location": "L281",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers",
-      "target": "src_parser_function_pointers_buildrecursivefuncpointerparam",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_buildrecursivefuncpointerparam"
     },
     {
       "relation": "contains",
@@ -15830,9 +15984,9 @@
       "source_location": "L88",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers",
-      "target": "src_parser_function_pointers_functionpointerdeclaratorparser",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_functionpointerdeclaratorparser"
     },
     {
       "relation": "contains",
@@ -15841,9 +15995,9 @@
       "source_location": "L9",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers",
-      "target": "src_parser_function_pointers_kw",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_kw"
     },
     {
       "relation": "contains",
@@ -15852,9 +16006,9 @@
       "source_location": "L14",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers",
-      "target": "src_parser_function_pointers_locfromtoken",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_locfromtoken"
     },
     {
       "relation": "imports_from",
@@ -15864,9 +16018,9 @@
       "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers",
-      "target": "src_parser_type_system",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system"
     },
     {
       "relation": "imports",
@@ -15876,9 +16030,9 @@
       "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers",
-      "target": "src_parser_type_system_buildstructtyperef",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_buildstructtyperef"
     },
     {
       "relation": "imports",
@@ -15888,9 +16042,9 @@
       "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers",
-      "target": "src_parser_type_system_createfunctionpointertype",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_createfunctionpointertype"
     },
     {
       "relation": "imports",
@@ -15900,9 +16054,9 @@
       "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers",
-      "target": "src_parser_type_system_createtypespec",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_createtypespec"
     },
     {
       "relation": "calls",
@@ -15912,9 +16066,9 @@
       "source_location": "L215",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers_buildextendedtypespecifier",
-      "target": "src_parser_function_pointers_kw",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_kw"
     },
     {
       "relation": "calls",
@@ -15924,9 +16078,9 @@
       "source_location": "L34",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers_buildparamlist",
-      "target": "src_parser_function_pointers_kw",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_kw"
     },
     {
       "relation": "calls",
@@ -15936,9 +16090,9 @@
       "source_location": "L285",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers_buildrecursivefuncpointerparam",
-      "target": "src_parser_function_pointers_kw",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_kw"
     },
     {
       "relation": "calls",
@@ -15948,9 +16102,9 @@
       "source_location": "L245",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers_buildextendedtypespecifier",
-      "target": "src_parser_function_pointers_locfromtoken",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_locfromtoken"
     },
     {
       "relation": "calls",
@@ -15960,9 +16114,9 @@
       "source_location": "L27",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers_buildparamlist",
-      "target": "src_parser_function_pointers_locfromtoken",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_locfromtoken"
     },
     {
       "relation": "calls",
@@ -15972,9 +16126,9 @@
       "source_location": "L294",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers_buildrecursivefuncpointerparam",
-      "target": "src_parser_function_pointers_locfromtoken",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_locfromtoken"
     },
     {
       "relation": "calls",
@@ -15984,9 +16138,9 @@
       "source_location": "L193",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers_buildfunctionpointerdeclarator",
-      "target": "src_parser_function_pointers_buildparamlist",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_buildparamlist"
     },
     {
       "relation": "calls",
@@ -15996,9 +16150,9 @@
       "source_location": "L282",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers_buildrecursivefuncpointerparam",
-      "target": "src_parser_function_pointers_buildparamlist",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_buildparamlist"
     },
     {
       "relation": "method",
@@ -16007,9 +16161,9 @@
       "source_location": "L89",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers_functionpointerdeclaratorparser",
-      "target": "src_parser_function_pointers_functionpointerdeclaratorparser_constructor",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_functionpointerdeclaratorparser_constructor"
     },
     {
       "relation": "method",
@@ -16018,9 +16172,9 @@
       "source_location": "L94",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers_functionpointerdeclaratorparser",
-      "target": "src_parser_function_pointers_functionpointerdeclaratorparser_parse",
-      "confidence_score": 1.0
+      "target": "src_parser_function_pointers_functionpointerdeclaratorparser_parse"
     },
     {
       "relation": "imports",
@@ -16078,9 +16232,9 @@
       "source_location": "L213",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers_buildextendedtypespecifier",
-      "target": "src_parser_type_system_buildstructtyperef",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_buildstructtyperef"
     },
     {
       "relation": "calls",
@@ -16090,9 +16244,9 @@
       "source_location": "L265",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers_buildextendedtypespecifier",
-      "target": "src_parser_type_system_createtypespec",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_createtypespec"
     },
     {
       "relation": "imports",
@@ -16114,9 +16268,9 @@
       "source_location": "L294",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_function_pointers_buildrecursivefuncpointerparam",
-      "target": "src_parser_type_system_createfunctionpointertype",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_createfunctionpointertype"
     },
     {
       "relation": "imports_from",
@@ -16173,9 +16327,9 @@
       "source_location": "L196",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_type_system",
-      "target": "src_parser_type_system_buildstructtyperef",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_buildstructtyperef"
     },
     {
       "relation": "contains",
@@ -16184,9 +16338,9 @@
       "source_location": "L140",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_type_system",
-      "target": "src_parser_type_system_buildtypespecifier",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_buildtypespecifier"
     },
     {
       "relation": "contains",
@@ -16195,9 +16349,9 @@
       "source_location": "L105",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_type_system",
-      "target": "src_parser_type_system_createfunctionpointertype",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_createfunctionpointertype"
     },
     {
       "relation": "contains",
@@ -16206,9 +16360,9 @@
       "source_location": "L40",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_type_system",
-      "target": "src_parser_type_system_createtypespec",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_createtypespec"
     },
     {
       "relation": "contains",
@@ -16217,9 +16371,9 @@
       "source_location": "L9",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_type_system",
-      "target": "src_parser_type_system_kw",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_kw"
     },
     {
       "relation": "contains",
@@ -16228,9 +16382,9 @@
       "source_location": "L14",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_type_system",
-      "target": "src_parser_type_system_locfromtoken",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_locfromtoken"
     },
     {
       "relation": "contains",
@@ -16239,9 +16393,9 @@
       "source_location": "L56",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_type_system",
-      "target": "src_parser_type_system_mergedeclaratortype",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_mergedeclaratortype"
     },
     {
       "relation": "contains",
@@ -16250,9 +16404,9 @@
       "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_type_system",
-      "target": "src_parser_type_system_typeinfos",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_typeinfos"
     },
     {
       "relation": "calls",
@@ -16262,9 +16416,9 @@
       "source_location": "L199",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_type_system_buildstructtyperef",
-      "target": "src_parser_type_system_kw",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_kw"
     },
     {
       "relation": "calls",
@@ -16274,9 +16428,9 @@
       "source_location": "L141",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_type_system_buildtypespecifier",
-      "target": "src_parser_type_system_kw",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_kw"
     },
     {
       "relation": "imports",
@@ -16310,9 +16464,9 @@
       "source_location": "L205",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_type_system_buildstructtyperef",
-      "target": "src_parser_type_system_locfromtoken",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_locfromtoken"
     },
     {
       "relation": "calls",
@@ -16322,9 +16476,9 @@
       "source_location": "L171",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_type_system_buildtypespecifier",
-      "target": "src_parser_type_system_locfromtoken",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_locfromtoken"
     },
     {
       "relation": "calls",
@@ -16334,9 +16488,9 @@
       "source_location": "L43",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_type_system_createtypespec",
-      "target": "src_parser_type_system_locfromtoken",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_locfromtoken"
     },
     {
       "relation": "imports",
@@ -16358,9 +16512,9 @@
       "source_location": "L180",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_parser_type_system_buildtypespecifier",
-      "target": "src_parser_type_system_createtypespec",
-      "confidence_score": 1.0
+      "target": "src_parser_type_system_createtypespec"
     },
     {
       "relation": "imports",
@@ -16537,9 +16691,9 @@
       "source_location": "L12",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_bitfields_test",
-      "target": "src_tests_bitfields_test_parse",
-      "confidence_score": 1.0
+      "target": "src_tests_bitfields_test_parse"
     },
     {
       "relation": "contains",
@@ -16548,9 +16702,9 @@
       "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast",
+      "confidence_score": 1.0,
       "source": "src_tests_bitfields_test",
-      "target": "src_tests_bitfields_test_toir",
-      "confidence_score": 1.0
+      "target": "src_tests_bitfields_test_toir"
     },
     {
       "relation": "contains",
@@ -44538,138 +44692,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L6",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "opencode_skills_z80_coder_skill",
-      "target": "opencode_skills_z80_coder_skill_z80_coder"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L37",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "opencode_skills_z80_coder_skill_z80_coder",
-      "target": "opencode_skills_z80_coder_skill_implicit_uses"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L55",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "opencode_skills_z80_coder_skill_z80_coder",
-      "target": "opencode_skills_z80_coder_skill_instruction_set"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L10",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "opencode_skills_z80_coder_skill_z80_coder",
-      "target": "opencode_skills_z80_coder_skill_registers"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L149",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "opencode_skills_z80_coder_skill_instruction_set",
-      "target": "opencode_skills_z80_coder_skill_cb_prefixed_instructions_bit_operations"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L172",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "opencode_skills_z80_coder_skill_instruction_set",
-      "target": "opencode_skills_z80_coder_skill_ed_prefixed_instructions_extended"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L222",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "opencode_skills_z80_coder_skill_instruction_set",
-      "target": "opencode_skills_z80_coder_skill_ix_iy_indexed_instructions_0xdd_0xfd"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L78",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "opencode_skills_z80_coder_skill_instruction_set",
-      "target": "opencode_skills_z80_coder_skill_unprefixed_instructions_0x00_0xff"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": ".opencode/skills/z80-coder/SKILL.md",
-      "source_location": "L303",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "opencode_skills_z80_coder_skill_ix_iy_indexed_instructions_0xdd_0xfd",
-      "target": "opencode_skills_z80_coder_skill_flags_effect_legend"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "FINDINGS.md",
-      "source_location": "L14",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "findings",
-      "target": "findings_context_scale_issues"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "FINDINGS.md",
-      "source_location": "L6",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "findings",
-      "target": "findings_software_design_issues"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "FINDINGS.md",
-      "source_location": "L18",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "findings",
-      "target": "findings_tooling_issues"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "doc/specs/CDECL.md",
       "source_location": "L24",
       "weight": 1.0,
@@ -45129,5 +45151,5 @@
       ]
     }
   ],
-  "built_at_commit": "adf6346617fad8c6b055fc61762e35abaddd4f26"
+  "built_at_commit": "b73dffd3a9a70eca11fb7d578dda0a4bde0900cf"
 }

@@ -259,6 +259,11 @@ export class Lexer extends LexerCore {
         continue;
       }
 
+      // Skip pragma directive results
+      if (token.type === 'pragma_once' || token.type === 'pragma_pack' || token.type === 'pragma_pack_push' || token.type === 'pragma_pack_pop') {
+        continue;
+      }
+
       tokens.push(token);
     }
 

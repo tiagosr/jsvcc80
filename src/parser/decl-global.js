@@ -106,19 +106,71 @@ function buildEnumDecl(ctx) {
  * @param {CPegParser} ctx 
  */
 function buildTypedefDecl(ctx) {
-  ctx.ruleRefs.typedefDecl = map(
+  const typedefStructField = map(
+    seq(
+      lazy(() => ctx.ruleRefs.typeSpecifier),
+      many(lit('*')),
+      pred(t => t.type === 'IDENTIFIER'),
+      opt(seq(lit('='), lazy(() => ctx.ruleRefs.expression))),
+      lit(';')
+    ),
+    ([typeSpec, stars, name, init]) => {
+      let initValue = null;
+      if (init) {
+        initValue = Array.isArray(init[1]) ? init[1][0] : init[1];
+      }
+      const pointerDepth = stars.length;
+      const fieldType = pointerDepth > 0
+        ? new AST.TypeSpecNode(typeSpec.baseType, typeSpec.isSigned, typeSpec.isConst, typeSpec.isVolatile, typeSpec.bitWidth, typeSpec.location, pointerDepth)
+        : typeSpec;
+      return new AST.StructFieldNode(
+        fieldType,
+        new AST.IdentifierNode(name.value, locFromToken(name)),
+        null, locFromToken(typeSpec));
+    }
+  );
+
+  const typedefStructDecl = map(
     seq(
       kw('typedef'),
-      lazy(() => ctx.ruleRefs.typeSpecifier),
+      alt(kw('struct'), kw('union')),
+      opt(pred(t => t.type === 'IDENTIFIER')),
+      lit('{'),
+      many(typedefStructField),
+      lit('}'),
       pred(t => t.type === 'IDENTIFIER'),
       lit(';')
     ),
-    ([typedefKw, typeSpec, name, semi]) => {
+    ([typedefKw, structKw, nameOpt, lbrace, fields, rbrace, name, semi]) => {
+      const structName = nameOpt ? new AST.IdentifierNode(nameOpt.value, locFromToken(nameOpt)) : null;
+      const structNode = new AST.StructNode(structKw.value, structName, fields, locFromToken(structKw));
+      const typeSpec = new AST.TypeSpecNode(
+        structKw.value, true, false, false, null, locFromToken(structKw),
+        0, false, null, name.value, structKw.value
+      );
       return new AST.DeclNode('typedef',
         typeSpec,
         new AST.IdentifierNode(name.value, locFromToken(name)),
-        null, locFromToken(typedefKw));
+        structNode, locFromToken(typedefKw));
     }
+  );
+
+  ctx.ruleRefs.typedefDecl = alt(
+    typedefStructDecl,
+    map(
+      seq(
+        kw('typedef'),
+        lazy(() => ctx.ruleRefs.typeSpecifier),
+        pred(t => t.type === 'IDENTIFIER'),
+        lit(';')
+      ),
+      ([typedefKw, typeSpec, name, semi]) => {
+        return new AST.DeclNode('typedef',
+          typeSpec,
+          new AST.IdentifierNode(name.value, locFromToken(name)),
+          null, locFromToken(typedefKw));
+      }
+    )
   );
 }
 

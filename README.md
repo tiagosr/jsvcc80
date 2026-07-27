@@ -16,8 +16,7 @@ See [CHANGELOG.md](CHANGELOG.md)
 - Nothing at the moment
 
 ### 🔜 Next Steps
-1. Create header files `<stdint.h>`, `<stdlib.h>`, `<stdio.h>`, `<file.h>` with declarations to the currently-implemented stdlib functions
-2. Implement object file viewer
+1. Implement object file viewer
 
 
 ### 📔 Backlog (issues identified during implementation for later priorization)

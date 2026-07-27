@@ -50,19 +50,20 @@ export class CallAndMemoryTranslator {
         blocks.push(...argResult.blocks);
 
         if (i < 2) {
-          const regName = this.context.state.temp();
           const size = argTypes[i] || 1;
           if (size === 2) {
             blocks.push(new IL.BasicBlock(this.context.state.label('reg'), [
-              new IL.BinaryOpInstruction('h', 'mov', regName, 0),
-              new IL.UnaryOpInstruction('l', 'mov', regName, 0)
+              new IL.BinaryOpInstruction('h', 'mov', argResult.result, 0),
+              new IL.UnaryOpInstruction('l', 'mov', argResult.result, 0)
             ]));
+            registerArgs.push('h');
+            registerArgs.push('l');
           } else {
             blocks.push(new IL.BasicBlock(this.context.state.label('reg'), [
-              new IL.UnaryOpInstruction('a', 'mov', regName, 0)
+              new IL.UnaryOpInstruction('a', 'mov', argResult.result, 0)
             ]));
+            registerArgs.push('a');
           }
-          registerArgs.push(regName);
         } else {
           blocks.push(new IL.BasicBlock(this.context.state.label('arg'), [
             new IL.PushInstruction(argResult.result)

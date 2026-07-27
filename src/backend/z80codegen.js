@@ -196,8 +196,7 @@ export class Z80Codegen {
       } else {
         this.codeLines.push(`  ld hl, ${totalSpace}`);
         this.codeLines.push('  add hl, sp');
-        this.codeLines.push('  ld sp, l');
-        this.codeLines.push('  ld sp, h');
+        this.codeLines.push('  ld sp, hl');
       }
     }
   }
@@ -349,28 +348,37 @@ export class Z80Codegen {
        return;
      }
 
-     // Load from memory address or register
-     if (typeof src === 'string') {
-       if (src === 'hl') {
-         // Source is HL register - copy to dest
-         if (dest !== 'hl') {
-           this.codeLines.push(`  ld (${dest}), hl`);
-         }
-       } else if (['a','b','c','d','e'].includes(src)) {
-         // Source is 8-bit register - load into HL (low byte only)
-         this.codeLines.push(`  ld l, ${src}`);
-         this.codeLines.push(`  ld h, 0`);
-         if (dest !== 'hl') {
-           this.codeLines.push(`  ld (${dest}), hl`);
-         }
-       } else {
-         // Source is a memory variable/label
-         this.codeLines.push(`  ld hl, (${src})`);
-         if (dest !== 'hl') {
-           this.codeLines.push(`  ld (${dest}), hl`);
-         }
-       }
-     }
+      // Load from memory address or register
+      if (typeof src === 'string') {
+        if (src === 'ret_val') {
+          // Return value is in A after a call - zero-extend to 16-bit and store
+          if (dest !== 'a') {
+            this.codeLines.push(`  ld l, a`);
+            this.codeLines.push(`  ld h, 0`);
+            this.codeLines.push(`  ld (${dest}), hl`);
+          }
+          return;
+        }
+        if (src === 'hl') {
+          // Source is HL register - copy to dest
+          if (dest !== 'hl') {
+            this.codeLines.push(`  ld (${dest}), hl`);
+          }
+        } else if (['a','b','c','d','e'].includes(src)) {
+          // Source is 8-bit register - load into HL (low byte only)
+          this.codeLines.push(`  ld l, ${src}`);
+          this.codeLines.push(`  ld h, 0`);
+          if (dest !== 'hl') {
+            this.codeLines.push(`  ld (${dest}), hl`);
+          }
+        } else {
+          // Source is a memory variable/label
+          this.codeLines.push(`  ld hl, (${src})`);
+          if (dest !== 'hl') {
+            this.codeLines.push(`  ld (${dest}), hl`);
+          }
+        }
+      }
    }
 
   /**
@@ -430,6 +438,58 @@ export class Z80Codegen {
       const reg = this.formatRegister(dest, true);
       if (reg !== 'a') {
         this.codeLines.push(`  ld ${reg}, a`);
+      }
+      return;
+    }
+
+    // Handle mov operation (copy value to specific register byte)
+    if (op === 'mov') {
+      // Handle physical register sources
+      if (src1 === 'a') {
+        if (dest === 'h') {
+          this.codeLines.push(`  ld h, 0`);
+        } else if (dest === 'l') {
+          this.codeLines.push(`  ld l, a`);
+        } else if (dest === 'a') {
+          this.codeLines.push(`  ld a, a`);
+        } else {
+          this.codeLines.push(`  ld l, a`);
+          this.codeLines.push(`  ld h, 0`);
+          this.codeLines.push(`  ld (${dest}), hl`);
+        }
+        return;
+      }
+      if (src1 === 'hl') {
+        if (dest === 'h') {
+          this.codeLines.push(`  ld h, h`);
+        } else if (dest === 'l') {
+          this.codeLines.push(`  ld l, l`);
+        } else if (dest === 'a') {
+          this.codeLines.push(`  ld a, l`);
+        } else {
+          this.codeLines.push(`  ld (${dest}), hl`);
+        }
+        return;
+      }
+      // General mov: copy src1 to dest
+      this.codeLines.push(`  ld hl, ${src1}`);
+      if (dest === 'h') {
+        this.codeLines.push(`  ld h, h`);
+      } else if (dest === 'l') {
+        this.codeLines.push(`  ld l, l`);
+      } else if (dest === 'a') {
+        this.codeLines.push(`  ld a, l`);
+      } else {
+        this.codeLines.push(`  ld (${dest}), hl`);
+      }
+      return;
+    }
+
+    // Handle count operation (constant assignment)
+    if (op === 'count') {
+      this.codeLines.push(`  ld hl, ${src1}`);
+      if (dest !== 'hl') {
+        this.codeLines.push(`  ld (${dest}), hl`);
       }
       return;
     }
@@ -582,6 +642,49 @@ export class Z80Codegen {
   generateUnaryOp(instr) {
     const [dest, op, src] = instr.operands;
 
+    // Handle mov operation (copy value to specific register byte)
+    if (op === 'mov') {
+      // Handle physical register sources
+      if (src === 'a') {
+        if (dest === 'l') {
+          this.codeLines.push(`  ld l, a`);
+        } else if (dest === 'a') {
+          this.codeLines.push(`  ld a, a`);
+        } else if (dest === 'h') {
+          this.codeLines.push(`  ld h, 0`);
+        } else {
+          this.codeLines.push(`  ld l, a`);
+          this.codeLines.push(`  ld h, 0`);
+          this.codeLines.push(`  ld (${dest}), hl`);
+        }
+        return;
+      }
+      if (src === 'hl') {
+        if (dest === 'l') {
+          this.codeLines.push(`  ld l, l`);
+        } else if (dest === 'a') {
+          this.codeLines.push(`  ld a, l`);
+        } else if (dest === 'h') {
+          this.codeLines.push(`  ld h, h`);
+        } else {
+          this.codeLines.push(`  ld (${dest}), hl`);
+        }
+        return;
+      }
+      // General mov: copy src to dest
+      this.codeLines.push(`  ld hl, ${src}`);
+      if (dest === 'l') {
+        this.codeLines.push(`  ld l, l`);
+      } else if (dest === 'a') {
+        this.codeLines.push(`  ld a, l`);
+      } else if (dest === 'h') {
+        this.codeLines.push(`  ld h, h`);
+      } else {
+        this.codeLines.push(`  ld (${dest}), hl`);
+      }
+      return;
+    }
+
     this.codeLines.push(`  ld a, ${src}`);
 
     switch (op) {
@@ -655,11 +758,7 @@ export class Z80Codegen {
     generateCdeclCall(args, funcName, paramTypes = []) {
       const codeLines = [];
 
-      for (const arg of args.reverse()) {
-        codeLines.push(`  ld a, ${arg}`);
-        codeLines.push('  push af');
-      }
-
+      // Args are already pushed by PushInstruction in IR
       codeLines.push(`  call ${funcName}`);
 
       if (args.length > 0 && !this.isVariadicFunction(funcName)) {
@@ -667,11 +766,8 @@ export class Z80Codegen {
         codeLines.push(`  ld hl, sp`);
         codeLines.push(`  ld de, ${bytes}`);
         codeLines.push('  add hl, de');
-        codeLines.push('  ld sp, l');
-        codeLines.push('  ld sp, h');
+        codeLines.push('  ld sp, hl');
       }
-
-      codeLines.push('  ld a, l');
 
       return codeLines;
     }
@@ -680,18 +776,9 @@ export class Z80Codegen {
       const codeLines = [];
 
       if (args.length === 1) {
-        const arg = args[0];
-        const argSize = paramTypes[0]?.size || 1;
-
-        if (argSize === 2) {
-          codeLines.push(`  ld h, ${arg}`);
-          codeLines.push('  ld l, 0');
-        } else {
-          codeLines.push(`  ld l, ${arg}`);
-        }
-
+        // Arg is already loaded into L by mov instruction in IR
         codeLines.push(`  call ${funcName}`);
-        codeLines.push('  ld a, l');
+        codeLines.push('  ld a, a');
       } else {
         return this.generateCdeclCall(args, funcName, paramTypes);
       }
@@ -702,11 +789,7 @@ export class Z80Codegen {
     generateCalleeCall(args, funcName, paramTypes = []) {
       const codeLines = [];
 
-      for (const arg of args.reverse()) {
-        codeLines.push(`  ld a, ${arg}`);
-        codeLines.push('  push af');
-      }
-
+      // Args are already pushed by PushInstruction in IR
       codeLines.push(`  call ${funcName}`);
 
       if (args.length > 0) {
@@ -714,11 +797,8 @@ export class Z80Codegen {
         codeLines.push(`  ld hl, sp`);
         codeLines.push(`  ld de, ${bytes}`);
         codeLines.push('  add hl, de');
-        codeLines.push('  ld sp, l');
-        codeLines.push('  ld sp, h');
+        codeLines.push('  ld sp, hl');
       }
-
-      codeLines.push('  ld a, l');
 
       return codeLines;
     }
@@ -727,110 +807,22 @@ export class Z80Codegen {
       const codeLines = [];
       const argTypes = paramTypes.map(p => p?.size || 1);
 
-      if (args.length === 0) {
-        codeLines.push(`  call ${funcName}`);
-        codeLines.push('  ld a, l');
-        return codeLines;
-      }
-
-      if (args.length === 1) {
-        const argSize = argTypes[0] || 1;
-        const arg = args[0];
-
-        if (argSize === 2) {
-          codeLines.push(`  ld h, ${arg}`);
-          codeLines.push('  ld l, 0');
-        } else {
-          codeLines.push(`  ld a, ${arg}`);
-        }
-
-        codeLines.push(`  call ${funcName}`);
-
-        if (argSize === 2) {
-          codeLines.push('  ld a, d');
-        } else {
-          codeLines.push('  ld a, a');
-        }
-
-        return codeLines;
-      }
-
-      if (args.length === 2) {
-        const size1 = argTypes[0] || 1;
-        const size2 = argTypes[1] || 1;
-        const arg1 = args[0];
-        const arg2 = args[1];
-
-        if (size1 === 1 && size2 === 1) {
-          codeLines.push(`  ld a, ${arg1}`);
-          codeLines.push(`  ld l, ${arg2}`);
-        } else if (size1 === 2 && size2 === 2) {
-          codeLines.push(`  ld h, ${arg1}`);
-          codeLines.push('  ld l, 0');
-          codeLines.push(`  ld d, ${arg2}`);
-          codeLines.push('  ld e, 0');
-        } else if (size1 === 1 && size2 === 2) {
-          codeLines.push(`  ld l, ${arg1}`);
-          codeLines.push(`  ld d, ${arg2}`);
-          codeLines.push('  ld e, 0');
-        } else if (size1 === 2 && size2 === 1) {
-          codeLines.push(`  ld h, ${arg1}`);
-          codeLines.push('  ld l, 0');
-          codeLines.push(`  ld e, ${arg2}`);
-        }
-
-        codeLines.push(`  call ${funcName}`);
-
-        if (size1 === 2 && size2 === 2) {
-          codeLines.push('  ld a, d');
-        } else {
-          codeLines.push('  ld a, a');
-        }
-
-        return codeLines;
-      }
-
-      const firstArg = args[0];
-      const secondArg = args[1];
-      const size1 = argTypes[0] || 1;
-      const size2 = argTypes[1] || 1;
-      const remainingArgs = args.slice(2).reverse();
-
-      if (size1 === 1 && size2 === 1) {
-        codeLines.push(`  ld a, ${firstArg}`);
-        codeLines.push(`  ld l, ${secondArg}`);
-      } else if (size1 === 2 && size2 === 2) {
-        codeLines.push(`  ld h, ${firstArg}`);
-        codeLines.push('  ld l, 0');
-        codeLines.push(`  ld d, ${secondArg}`);
-        codeLines.push('  ld e, 0');
-      } else if (size1 === 1 && size2 === 2) {
-        codeLines.push(`  ld l, ${firstArg}`);
-        codeLines.push(`  ld d, ${secondArg}`);
-        codeLines.push('  ld e, 0');
-      } else if (size1 === 2 && size2 === 1) {
-        codeLines.push(`  ld h, ${firstArg}`);
-        codeLines.push('  ld l, 0');
-        codeLines.push(`  ld e, ${secondArg}`);
-      }
-
-      for (const arg of remainingArgs) {
-        codeLines.push(`  ld a, ${arg}`);
-        codeLines.push('  push af');
-      }
-
+      // Args are already loaded into registers by mov instructions in IR
+      // Spillover args are already pushed by PushInstruction in IR
       codeLines.push(`  call ${funcName}`);
 
-      if (remainingArgs.length > 0) {
-        const bytes = remainingArgs.length * 2;
+      // Stack cleanup for spillover args (args 3+)
+      const spilloverCount = Math.max(0, args.length - 2);
+      if (spilloverCount > 0) {
+        const bytes = spilloverCount * 2;
         codeLines.push(`  ld hl, sp`);
         codeLines.push(`  ld de, ${bytes}`);
         codeLines.push('  add hl, de');
-        codeLines.push('  ld sp, l');
-        codeLines.push('  ld sp, h');
+        codeLines.push('  ld sp, hl');
       }
 
-      if (size1 === 2 && size2 === 2) {
+      // Return value loading (heuristic based on arg types)
+      if (args.length >= 1 && argTypes[0] === 2) {
         codeLines.push('  ld a, d');
       } else {
         codeLines.push('  ld a, a');
@@ -867,11 +859,7 @@ export class Z80Codegen {
     }
 
     generateCdeclCallIndirect(ptr, args, callingConvention) {
-      for (const arg of args.reverse()) {
-        this.codeLines.push(`  ld a, ${arg}`);
-        this.codeLines.push('  push af');
-      }
-
+      // Args are already pushed by PushInstruction in IR
       this.codeLines.push(`  ld hl, ${ptr}`);
       this.codeLines.push('  call hl');
 
@@ -880,22 +868,14 @@ export class Z80Codegen {
         this.codeLines.push(`  ld hl, sp`);
         this.codeLines.push(`  ld de, ${bytes}`);
         this.codeLines.push('  add hl, de');
-        this.codeLines.push('  ld sp, l');
-        this.codeLines.push('  ld sp, h');
+        this.codeLines.push('  ld sp, hl');
       }
+
+      this.codeLines.push('  ld a, a');
     }
 
     generateFastcallCallIndirect(ptr, args) {
-      if (args.length === 1) {
-        const arg = args[0];
-        this.codeLines.push(`  ld l, ${arg}`);
-      } else {
-        for (const arg of args.reverse()) {
-          this.codeLines.push(`  ld a, ${arg}`);
-          this.codeLines.push('  push af');
-        }
-      }
-
+      // Args are already pushed by PushInstruction in IR
       this.codeLines.push(`  ld hl, ${ptr}`);
       this.codeLines.push('  call hl');
 
@@ -904,40 +884,26 @@ export class Z80Codegen {
         this.codeLines.push(`  ld hl, sp`);
         this.codeLines.push(`  ld de, ${bytes}`);
         this.codeLines.push('  add hl, de');
-        this.codeLines.push('  ld sp, l');
-        this.codeLines.push('  ld sp, h');
+        this.codeLines.push('  ld sp, hl');
       }
+
+      this.codeLines.push('  ld a, a');
     }
 
     generateNewSdccCallIndirect(ptr, args) {
-      if (args.length === 0) {
-        this.codeLines.push(`  ld hl, ${ptr}`);
-        this.codeLines.push('  call hl');
-        return;
-      }
+      // Args are already pushed by PushInstruction in IR
+      this.codeLines.push(`  ld hl, ${ptr}`);
+      this.codeLines.push('  call hl');
 
-      if (args.length === 1) {
-        this.codeLines.push(`  ld a, ${args[0]}`);
-      } else if (args.length === 2) {
-        this.codeLines.push(`  ld a, ${args[0]}`);
-        this.codeLines.push(`  ld l, ${args[1]}`);
-      } else {
-        this.codeLines.push(`  ld a, ${args[0]}`);
-        this.codeLines.push(`  ld l, ${args[1]}`);
-        for (const arg of args.slice(2).reverse()) {
-          this.codeLines.push(`  ld a, ${arg}`);
-          this.codeLines.push('  push af');
-        }
+      if (args.length > 2) {
         const bytes = (args.length - 2) * 2;
         this.codeLines.push(`  ld hl, sp`);
         this.codeLines.push(`  ld de, ${bytes}`);
         this.codeLines.push('  add hl, de');
-        this.codeLines.push('  ld sp, l');
-        this.codeLines.push('  ld sp, h');
+        this.codeLines.push('  ld sp, hl');
       }
 
-      this.codeLines.push(`  ld hl, ${ptr}`);
-      this.codeLines.push('  call hl');
+      this.codeLines.push('  ld a, a');
     }
 
   /**
@@ -1516,10 +1482,7 @@ export class Z80Codegen {
         this.codeLines.push(`  ld hl, sp`); // HL = SP after call
         this.codeLines.push(`  ld de, 4`); // DE = 4 bytes (2 args * 2 bytes)
         this.codeLines.push('  add hl, de'); // HL = SP + 4 (restore stack)
-        this.codeLines.push('  ld sp, h');
-        this.codeLines.push('  ld sp, l');
-        this.codeLines.push('  ld sp, h');
-        this.codeLines.push('  ld sp, l');
+        this.codeLines.push('  ld sp, hl');
         this.codeLines.push(`  ld hl, sp`); // HL = current SP (top of allocated space)
         this.codeLines.push('  ld (hl), 0'); // streamType = 0 (filesystem) (offset 0)
         this.codeLines.push('  inc hl');
@@ -1602,10 +1565,7 @@ export class Z80Codegen {
         this.codeLines.push(`  ld hl, sp`); // HL = SP after call
         this.codeLines.push(`  ld de, 2`); // DE = 2 bytes (1 arg)
         this.codeLines.push('  add hl, de'); // HL = SP + 2
-        this.codeLines.push('  ld sp, h');
-        this.codeLines.push('  ld sp, l');
-        this.codeLines.push('  ld sp, h');
-        this.codeLines.push('  ld sp, l');
+        this.codeLines.push('  ld sp, hl');
         this.codeLines.push(`  ld hl, sp`); // HL = current SP (top of allocation)
         this.codeLines.push('  ld (hl), 1'); // streamType = 1 (serial) (offset 0)
         this.codeLines.push('  inc hl');
@@ -1772,10 +1732,7 @@ export class Z80Codegen {
         this.codeLines.push(`  ld hl, sp`); // HL = SP after call
         this.codeLines.push(`  ld de, 0`); // DE = 0 bytes (no args)
         this.codeLines.push('  add hl, de'); // HL = SP
-        this.codeLines.push('  ld sp, h');
-        this.codeLines.push('  ld sp, l');
-        this.codeLines.push('  ld sp, h');
-        this.codeLines.push('  ld sp, l');
+        this.codeLines.push('  ld sp, hl');
         this.codeLines.push(`  ld hl, sp`); // HL = current SP (top of allocation)
         this.codeLines.push('  ld (hl), 2'); // streamType = 2 (terminal) (offset 0)
         this.codeLines.push('  inc hl');

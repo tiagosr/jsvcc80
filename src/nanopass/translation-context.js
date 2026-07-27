@@ -19,16 +19,16 @@ function extractCallingConventionFromAttributes(attributes) {
     return IL.CALLING_CONVENTION_DEFAULT;
   }
   for (const attr of attributes) {
-    if (attr.name === 'cdecl') {
+    if (attr.name === 'cdecl' || attr.name === '__cdecl__') {
       return IL.CALLING_CONVENTION_CDECL;
     }
-    if (attr.name === 'fastcall') {
+    if (attr.name === 'fastcall' || attr.name === '__fastcall__') {
       return IL.CALLING_CONVENTION_FASTCALL;
     }
-    if (attr.name === 'callee') {
+    if (attr.name === 'callee' || attr.name === '__callee__') {
       return IL.CALLING_CONVENTION_CALLEE;
     }
-    if (attr.name === 'new_sdcc') {
+    if (attr.name === 'new_sdcc' || attr.name === '__new_sdcc__') {
       return IL.CALLING_CONVENTION_NEW_Sdcc;
     }
   }
@@ -109,7 +109,7 @@ export class TranslationContext {
     // Third pass: translate functions and globals
     for (const node of ast.statements) {
       if (node instanceof AST.FunctionNode) {
-        const funcIr = this.translateFunction(node);
+        const funcIr = this.translateFunction(node, node.attributes);
         program.addFunction(funcIr);
       } else if (node instanceof AST.AnnotatedDeclNode && node.declaration instanceof AST.FunctionNode) {
         const funcIr = this.translateFunction(node.declaration, node.attributes);

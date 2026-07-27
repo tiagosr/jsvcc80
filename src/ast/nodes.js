@@ -449,79 +449,88 @@ export class TypeSpecNode extends ASTNode {
   }
 
   /**
-   * Returns the size in bytes for this type on the Z80 target
-   * Pointers are always 2 bytes (16-bit addresses). Arrays are elementSize * length.
-   * Struct types use structSize if available, otherwise compute from fields.
-   * Function pointers are also 2 bytes (16-bit function addresses).
-   * @returns {number} Size in bytes
-   */
-  getSize(structRegistry = null) {
-    if (this.pointerDepth > 0 || this.isFunctionPointer) {
-      return 2;
-    }
-    if (this.structKind && this.structType && structRegistry) {
-      const structDef = structRegistry.get(this.structType);
-      if (structDef) {
-        return structDef.size;
-      }
-    }
-    const baseSize = TypeSpecNode.TypeSizes[this.baseType] ?? 2;
-    if (this.isArray && this.arrayLength != null) {
-      return baseSize * this.arrayLength;
-    }
-    return baseSize;
-  }
+    * Returns the size in bytes for this type on the Z80 target
+    * Pointers are always 2 bytes (16-bit addresses). Arrays are elementSize * length.
+    * Struct types use structSize if available, otherwise compute from fields.
+    * Function pointers are also 2 bytes (16-bit function addresses).
+    * Bit-width types (unsigned:n) return ceil(bitWidth / 8).
+    * @returns {number} Size in bytes
+    */
+   getSize(structRegistry = null) {
+     if (this.pointerDepth > 0 || this.isFunctionPointer) {
+       return 2;
+     }
+     if (this.bitWidth != null) {
+       return Math.ceil(this.bitWidth / 8);
+     }
+     if (this.structKind && this.structType && structRegistry) {
+       const structDef = structRegistry.get(this.structType);
+       if (structDef) {
+         return structDef.size;
+       }
+     }
+     const baseSize = TypeSpecNode.TypeSizes[this.baseType] ?? 2;
+     if (this.isArray && this.arrayLength != null) {
+       return baseSize * this.arrayLength;
+     }
+     return baseSize;
+   }
 
   /**
-   * Returns the element size for this type (ignores array length)
-   * @param {Map} [structRegistry] - Struct type registry for size lookup
-   * @returns {number} Element size in bytes
-   */
-  getElementSize(structRegistry = null) {
-    if (this.pointerDepth > 0 || this.isFunctionPointer) {
-      return 2;
-    }
-    if (this.structKind && this.structType && structRegistry) {
-      const structDef = structRegistry.get(this.structType);
-      if (structDef) {
-        return structDef.size;
-      }
-    }
-    return TypeSpecNode.TypeSizes[this.baseType] ?? 2;
-  }
+    * Returns the element size for this type (ignores array length)
+    * @param {Map} [structRegistry] - Struct type registry for size lookup
+    * @returns {number} Element size in bytes
+    */
+   getElementSize(structRegistry = null) {
+     if (this.pointerDepth > 0 || this.isFunctionPointer) {
+       return 2;
+     }
+     if (this.bitWidth != null) {
+       return Math.ceil(this.bitWidth / 8);
+     }
+     if (this.structKind && this.structType && structRegistry) {
+       const structDef = structRegistry.get(this.structType);
+       if (structDef) {
+         return structDef.size;
+       }
+     }
+     return TypeSpecNode.TypeSizes[this.baseType] ?? 2;
+   }
 
   /**
-   * Returns the type string representation (e.g., 'const int*', 'volatile char[10]', 'struct Point', 'int (*)(int)')
-   * @returns {string} Type string
-   */
-  typeString() {
-    let s = '';
-    if (this.isConst) s += 'const ';
-    if (this.isVolatile) s += 'volatile ';
-    
-    if (this.isFunctionPointer && this.functionReturnType) {
-      // Function pointer: int (*)(int, char)
-      const returnStr = this.functionReturnType.typeString();
-      s += `${returnStr} (*)`;
-      
-      if (this.functionParams && this.functionParams.length > 0) {
-        s += '(';
-        s += this.functionParams.map(p => p.type.typeString() + ' ' + (p.name || '')).join(', ');
-        s += ')';
-      } else {
-        s += '(void)';
-      }
-    } else {
-      s += this.structKind ? `${this.structKind} ${this.structType}` : this.baseType;
-      for (let i = 0; i < this.pointerDepth; i++) {
-        s += '*';
-      }
-      if (this.isArray) {
-        s += `[${this.arrayLength ?? ''}]`;
-      }
-    }
-    return s;
-  }
+    * Returns the type string representation (e.g., 'const int*', 'volatile char[10]', 'struct Point', 'int (*)(int)', 'unsigned:8')
+    * @returns {string} Type string
+    */
+   typeString() {
+     let s = '';
+     if (this.isConst) s += 'const ';
+     if (this.isVolatile) s += 'volatile ';
+     
+     if (this.isFunctionPointer && this.functionReturnType) {
+       // Function pointer: int (*)(int, char)
+       const returnStr = this.functionReturnType.typeString();
+       s += `${returnStr} (*)`;
+       
+       if (this.functionParams && this.functionParams.length > 0) {
+         s += '(';
+         s += this.functionParams.map(p => p.type.typeString() + ' ' + (p.name || '')).join(', ');
+         s += ')';
+       } else {
+         s += '(void)';
+       }
+     } else if (this.bitWidth != null) {
+       s += `unsigned:${this.bitWidth}`;
+     } else {
+       s += this.structKind ? `${this.structKind} ${this.structType}` : this.baseType;
+       for (let i = 0; i < this.pointerDepth; i++) {
+         s += '*';
+       }
+       if (this.isArray) {
+         s += `[${this.arrayLength ?? ''}]`;
+       }
+     }
+     return s;
+   }
 }
 
 /**

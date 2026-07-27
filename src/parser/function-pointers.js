@@ -218,9 +218,12 @@ function buildExtendedTypeSpecifier(typedefNames, structTags) {
     kw('void'), kw('char'), kw('_Bool'),
     kw('short'), kw('int'), kw('long')
   );
+  const colon = lit(':');
+  const integerLiteral = pred(t => t.type === 'INTEGER');
 
   const qualifiers = many(typeQualifier);
 
+  const withBitWidth = map(seq(qualifiers, kw('unsigned'), colon, integerLiteral), ([qs, u, c, i]) => ({ kind: 'bitwidth', qualifiers: qs, bitWidthToken: i }));
   const withBoth = map(seq(qualifiers, signedness, basicType), ([qs, s, t]) => ({ kind: 'keyword', qualifiers: qs, signToken: s, typeToken: t }));
   const onlySign = map(seq(qualifiers, signedness), ([qs, s]) => ({ kind: 'keyword', qualifiers: qs, signToken: s, typeToken: null }));
   const onlyType = map(seq(qualifiers, basicType), ([qs, t]) => ({ kind: 'keyword', qualifiers: qs, signToken: null, typeToken: t }));
@@ -229,6 +232,7 @@ function buildExtendedTypeSpecifier(typedefNames, structTags) {
     alt(
       structTypeRef,
       typedefNameParser,
+      withBitWidth,
       withBoth,
       onlySign,
       onlyType
@@ -239,6 +243,14 @@ function buildExtendedTypeSpecifier(typedefNames, structTags) {
       }
       if (value.kind === 'typedef') {
         return new AST.TypeSpecNode(value.token.value, true, false, false, null, locFromToken(value.token));
+      }
+      if (value.kind === 'bitwidth') {
+        const qualTokens = value.qualifiers || [];
+        const isConst = qualTokens.some(t => t.value === 'const');
+        const isVolatile = qualTokens.some(t => t.value === 'volatile');
+        const bitWidth = parseInt(value.bitWidthToken.value, 10);
+        const locToken = qualTokens.length > 0 ? qualTokens[0] : value.bitWidthToken;
+        return new AST.TypeSpecNode('unsigned', false, isConst, isVolatile, bitWidth, locFromToken(locToken));
       }
       const qualTokens = value.qualifiers || [];
       const isConst = qualTokens.some(t => t.value === 'const');

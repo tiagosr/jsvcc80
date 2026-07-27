@@ -133,7 +133,7 @@ function createFunctionPointerType(returnType, params, location) {
 
 /**
  * Build a type specifier parser rule
- * Matches: [const|volatile]* [signed|unsigned] [void|char|_Bool|short|int|long] or struct/union tag
+ * Matches: [const|volatile]* [signed|unsigned] [void|char|_Bool|short|int|long] or struct/union tag or unsigned:n
  * Requires at least one token to be consumed.
  * @returns {Object} Parser rule
  */
@@ -144,11 +144,15 @@ function buildTypeSpecifier() {
     kw('void'), kw('char'), kw('_Bool'),
     kw('short'), kw('int'), kw('long')
   );
+  const colon = lit(':');
+  const integerLiteral = pred(t => t.type === 'INTEGER');
 
   // Collect zero or more qualifiers
   const qualifiers = many(typeQualifier);
 
-  // Try signedness + basicType first (e.g., "unsigned int")
+  // Try unsigned:n first (e.g., "unsigned:8")
+  const withBitWidth = map(seq(qualifiers, kw('unsigned'), colon, integerLiteral), ([qs, u, c, i]) => [qs, u, c, i]);
+  // Try signedness + basicType (e.g., "unsigned int")
   const withBoth = map(seq(qualifiers, signedness, basicType), ([qs, s, t]) => [qs, s, t]);
   // Try signedness only (e.g., "unsigned")
   const onlySign = map(seq(qualifiers, signedness), ([qs, s]) => [qs, s, null]);
@@ -156,11 +160,16 @@ function buildTypeSpecifier() {
   const onlyType = map(seq(qualifiers, basicType), ([qs, t]) => [qs, null, t]);
 
   return map(
-    alt(withBoth, onlySign, onlyType),
-    ([qualTokens, signToken, typeToken]) => {
+    alt(withBitWidth, withBoth, onlySign, onlyType),
+    ([qualTokens, signToken, typeToken, bitWidthToken]) => {
       const isConst = qualTokens.some(t => t.value === 'const');
       const isVolatile = qualTokens.some(t => t.value === 'volatile');
-      const locToken = qualTokens.length > 0 ? qualTokens[0] : (signToken || typeToken);
+      const locToken = qualTokens.length > 0 ? qualTokens[0] : (signToken || typeToken || bitWidthToken);
+
+      if (bitWidthToken) {
+        const bitWidth = parseInt(bitWidthToken.value, 10);
+        return new AST.TypeSpecNode('unsigned', false, isConst, isVolatile, bitWidth, locFromToken(locToken));
+      }
 
       if (typeToken) {
         const typeKw = typeToken.value;

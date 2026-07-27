@@ -16,7 +16,6 @@ See [CHANGELOG.md](CHANGELOG.md)
 - Nothing at the moment
 
 ### 🔜 Next Steps
-1. Fix support for missing compound statements `&=`, `|=`, `^=`, `<<=`, `>>=`.
 3. Implement single-precision IEEE 754 `float` with optionally-linkable soft-float `+`, `-`, `*`, `/`, `%` operations, `isnan`, `isinf`
 4. Implement nearest integer, absolute value, remainder `fabsf`, `frexpf`, `ldexpf`, `ceilf`, `floorf`, `modff`
 5. Fix `typedef unsigned int newType` parsing

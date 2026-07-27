@@ -180,6 +180,11 @@ export class ExpressionTranslator {
       return this.translateAssignment(binOp);
     }
 
+    const compoundAssignOps = ['+=', '-=', '*=', '/=', '%=', '&=', '|=', '^=', '<<=', '>>='];
+    if (compoundAssignOps.includes(binOp.op)) {
+      return this.translateCompoundAssignment(binOp);
+    }
+
     const opMapping = {
       '+': 'add', '-': 'sub', '*': 'mul', '/': 'div', '%': 'mod',
       '<<': 'shl', '>>': 'shr'
@@ -337,14 +342,87 @@ export class ExpressionTranslator {
      } else {
        block.add(new IL.StoreInstruction(target, rightResult.result));
      }
-     return {
-       blocks: [...rightResult.blocks, block],
-       result: rightResult.result
-     };
-   }
+      return {
+        blocks: [...rightResult.blocks, block],
+        result: rightResult.result
+      };
+    }
 
-  /**
-   * Translate a unary operation expression
+   /**
+    * Translate a compound assignment expression (x op= y => x = x op y)
+    * @param {AST.BinaryOpNode} compAssign - Compound assignment expression
+    * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+    */
+   translateCompoundAssignment(compAssign) {
+    const compoundOpToIL = {
+      '+': 'add', '-': 'sub', '*': 'mul', '/': 'div', '%': 'mod',
+      '&': 'and', '|': 'or', '^': 'xor',
+      '<<': 'shl', '>>': 'shr'
+    };
+    const baseOp = compoundOpToIL[compAssign.op.replace('=', '')];
+
+    const rightResult = this.translateExpression(compAssign.right);
+    const blocks = [...rightResult.blocks];
+
+    let varName = null;
+    let isFuncPtrTarget = false;
+    if (compAssign.left instanceof AST.IdentifierNode) {
+      varName = compAssign.left.name;
+      const targetSym = this.context.state.symbolTable.lookup(varName);
+      if (targetSym && (targetSym.isFunctionPointer || targetSym.type === 'function_pointer')) {
+        isFuncPtrTarget = true;
+      }
+    }
+
+    if (varName) {
+      const loadBlock = new IL.BasicBlock(this.context.state.label('compassign_load'));
+      const opBlock = new IL.BasicBlock(this.context.state.label('compassign_op'));
+      const storeBlock = new IL.BasicBlock(this.context.state.label('compassign_store'));
+
+      const origTemp = this.context.state.temp();
+      loadBlock.add(new IL.LoadInstruction(origTemp, varName));
+
+      const resultTemp = this.context.state.temp();
+      opBlock.add(new IL.BinaryOpInstruction(resultTemp, baseOp, origTemp, rightResult.result));
+
+      if (isFuncPtrTarget) {
+        storeBlock.add(new IL.LoadAddrInstruction('fp_addr', varName));
+        storeBlock.add(new IL.BinaryOpInstruction('fp_addr', 'addr', 'fp_addr', resultTemp));
+      } else {
+        storeBlock.add(new IL.StoreInstruction(varName, resultTemp));
+      }
+
+      return {
+        blocks: [...blocks, loadBlock, opBlock, storeBlock],
+        result: resultTemp
+      };
+    }
+
+    const leftResult = this.translateExpression(compAssign.left);
+    blocks.push(...leftResult.blocks);
+
+    const loadBlock = new IL.BasicBlock(this.context.state.label('compassign_load'));
+    const opBlock = new IL.BasicBlock(this.context.state.label('compassign_op'));
+    const storeBlock = new IL.BasicBlock(this.context.state.label('compassign_store'));
+
+    const origTemp = this.context.state.temp();
+    loadBlock.add(new IL.LoadInstruction(origTemp, leftResult.result));
+
+    const resultTemp = this.context.state.temp();
+    opBlock.add(new IL.BinaryOpInstruction(resultTemp, baseOp, origTemp, rightResult.result));
+
+    const addrTemp = this.context.state.temp();
+    storeBlock.add(new IL.BinaryOpInstruction('addr', 'addr', leftResult.result, 'sp'));
+    storeBlock.add(new IL.StoreInstruction('mem', resultTemp));
+
+    return {
+      blocks: [...blocks, loadBlock, opBlock, storeBlock],
+      result: resultTemp
+    };
+  }
+
+   /**
+    * Translate a unary operation expression
    * @param {AST.UnaryOpNode} unaryOp - Unary operation
    * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
    */

@@ -17,7 +17,7 @@ function buildAssignmentExpr(ctx) {
     seq(
       alt(ctx.ruleRefs.conditionalExpr, lhsIdentifier),
       opt(seq(
-        pred(t => ['=', '+=', '-=', '*=', '/='].includes(t.type)),
+        pred(t => ['=', '+=', '-=', '*=', '/=', '%=', '&=', '|=', '^=', '<<=', '>>='].includes(t.type)),
         lazy(() => ctx.ruleRefs.expression)
       ))
     ),

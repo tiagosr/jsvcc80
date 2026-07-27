@@ -178,12 +178,26 @@ export class Lexer extends LexerCore {
       }
     }
 
+    // Three-character operators (compound shifts and ellipsis)
+    const threeChar = ch + this.peekNext(1) + this.peekNext(2);
+    if (threeChar === '<<=' || threeChar === '>>=') {
+      this.advance();
+      this.advance();
+      this.advance();
+      return this.makeToken(threeChar, threeChar);
+    }
+    if (threeChar === '...') {
+      this.advance();
+      this.advance();
+      this.advance();
+      return this.makeToken('ELLIPSIS', '...');
+    }
+
     // Two-character operators and assignment variants
     const twoOps = [
       '++', '--',
       '==', '!=', '<=', '>=', '<<', '>>', '&&', '||', '->',
-      '+=', '-=', '*=', '/=', '%=', '&=', '|=', '^=',
-      '<<=', '>>='
+      '+=', '-=', '*=', '/=', '%=', '&=', '|=', '^='
     ];
 
     if (twoChar === '::') {
@@ -198,15 +212,6 @@ export class Lexer extends LexerCore {
         this.advance();
         return this.makeToken(op, op);
       }
-    }
-
-    // Three-character operators (ellipsis for variadic functions)
-    const threeChar = ch + this.peekNext(1) + this.peekNext(2);
-    if (threeChar === '...') {
-      this.advance();
-      this.advance();
-      this.advance();
-      return this.makeToken('ELLIPSIS', '...');
     }
 
     // Single character tokens

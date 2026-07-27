@@ -645,7 +645,7 @@ export class Z80Codegen {
           }
           break;
         default:
-          for (const line of this.generateCdeclCall(args, func, paramTypes)) {
+          for (const line of this.generateNewSdccCall(args, func, paramTypes)) {
             this.codeLines.push(line);
           }
           break;
@@ -861,7 +861,7 @@ export class Z80Codegen {
           this.generateNewSdccCallIndirect(ptr, args);
           break;
         default:
-          this.generateCdeclCallIndirect(ptr, args, CALLING_CONVENTION_DEFAULT);
+          this.generateNewSdccCallIndirect(ptr, args);
           break;
       }
     }

@@ -127,7 +127,7 @@ export class CallAndMemoryTranslator {
       pushedRegs.push(`arg${i}`);
     }
     const block = new IL.BasicBlock(this.context.state.label('funcptrcall'));
-    block.add(new IL.CallIndirectInstruction(pointerResult.result, pushedRegs, IL.CALLING_CONVENTION_DEFAULT));
+    block.add(new IL.CallIndirectInstruction(pointerResult.result, pushedRegs, IL.CALLING_CONVENTION_CDECL));
     block.add(new IL.LoadInstruction(dest, 'ret_val'));
     return { blocks: [...blocks, block], result: dest };
   }
@@ -174,7 +174,7 @@ export class CallAndMemoryTranslator {
       pushedRegs.push(`arg${i}`);
     }
     const block = new IL.BasicBlock(this.context.state.label('funcptrcall'));
-    block.add(new IL.CallIndirectInstruction(indexResult.result, pushedRegs, IL.CALLING_CONVENTION_DEFAULT));
+    block.add(new IL.CallIndirectInstruction(indexResult.result, pushedRegs, IL.CALLING_CONVENTION_CDECL));
     block.add(new IL.LoadInstruction(dest, 'ret_val'));
     return { blocks: [...blocks, block], result: dest };
   }

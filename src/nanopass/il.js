@@ -5,7 +5,7 @@ export const CALLING_CONVENTION_CDECL = 'cdecl';
 export const CALLING_CONVENTION_FASTCALL = 'fastcall';
 export const CALLING_CONVENTION_CALLEE = 'callee';
 export const CALLING_CONVENTION_NEW_Sdcc = 'new_sdcc';
-export const CALLING_CONVENTION_DEFAULT = CALLING_CONVENTION_CDECL;
+export const CALLING_CONVENTION_DEFAULT = CALLING_CONVENTION_NEW_Sdcc;
 
 /**
  * Base class for all IL instructions

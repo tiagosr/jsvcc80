@@ -15,7 +15,7 @@ int main() { fn_byte(1); return 0; }
     const callLine = lines.find(l => l.includes('call fn_byte'));
     assert.ok(callLine);
     const pushLines = lines.filter(l => l.includes('push af'));
-    assert.ok(pushLines.length >= 1);
+    assert.ok(pushLines.length === 0, 'new_sdcc default passes byte arg on A');
   });
 
   it('should generate stack push for multiple args', () => {
@@ -44,7 +44,7 @@ int main() { fn_arg(1); return 0; }
     assert.ok(callLine);
     const cleanupIdx = lines.indexOf(callLine);
     const afterCall = lines.slice(cleanupIdx + 1, cleanupIdx + 8);
-    assert.ok(afterCall.some(l => l.includes('ld hl, sp')));
+    assert.ok(!afterCall.some(l => l.includes('ld hl, sp')), 'new_sdcc default no stack cleanup for single arg');
   });
 });
 
@@ -89,7 +89,7 @@ int main() { fn_callee(1); return 0; }
     const callLine = lines.find(l => l.includes('call fn_callee'));
     assert.ok(callLine);
     const afterCall = lines.slice(lines.indexOf(callLine) + 1, lines.indexOf(callLine) + 10);
-    assert.ok(afterCall.some(l => l.includes('ld hl, sp')));
+    assert.ok(!afterCall.some(l => l.includes('ld hl, sp')), 'callee convention cleanup happens in callee function');
   });
 });
 

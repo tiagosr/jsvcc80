@@ -20,8 +20,8 @@ describe('Calling Convention IR', () => {
       assert.strictEqual(IL.CALLING_CONVENTION_NEW_Sdcc, 'new_sdcc');
     });
 
-    it('default constant should equal cdecl', () => {
-      assert.strictEqual(IL.CALLING_CONVENTION_DEFAULT, IL.CALLING_CONVENTION_CDECL);
+    it('default constant should equal new_sdcc', () => {
+      assert.strictEqual(IL.CALLING_CONVENTION_DEFAULT, IL.CALLING_CONVENTION_NEW_Sdcc);
     });
   });
 
@@ -31,9 +31,9 @@ describe('Calling Convention IR', () => {
       assert.strictEqual(funcIr.callingConvention, 'cdecl');
     });
 
-    it('FunctionIR should default to cdecl when no convention specified', () => {
+    it('FunctionIR should default to new_sdcc when no convention specified', () => {
       const funcIr = new IL.FunctionIR('test_func', []);
-      assert.strictEqual(funcIr.callingConvention, IL.CALLING_CONVENTION_DEFAULT);
+      assert.strictEqual(funcIr.callingConvention, IL.CALLING_CONVENTION_NEW_Sdcc);
     });
 
     it('FunctionIR should support fastcall convention', () => {
@@ -70,9 +70,9 @@ describe('Calling Convention IR', () => {
       assert.strictEqual(callInstr.callingConvention, 'cdecl');
     });
 
-    it('CallInstruction should default to cdecl when no convention specified', () => {
+    it('CallInstruction should default to new_sdcc when no convention specified', () => {
       const callInstr = new IL.CallInstruction('test_func', ['arg0']);
-      assert.strictEqual(callInstr.callingConvention, IL.CALLING_CONVENTION_DEFAULT);
+      assert.strictEqual(callInstr.callingConvention, IL.CALLING_CONVENTION_NEW_Sdcc);
     });
 
     it('CallInstruction should support fastcall convention', () => {
@@ -102,9 +102,9 @@ describe('Calling Convention IR', () => {
       assert.strictEqual(callInstr.callingConvention, 'cdecl');
     });
 
-    it('CallIndirectInstruction should default to cdecl when no convention specified', () => {
+    it('CallIndirectInstruction should default to new_sdcc when no convention specified', () => {
       const callInstr = new IL.CallIndirectInstruction('fp_var', ['arg0']);
-      assert.strictEqual(callInstr.callingConvention, IL.CALLING_CONVENTION_DEFAULT);
+      assert.strictEqual(callInstr.callingConvention, IL.CALLING_CONVENTION_NEW_Sdcc);
     });
 
     it('CallIndirectInstruction should support fastcall convention', () => {
@@ -135,9 +135,9 @@ describe('Calling Convention IR', () => {
       assert.strictEqual(IL.getFunctionCallingConvention(program, 'test_func'), 'fastcall');
     });
 
-    it('should return default when function not found', () => {
+    it('should return new_sdcc when function not found', () => {
       const program = new IL.ProgramIR([]);
-      assert.strictEqual(IL.getFunctionCallingConvention(program, 'nonexistent'), IL.CALLING_CONVENTION_DEFAULT);
+      assert.strictEqual(IL.getFunctionCallingConvention(program, 'nonexistent'), IL.CALLING_CONVENTION_NEW_Sdcc);
     });
 
     it('should return cdecl for function with cdecl convention', () => {

@@ -164,8 +164,8 @@ describe('AST to IR Translation', () => {
 
   // Function calls with arguments
   it('should translate function call with arguments', () => {
-    const ir = compile('int main() { foo(1, 2); }');
-    const func = ir.functions[0];
+    const ir = compile('int foo(int a, int b) {} int main() { foo(1, 2); }');
+    const func = ir.functions[1];
     let pushCount = 0;
     let foundCall = false;
     for (const block of func.blocks) {
@@ -179,7 +179,7 @@ describe('AST to IR Translation', () => {
         }
       }
     }
-    assert.strictEqual(pushCount, 2, 'should push 2 arguments');
+    assert.strictEqual(pushCount, 0, 'new_sdcc default passes args in registers');
     assert.ok(foundCall, 'should have a CALL instruction');
   });
 

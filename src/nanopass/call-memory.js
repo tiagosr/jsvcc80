@@ -221,44 +221,69 @@ export class CallAndMemoryTranslator {
   }
 
   /**
-   * Translate a member access expression (struct.field)
-   * @param {AST.MemberNode} member - Member access
-   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
-   */
-  translateMember(member) {
-    const objResult = this.expressionTranslator.translateExpression(member.object);
-    const dest = this.context.state.temp();
-    const block = new IL.BasicBlock(this.context.state.label('member'));
+    * Translate a member access expression (struct.field)
+    * @param {AST.MemberNode} member - Member access
+    * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+    */
+   translateMember(member) {
+     const fieldName = member.field.name;
 
-    // Look up the object's type to find struct definition
-    let structDef = null;
-    let fieldOffset = 0;
-    const fieldName = member.field.name;
+     // Look up struct definition for offset
+     let structDef = null;
+     let fieldOffset = 0;
+     if (member.object instanceof AST.IdentifierNode) {
+       const sym = this.context.state.symbolTable.lookup(member.object.name);
+       if (sym && sym.structType) {
+         structDef = this.context.typeRegistry.structRegistry.get(sym.structType);
+         if (structDef) {
+           fieldOffset = structDef.fieldOffsets.get(fieldName) || 0;
+         }
+       }
+     }
 
-    if (member.object instanceof AST.IdentifierNode) {
-      const sym = this.context.state.symbolTable.lookup(member.object.name);
-      if (sym && sym.structType) {
-        structDef = this.context.typeRegistry.structRegistry.get(sym.structType);
-        if (structDef) {
-          fieldOffset = structDef.fieldOffsets.get(fieldName) || 0;
-        }
-      }
-    }
+     // For struct variable (IdentifierNode): get address of struct, add offset, dereference
+     if (member.object instanceof AST.IdentifierNode) {
+       const sym = this.context.state.symbolTable.lookup(member.object.name);
+       if (sym && sym.structType) {
+         const baseAddr = this.context.state.temp();
+         const block = new IL.BasicBlock(this.context.state.label('member'));
+         block.add(new IL.LoadAddrInstruction(baseAddr, member.object.name));
+         if (fieldOffset > 0) {
+           const addrTemp = this.context.state.temp();
+           block.add(new IL.BinaryOpInstruction(addrTemp, 'add', baseAddr, fieldOffset));
+           block.add(new IL.DerefLoadInstruction(this.context.state.temp(), addrTemp));
+           return {
+             blocks: [block],
+             result: block.instructions[block.instructions.length - 1].operands[0]
+           };
+         } else {
+           block.add(new IL.DerefLoadInstruction(this.context.state.temp(), baseAddr));
+           return {
+             blocks: [block],
+             result: block.instructions[block.instructions.length - 1].operands[0]
+           };
+         }
+       }
+     }
 
-    if (fieldOffset === 0) {
-      block.add(new IL.BinaryOpInstruction(dest, 'member', objResult.result, fieldName));
-    } else {
-      // Load base address, add offset, dereference
-      const addrTemp = this.context.state.temp();
-      block.add(new IL.BinaryOpInstruction(addrTemp, 'add', objResult.result, fieldOffset));
-      block.add(new IL.DerefLoadInstruction(dest, addrTemp));
-    }
+     // For dereference expression (*ptr) or other computed pointer: add offset, dereference
+     const objResult = this.expressionTranslator.translateExpression(member.object);
+     const dest = this.context.state.temp();
+     const block = new IL.BasicBlock(this.context.state.label('member'));
 
-    return {
-      blocks: [...objResult.blocks, block],
-      result: dest
-    };
-  }
+     if (fieldOffset > 0) {
+       const addrTemp = this.context.state.temp();
+       block.add(new IL.BinaryOpInstruction(addrTemp, 'add', objResult.result, fieldOffset));
+       block.add(new IL.DerefLoadInstruction(dest, addrTemp));
+     } else {
+       block.add(new IL.DerefLoadInstruction(dest, objResult.result));
+     }
+
+     return {
+       blocks: [...objResult.blocks, block],
+       result: dest
+     };
+   }
 
   /**
    * Translate an address-of expression (&expr)
@@ -317,42 +342,69 @@ export class CallAndMemoryTranslator {
   }
 
   /**
-   * Translate a pointer member access expression (ptr->field)
-   * @param {AST.PointerMemberNode} pmem - Pointer member access
-   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
-   */
-  translatePointerMember(pmem) {
-    const ptrResult = this.expressionTranslator.translateExpression(pmem.object);
-    const dest = this.context.state.temp();
-    const block = new IL.BasicBlock(this.context.state.label('pmem'));
+    * Translate a pointer member access expression (ptr->field)
+    * @param {AST.PointerMemberNode} pmem - Pointer member access
+    * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+    */
+   translatePointerMember(pmem) {
+     const fieldName = pmem.field.name;
 
-    let structDef = null;
-    let fieldOffset = 0;
-    const fieldName = pmem.field.name;
+     // Look up struct definition for offset
+     let structDef = null;
+     let fieldOffset = 0;
+     if (pmem.object instanceof AST.IdentifierNode) {
+       const sym = this.context.state.symbolTable.lookup(pmem.object.name);
+       if (sym && sym.structType) {
+         structDef = this.context.typeRegistry.structRegistry.get(sym.structType);
+         if (structDef) {
+           fieldOffset = structDef.fieldOffsets.get(fieldName) || 0;
+         }
+       }
+     }
 
-    if (pmem.object instanceof AST.IdentifierNode) {
-      const sym = this.context.state.symbolTable.lookup(pmem.object.name);
-      if (sym && sym.structType) {
-        structDef = this.context.typeRegistry.structRegistry.get(sym.structType);
-        if (structDef) {
-          fieldOffset = structDef.fieldOffsets.get(fieldName) || 0;
+      // For pointer variable (IdentifierNode with pointer type): load 16-bit address from variable
+      if (pmem.object instanceof AST.IdentifierNode) {
+        const sym = this.context.state.symbolTable.lookup(pmem.object.name);
+        if (sym && (sym.pointerDepth > 0 || sym.type === 'pointer')) {
+          const ptrResult = this.expressionTranslator.translateExpression(pmem.object);
+          const dest = this.context.state.temp();
+          const block = new IL.BasicBlock(this.context.state.label('pmem'));
+          // Load 16-bit address from pointer variable
+          block.add(new IL.LoadInstruction(this.context.state.temp(), ptrResult.result));
+          const actualAddr = block.instructions[block.instructions.length - 1].operands[0];
+          // Add field offset and dereference
+          if (fieldOffset > 0) {
+            const addrTemp = this.context.state.temp();
+            block.add(new IL.BinaryOpInstruction(addrTemp, 'add', actualAddr, fieldOffset));
+            block.add(new IL.DerefLoadInstruction(dest, addrTemp));
+          } else {
+            block.add(new IL.DerefLoadInstruction(dest, actualAddr));
+          }
+          return {
+            blocks: [...ptrResult.blocks, block],
+            result: dest
+          };
         }
       }
-    }
 
-    if (fieldOffset === 0) {
-      block.add(new IL.BinaryOpInstruction(dest, 'pmember', ptrResult.result, fieldName));
-    } else {
-      const addrTemp = this.context.state.temp();
-      block.add(new IL.BinaryOpInstruction(addrTemp, 'add', ptrResult.result, fieldOffset));
-      block.add(new IL.DerefLoadInstruction(dest, addrTemp));
-    }
+     // For computed pointer (dereference, etc.): add offset, dereference
+     const ptrResult = this.expressionTranslator.translateExpression(pmem.object);
+     const dest = this.context.state.temp();
+     const block = new IL.BasicBlock(this.context.state.label('pmem'));
 
-    return {
-      blocks: [...ptrResult.blocks, block],
-      result: dest
-    };
-  }
+     if (fieldOffset > 0) {
+       const addrTemp = this.context.state.temp();
+       block.add(new IL.BinaryOpInstruction(addrTemp, 'add', ptrResult.result, fieldOffset));
+       block.add(new IL.DerefLoadInstruction(dest, addrTemp));
+     } else {
+       block.add(new IL.DerefLoadInstruction(dest, ptrResult.result));
+     }
+
+     return {
+       blocks: [...ptrResult.blocks, block],
+       result: dest
+     };
+   }
 
   /**
    * Translate loading a function pointer value from a variable

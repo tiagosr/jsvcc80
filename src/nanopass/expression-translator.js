@@ -198,45 +198,150 @@ export class ExpressionTranslator {
   }
 
   /**
-   * Translate an assignment expression
-   * @param {AST.BinaryOpNode} assign - Assignment expression (op is '=')
-   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
-   */
-  translateAssignment(assign) {
-    const rightResult = this.translateExpression(assign.right);
-    const block = new IL.BasicBlock(this.context.state.label('assign'));
+    * Translate an assignment expression
+    * @param {AST.BinaryOpNode} assign - Assignment expression (op is '=')
+    * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+    */
+   translateAssignment(assign) {
+     const rightResult = this.translateExpression(assign.right);
+     const block = new IL.BasicBlock(this.context.state.label('assign'));
 
-    let target;
-    let isFuncPtrTarget = false;
-    if (assign.left instanceof AST.IdentifierNode) {
-      target = assign.left.name;
-      // Check if target is a function pointer variable
-      const targetSym = this.context.state.symbolTable.lookup(target);
-      if (targetSym && (targetSym.isFunctionPointer || targetSym.type === 'function_pointer')) {
-        isFuncPtrTarget = true;
-      }
-    } else {
-      const leftResult = this.translateExpression(assign.left);
-      block.add(new IL.BinaryOpInstruction('addr', 'addr', leftResult.result, 'sp'));
-      block.add(new IL.StoreInstruction('mem', rightResult.result));
-      return {
-        blocks: [...leftResult.blocks, ...rightResult.blocks, block],
-        result: rightResult.result
-      };
-    }
+     let target;
+     let isFuncPtrTarget = false;
+     if (assign.left instanceof AST.IdentifierNode) {
+       target = assign.left.name;
+       // Check if target is a function pointer variable
+       const targetSym = this.context.state.symbolTable.lookup(target);
+       if (targetSym && (targetSym.isFunctionPointer || targetSym.type === 'function_pointer')) {
+         isFuncPtrTarget = true;
+       }
+     } else if (assign.left instanceof AST.MemberNode) {
+       // Struct member assignment: p.x = value
+       const fieldName = assign.left.field.name;
+       const obj = assign.left.object;
 
-    // Handle function pointer assignment: store the address
-    if (isFuncPtrTarget) {
-      block.add(new IL.LoadAddrInstruction('fp_addr', target));
-      block.add(new IL.BinaryOpInstruction('fp_addr', 'addr', 'fp_addr', rightResult.result));
-    } else {
-      block.add(new IL.StoreInstruction(target, rightResult.result));
-    }
-    return {
-      blocks: [...rightResult.blocks, block],
-      result: rightResult.result
-    };
-  }
+       // Look up struct definition for offset
+       let fieldOffset = 0;
+       if (obj instanceof AST.IdentifierNode) {
+         const sym = this.context.state.symbolTable.lookup(obj.name);
+         if (sym && sym.structType) {
+           const structDef = this.context.typeRegistry.structRegistry.get(sym.structType);
+           if (structDef) {
+             fieldOffset = structDef.fieldOffsets.get(fieldName) || 0;
+           }
+         }
+       }
+
+       // Get address of struct, add offset, store value
+       if (obj instanceof AST.IdentifierNode) {
+         const sym = this.context.state.symbolTable.lookup(obj.name);
+         if (sym && sym.structType) {
+           const baseAddr = this.context.state.temp();
+           block.add(new IL.LoadAddrInstruction(baseAddr, obj.name));
+           if (fieldOffset > 0) {
+             const addrTemp = this.context.state.temp();
+             block.add(new IL.BinaryOpInstruction(addrTemp, 'add', baseAddr, fieldOffset));
+             block.add(new IL.DerefStoreInstruction(addrTemp, rightResult.result));
+           } else {
+             block.add(new IL.DerefStoreInstruction(baseAddr, rightResult.result));
+           }
+           return {
+             blocks: [...rightResult.blocks, block],
+             result: rightResult.result
+           };
+         }
+       }
+
+       // For computed pointer object (*ptr): add offset, store
+       const objResult = this.translateExpression(obj);
+       block.add(...objResult.blocks);
+       if (fieldOffset > 0) {
+         const addrTemp = this.context.state.temp();
+         block.add(new IL.BinaryOpInstruction(addrTemp, 'add', objResult.result, fieldOffset));
+         block.add(new IL.DerefStoreInstruction(addrTemp, rightResult.result));
+       } else {
+         block.add(new IL.DerefStoreInstruction(objResult.result, rightResult.result));
+       }
+       return {
+         blocks: [...objResult.blocks, ...rightResult.blocks, block],
+         result: rightResult.result
+       };
+     } else if (assign.left instanceof AST.PointerMemberNode) {
+       // Pointer member assignment: ptr->x = value
+       const fieldName = assign.left.field.name;
+       const obj = assign.left.object;
+
+       // Look up struct definition for offset
+       let fieldOffset = 0;
+       if (obj instanceof AST.IdentifierNode) {
+         const sym = this.context.state.symbolTable.lookup(obj.name);
+         if (sym && sym.structType) {
+           const structDef = this.context.typeRegistry.structRegistry.get(sym.structType);
+           if (structDef) {
+             fieldOffset = structDef.fieldOffsets.get(fieldName) || 0;
+           }
+         }
+       }
+
+       // Get address from pointer variable, add offset, store
+       if (obj instanceof AST.IdentifierNode) {
+         const sym = this.context.state.symbolTable.lookup(obj.name);
+         if (sym && (sym.pointerDepth > 0 || sym.type === 'pointer')) {
+           const ptrResult = this.translateExpression(obj);
+           block.add(...ptrResult.blocks);
+           // Dereference pointer variable to get actual address
+           const actualAddr = this.context.state.temp();
+           block.add(new IL.DerefLoadInstruction(actualAddr, ptrResult.result));
+           if (fieldOffset > 0) {
+             const addrTemp = this.context.state.temp();
+             block.add(new IL.BinaryOpInstruction(addrTemp, 'add', actualAddr, fieldOffset));
+             block.add(new IL.DerefStoreInstruction(addrTemp, rightResult.result));
+           } else {
+             block.add(new IL.DerefStoreInstruction(actualAddr, rightResult.result));
+           }
+           return {
+             blocks: [...ptrResult.blocks, ...rightResult.blocks, block],
+             result: rightResult.result
+           };
+         }
+       }
+
+       // For computed pointer object: add offset, store
+       const objResult = this.translateExpression(obj);
+       block.add(...objResult.blocks);
+       if (fieldOffset > 0) {
+         const addrTemp = this.context.state.temp();
+         block.add(new IL.BinaryOpInstruction(addrTemp, 'add', objResult.result, fieldOffset));
+         block.add(new IL.DerefStoreInstruction(addrTemp, rightResult.result));
+       } else {
+         block.add(new IL.DerefStoreInstruction(objResult.result, rightResult.result));
+       }
+       return {
+         blocks: [...objResult.blocks, ...rightResult.blocks, block],
+         result: rightResult.result
+       };
+     } else {
+       const leftResult = this.translateExpression(assign.left);
+       block.add(new IL.BinaryOpInstruction('addr', 'addr', leftResult.result, 'sp'));
+       block.add(new IL.StoreInstruction('mem', rightResult.result));
+       return {
+         blocks: [...leftResult.blocks, ...rightResult.blocks, block],
+         result: rightResult.result
+       };
+     }
+
+     // Handle function pointer assignment: store the address
+     if (isFuncPtrTarget) {
+       block.add(new IL.LoadAddrInstruction('fp_addr', target));
+       block.add(new IL.BinaryOpInstruction('fp_addr', 'addr', 'fp_addr', rightResult.result));
+     } else {
+       block.add(new IL.StoreInstruction(target, rightResult.result));
+     }
+     return {
+       blocks: [...rightResult.blocks, block],
+       result: rightResult.result
+     };
+   }
 
   /**
    * Translate a unary operation expression

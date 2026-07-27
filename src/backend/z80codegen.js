@@ -328,45 +328,72 @@ export class Z80Codegen {
   }
 
   /**
-   * Generates a LOAD instruction
-   * @param {LoadInstruction} instr - Load instruction
-   */
-  generateLoad(instr) {
-    const [dest, src] = instr.operands;
+    * Generates a LOAD instruction
+    * @param {LoadInstruction} instr - Load instruction
+    */
+   generateLoad(instr) {
+     const [dest, src] = instr.operands;
 
-    // Immediate/numeric load
-    if (typeof src === 'number' || (typeof src === 'string' && (/^\d+$/.test(src) || src.startsWith('#')))) {
-      this.codeLines.push(`  ld hl, ${this.formatValue(src)}`);
-      return;
-    }
+     // Immediate/numeric load
+     if (typeof src === 'number' || (typeof src === 'string' && (/^\d+$/.test(src) || src.startsWith('#')))) {
+       this.codeLines.push(`  ld hl, ${this.formatValue(src)}`);
+       if (dest !== 'hl') {
+         if (/^[a-z]$/.test(dest) && ['a','b','c','d','e','h','l'].includes(dest)) {
+           // 8-bit physical register - store low byte
+           this.codeLines.push(`  ld ${dest}, l`);
+         } else {
+           // Variable/spill - store 16-bit
+           this.codeLines.push(`  ld (${dest}), hl`);
+         }
+       }
+       return;
+     }
 
-    // Load from memory address into HL
-    if (typeof src === 'string' && !dest.startsWith('hl')) {
-      this.codeLines.push(`  ld hl, (${src})`);
-    } else {
-      // Load value to register
-      const reg = this.formatRegister(dest);
-      this.codeLines.push(`  ld ${reg}, ${this.formatValue(src)}`);
-    }
-  }
+     // Load from memory address or register
+     if (typeof src === 'string') {
+       if (src === 'hl') {
+         // Source is HL register - copy to dest
+         if (dest !== 'hl') {
+           this.codeLines.push(`  ld (${dest}), hl`);
+         }
+       } else if (['a','b','c','d','e'].includes(src)) {
+         // Source is 8-bit register - load into HL (low byte only)
+         this.codeLines.push(`  ld l, ${src}`);
+         this.codeLines.push(`  ld h, 0`);
+         if (dest !== 'hl') {
+           this.codeLines.push(`  ld (${dest}), hl`);
+         }
+       } else {
+         // Source is a memory variable/label
+         this.codeLines.push(`  ld hl, (${src})`);
+         if (dest !== 'hl') {
+           this.codeLines.push(`  ld (${dest}), hl`);
+         }
+       }
+     }
+   }
 
   /**
-   * Generates a STORE instruction
-   * @param {StoreInstruction} instr - Store instruction
-   */
-  generateStore(instr) {
-    const [dest, src] = instr.operands;
+    * Generates a STORE instruction
+    * @param {StoreInstruction} instr - Store instruction
+    */
+   generateStore(instr) {
+     const [dest, src] = instr.operands;
 
-    // Store HL to memory address
-    if (src === 'hl') {
-      this.codeLines.push(`  ld (${dest}), hl`);
-    } else {
-      // Load value into HL first
-      const reg = this.formatRegister(src);
-      this.codeLines.push(`  ld ${reg}, a`); // Assuming src is A register
-      this.codeLines.push(`  ld (${dest}), ${reg}`);
-    }
-  }
+     // Store HL to memory address
+     if (src === 'hl') {
+       this.codeLines.push(`  ld (${dest}), hl`);
+     } else if (['a','b','c','d','e','h','l'].includes(src)) {
+       // 8-bit register - zero-extend to 16-bit then store
+       this.codeLines.push(`  ld l, ${src}`);
+       this.codeLines.push(`  ld h, 0`);
+       this.codeLines.push(`  ld (${dest}), hl`);
+     } else {
+       // src is a memory variable/label holding 16-bit value
+       this.codeLines.push(`  ld hl, (${src})`);
+       this.codeLines.push(`  ld (${dest}), hl`);
+     }
+   }
 
   /**
    * Generates a binary operation instruction
@@ -382,13 +409,28 @@ export class Z80Codegen {
       return;
     }
 
-    // Handle address store operation (used for function pointer storage)
+    // Handle address store operation (used for assignment to computed targets)
     if (op === 'addr') {
-      // dest = address to store to
+      // dest = register holding address to store to
       // src2 = value to store
-      // Generate: store src2 value at address in dest
-      this.codeLines.push(`  ld hl, ${src2}`);
-      this.codeLines.push(`  ld (${dest}), hl`);
+      this.codeLines.push(`  ld hl, ${dest}`);
+      this.codeLines.push(`  ld a, ${src2}`);
+      this.codeLines.push(`  ld (hl), a`);
+      return;
+    }
+
+    // Handle struct member access (fallback opcode)
+    if (op === 'member' || op === 'pmember') {
+      // dest = result register
+      // src1 = base address register
+      // src2 = field name (ignored, handled by IR translation)
+      // This should not be reached after proper IR translation
+      this.codeLines.push(`  ld hl, ${src1}`);
+      this.codeLines.push(`  ld a, (hl)`);
+      const reg = this.formatRegister(dest, true);
+      if (reg !== 'a') {
+        this.codeLines.push(`  ld ${reg}, a`);
+      }
       return;
     }
 
@@ -1329,42 +1371,66 @@ export class Z80Codegen {
   }
 
   /**
-   * Generates a LOAD_ADDR instruction (load address of a symbol)
-   * @param {LoadAddrInstruction} instr - Load address instruction
-   */
-  generateLoadAddr(instr) {
-    const [dest, src] = instr.operands;
-    this.codeLines.push(`  ld hl, ${src}`);
-    if (dest !== 'hl') {
-      this.codeLines.push(`  ex de, hl`);
-      this.codeLines.push(`  ld ${dest}, de`);
-    }
-  }
+    * Generates a LOAD_ADDR instruction (load address of a symbol)
+    * @param {LoadAddrInstruction} instr - Load address instruction
+    */
+   generateLoadAddr(instr) {
+     const [dest, src] = instr.operands;
+     this.codeLines.push(`  ld hl, ${src}`);
+     if (dest !== 'hl') {
+       // Store 16-bit address into memory location
+       this.codeLines.push(`  ld (${dest}), hl`);
+     }
+   }
 
   /**
-   * Generates a DEREF_LOAD instruction (load value from pointer address)
-   * @param {DerefLoadInstruction} instr - Dereference load instruction
-   */
-  generateDerefLoad(instr) {
-    const [dest, ptr] = instr.operands;
-    this.codeLines.push(`  ld hl, ${ptr}`);
-    this.codeLines.push(`  ld a, (hl)`);
-    const reg = this.formatRegister(dest, true);
-    if (reg !== 'a') {
-      this.codeLines.push(`  ld ${reg}, a`);
-    }
-  }
+    * Generates a DEREF_LOAD instruction (load value from pointer address)
+    * @param {DerefLoadInstruction} instr - Dereference load instruction
+    */
+   generateDerefLoad(instr) {
+     const [dest, ptr] = instr.operands;
+     // ptr can be a physical register (hl) or a memory variable/spill location
+     if (ptr === 'hl') {
+       this.codeLines.push(`  ld a, (hl)`);
+     } else {
+       this.codeLines.push(`  ld hl, (${ptr})`);
+       this.codeLines.push(`  ld a, (hl)`);
+     }
+     const reg = this.formatRegister(dest, true);
+     if (reg !== 'a') {
+       this.codeLines.push(`  ld ${reg}, a`);
+     }
+   }
 
   /**
-   * Generates a DEREF_STORE instruction (store value to pointer address)
-   * @param {DerefStoreInstruction} instr - Dereference store instruction
-   */
-  generateDerefStore(instr) {
-    const [ptr, src] = instr.operands;
-    this.codeLines.push(`  ld hl, ${ptr}`);
-    this.codeLines.push(`  ld a, ${src}`);
-    this.codeLines.push(`  ld (hl), a`);
-  }
+    * Generates a DEREF_STORE instruction (store value to pointer address)
+    * @param {DerefStoreInstruction} instr - Dereference store instruction
+    */
+   generateDerefStore(instr) {
+     const [ptr, src] = instr.operands;
+     // ptr can be a physical register (hl) or a memory variable/spill location
+     if (ptr === 'hl') {
+       // Address already in HL
+     } else {
+       this.codeLines.push(`  ld hl, (${ptr})`);
+     }
+     // src is a memory location, HL, or 8-bit register holding the value
+     if (src === 'hl') {
+       this.codeLines.push(`  ld (hl), l`);
+       this.codeLines.push(`  inc hl`);
+       this.codeLines.push(`  ld (hl), h`);
+     } else if (['a','b','c','d','e','h','l'].includes(src)) {
+       // 8-bit register - store byte at address in HL
+       this.codeLines.push(`  ld a, ${src}`);
+       this.codeLines.push(`  ld (hl), a`);
+     } else {
+       // src is a memory variable/label holding 16-bit value
+       this.codeLines.push(`  ld hl, (${src})`);
+       this.codeLines.push(`  ld (hl), l`);
+       this.codeLines.push(`  inc hl`);
+       this.codeLines.push(`  ld (hl), h`);
+     }
+   }
 
   /**
    * Generates an INDEXED_LOAD instruction (array index with element size)

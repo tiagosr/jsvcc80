@@ -6,7 +6,8 @@ import {
   Instruction, LoadInstruction, StoreInstruction, BinaryOpInstruction,
   UnaryOpInstruction, CallInstruction, CallIndirectInstruction, ReturnInstruction, JumpIfInstruction,
   JumpInstruction, LabelInstruction, AllocStackInstruction, FreeStackInstruction,
-  PushInstruction, PopInstruction, BasicBlock, FunctionIR, ProgramIR
+  PushInstruction, PopInstruction, LoadAddrInstruction, DerefLoadInstruction, DerefStoreInstruction,
+  IndexedLoadInstruction, IndexedStoreInstruction, BasicBlock, FunctionIR, ProgramIR
 } from './il.js';
 
 /**
@@ -272,102 +273,153 @@ export class PeepholeOptimizer extends OptimizationPass {
   }
 
   /**
-   * Eliminates dead stores (stores to a location never read before overwrite)
-   * @param {BasicBlock} block - Block to optimize
-   */
-  eliminateDeadStores(block) {
-    if (block.instructions.length <= 1) return;
+    * Eliminates dead stores (stores to a location never read before overwrite)
+    * @param {BasicBlock} block - Block to optimize
+    */
+   eliminateDeadStores(block) {
+     if (block.instructions.length <= 1) return;
 
-    const instructions = [...block.instructions];
-    const liveStores = new Set();
+     const instructions = [...block.instructions];
+     const liveStores = new Set();
 
-    for (let i = instructions.length - 1; i >= 0; i--) {
-      const instr = instructions[i];
+     for (let i = instructions.length - 1; i >= 0; i--) {
+       const instr = instructions[i];
 
-      if (instr instanceof StoreInstruction) {
-        const [dest] = instr.operands;
-        if (!liveStores.has(dest)) {
-          liveStores.add(dest);
-        } else {
-          liveStores.delete(dest);
-        }
-      } else if (instr instanceof LoadInstruction) {
-        const [, src] = instr.operands;
-        liveStores.delete(src);
-      } else if (instr instanceof BinaryOpInstruction) {
-        const [dest, , src1, src2] = instr.operands;
-        liveStores.delete(src1);
-        liveStores.delete(src2);
-        liveStores.add(dest);
-      } else if (instr instanceof ReturnInstruction) {
-        const [value] = instr.operands;
-        if (value) {
-          liveStores.delete(value);
-        }
-      } else if (instr instanceof JumpInstruction || instr instanceof JumpIfInstruction) {
-        liveStores.clear();
-      }
-    }
+       if (instr instanceof StoreInstruction) {
+         const [dest] = instr.operands;
+         if (!liveStores.has(dest)) {
+           liveStores.add(dest);
+         } else {
+           liveStores.delete(dest);
+         }
+       } else if (instr instanceof LoadInstruction) {
+         const [, src] = instr.operands;
+         liveStores.delete(src);
+       } else if (instr instanceof BinaryOpInstruction) {
+         const [dest, , src1, src2] = instr.operands;
+         liveStores.delete(src1);
+         liveStores.delete(src2);
+         liveStores.add(dest);
+       } else if (instr instanceof ReturnInstruction) {
+         const [value] = instr.operands;
+         if (value) {
+           liveStores.delete(value);
+         }
+       } else if (instr instanceof JumpInstruction || instr instanceof JumpIfInstruction) {
+         liveStores.clear();
+       }
+     }
 
-    const newInstructions = [];
-    const storeChain = new Map();
+     const newInstructions = [];
 
-    for (let i = 0; i < block.instructions.length; i++) {
-      const instr = block.instructions[i];
+     for (let i = 0; i < block.instructions.length; i++) {
+       const instr = block.instructions[i];
 
-      if (instr instanceof StoreInstruction) {
-        const [dest, src] = instr.operands;
-        const nextUses = this.isStoreLive(block, i, dest);
-        if (!nextUses) {
-          this.stats.instructionsRemoved++;
-          this.stats.deadStoresEliminated++;
-          continue;
-        }
-      }
+       if (instr instanceof StoreInstruction) {
+         const [dest, src] = instr.operands;
+         // For variable names (non-temp), only eliminate if overwritten by another store
+         // to the same destination within the block (definitely dead)
+         // Otherwise preserve as it may be read in subsequent blocks
+         const isVarName = !/^t\d+$/.test(dest);
+         if (isVarName) {
+           // Check if there's a subsequent store to the same destination
+           let overwritten = false;
+           for (let j = i + 1; j < block.instructions.length; j++) {
+             const nextInstr = block.instructions[j];
+             if (nextInstr instanceof StoreInstruction) {
+               const [sDest] = nextInstr.operands;
+               if (sDest === dest) {
+                 overwritten = true;
+                 break;
+               }
+             }
+           }
+           if (!overwritten) {
+             newInstructions.push(instr);
+             continue;
+           }
+         }
+         const nextUses = this.isStoreLive(block, i, dest);
+         if (!nextUses) {
+           this.stats.instructionsRemoved++;
+           this.stats.deadStoresEliminated++;
+           continue;
+         }
+       }
 
-      newInstructions.push(instr);
-    }
+       newInstructions.push(instr);
+     }
 
-    block.instructions = newInstructions;
-  }
+     block.instructions = newInstructions;
+   }
 
   /**
-   * Checks if a store to a destination is live (will be read before overwrite)
-   * @param {BasicBlock} block - Block to check
-   * @param {number} storeIndex - Index of the store instruction
-   * @param {string} dest - Destination of the store
-   * @returns {boolean} True if the store is live
-   */
-  isStoreLive(block, storeIndex, dest) {
-    for (let i = storeIndex + 1; i < block.instructions.length; i++) {
-      const instr = block.instructions[i];
+    * Checks if a store to a destination is live (will be read before overwrite)
+    * @param {BasicBlock} block - Block to check
+    * @param {number} storeIndex - Index of the store instruction
+    * @param {string} dest - Destination of the store
+    * @returns {boolean} True if the store is live
+    */
+   isStoreLive(block, storeIndex, dest) {
+     for (let i = storeIndex + 1; i < block.instructions.length; i++) {
+       const instr = block.instructions[i];
 
-      if (instr instanceof LoadInstruction) {
-        const [, src] = instr.operands;
-        if (src === dest) return true;
-      }
+       if (instr instanceof LoadInstruction) {
+         const [, src] = instr.operands;
+         if (src === dest) return true;
+       }
 
-      if (instr instanceof BinaryOpInstruction) {
-        const [, , src1, src2] = instr.operands;
-        if (src1 === dest || src2 === dest) return true;
-      }
+       if (instr instanceof BinaryOpInstruction) {
+         const [, , src1, src2] = instr.operands;
+         if (src1 === dest || src2 === dest) return true;
+       }
 
-      if (instr instanceof StoreInstruction) {
-        const [sDest] = instr.operands;
-        if (sDest === dest) return false;
-      }
+       if (instr instanceof StoreInstruction) {
+         const [sDest] = instr.operands;
+         if (sDest === dest) return false;
+       }
 
-      if (instr instanceof ReturnInstruction) {
-        const [value] = instr.operands;
-        if (value === dest) return true;
-      }
+       if (instr instanceof ReturnInstruction) {
+         const [value] = instr.operands;
+         if (value === dest) return true;
+       }
 
-      if (instr instanceof JumpInstruction || instr instanceof JumpIfInstruction) {
-        return false;
-      }
-    }
-    return false;
-  }
+       if (instr instanceof JumpInstruction || instr instanceof JumpIfInstruction) {
+         return false;
+       }
+     }
+
+     // Check successor block for cross-block liveness
+     if (block.successor) {
+       for (const instr of block.successor.instructions) {
+         if (instr instanceof LoadInstruction) {
+           const [, src] = instr.operands;
+           if (src === dest) return true;
+         }
+
+         if (instr instanceof BinaryOpInstruction) {
+           const [, , src1, src2] = instr.operands;
+           if (src1 === dest || src2 === dest) return true;
+         }
+
+         if (instr instanceof StoreInstruction) {
+           const [sDest] = instr.operands;
+           if (sDest === dest) return false;
+         }
+
+         if (instr instanceof ReturnInstruction) {
+           const [value] = instr.operands;
+           if (value === dest) return true;
+         }
+
+         if (instr instanceof JumpInstruction || instr instanceof JumpIfInstruction) {
+           return false;
+         }
+       }
+     }
+
+     return false;
+   }
 
   /**
    * Eliminates redundant jumps (jump to the next instruction)
@@ -637,54 +689,75 @@ class BlockRegisterAllocator {
   }
 
   /**
-   * Allocates registers for a single instruction
-   * @param {Instruction} instr - Instruction to allocate
-   */
-  allocateInstruction(instr) {
-    if (instr instanceof LoadInstruction) {
-      this.allocateLoad(instr);
-    } else if (instr instanceof StoreInstruction) {
-      this.allocateStore(instr);
-    } else if (instr instanceof BinaryOpInstruction) {
-      this.allocateBinaryOp(instr);
-    } else if (instr instanceof UnaryOpInstruction) {
-      this.allocateUnaryOp(instr);
-    } else if (instr instanceof CallInstruction) {
-      this.allocateCall(instr);
-    } else if (instr instanceof CallIndirectInstruction) {
-      this.allocateCallIndirect(instr);
-    } else if (instr instanceof ReturnInstruction) {
-      this.allocateReturn(instr);
-    } else if (instr instanceof JumpIfInstruction) {
-      this.allocateJumpIf(instr);
-    } else if (instr instanceof PushInstruction) {
-      this.allocatePush(instr);
-    } else if (instr instanceof PopInstruction) {
-      this.allocatePop(instr);
-    }
-  }
+    * Allocates registers for a single instruction
+    * @param {Instruction} instr - Instruction to allocate
+    */
+   allocateInstruction(instr) {
+     if (instr instanceof LoadInstruction) {
+       this.allocateLoad(instr);
+     } else if (instr instanceof StoreInstruction) {
+       this.allocateStore(instr);
+     } else if (instr instanceof BinaryOpInstruction) {
+       this.allocateBinaryOp(instr);
+     } else if (instr instanceof UnaryOpInstruction) {
+       this.allocateUnaryOp(instr);
+     } else if (instr instanceof CallInstruction) {
+       this.allocateCall(instr);
+     } else if (instr instanceof CallIndirectInstruction) {
+       this.allocateCallIndirect(instr);
+     } else if (instr instanceof ReturnInstruction) {
+       this.allocateReturn(instr);
+     } else if (instr instanceof JumpIfInstruction) {
+       this.allocateJumpIf(instr);
+     } else if (instr instanceof PushInstruction) {
+       this.allocatePush(instr);
+     } else if (instr instanceof PopInstruction) {
+       this.allocatePop(instr);
+     } else if (instr instanceof LoadAddrInstruction) {
+       this.allocateLoadAddr(instr);
+     } else if (instr instanceof DerefLoadInstruction) {
+       this.allocateDerefLoad(instr);
+     } else if (instr instanceof DerefStoreInstruction) {
+       this.allocateDerefStore(instr);
+     } else if (instr instanceof IndexedLoadInstruction) {
+       this.allocateIndexedLoad(instr);
+     } else if (instr instanceof IndexedStoreInstruction) {
+       this.allocateIndexedStore(instr);
+     }
+   }
 
   /**
-   * Allocates a load instruction
-   * @param {LoadInstruction} instr - Load instruction
-   */
-  allocateLoad(instr) {
-    const [dest, src] = instr.operands;
+    * Allocates a load instruction
+    * @param {LoadInstruction} instr - Load instruction
+    */
+   allocateLoad(instr) {
+     const [dest, src] = instr.operands;
 
-    if (this.isVreg(dest)) {
-      const preg = this.allocateRegister(dest);
-      if (preg) {
-        instr.operands[0] = preg;
-      }
-    }
+     if (this.isVreg(dest)) {
+       // For memory loads (src is a variable label), result is 16-bit -> use HL
+       if (typeof src === 'string' && !this.isVreg(src) && !/^\d+$/.test(src)) {
+         instr.operands[0] = 'hl';
+       } else {
+         const preg = this.allocateRegister(dest);
+         if (preg) {
+           instr.operands[0] = preg;
+         }
+       }
+     }
 
-    if (this.isVreg(src)) {
-      const preg = this.getPhysicalRegister(src);
-      if (preg) {
-        instr.operands[1] = preg;
-      }
-    }
-  }
+     if (this.isVreg(src)) {
+       const preg = this.getPhysicalRegister(src);
+       if (preg) {
+         instr.operands[1] = preg;
+       } else {
+         // src vreg not yet allocated - allocate it
+         const newPreg = this.allocateRegister(src);
+         if (newPreg) {
+           instr.operands[1] = newPreg;
+         }
+       }
+     }
+   }
 
   /**
    * Allocates a store instruction
@@ -838,19 +911,145 @@ class BlockRegisterAllocator {
   }
 
   /**
-   * Allocates a pop instruction
-   * @param {PopInstruction} instr - Pop instruction
-   */
-  allocatePop(instr) {
-    const [dest] = instr.operands;
+    * Allocates a pop instruction
+    * @param {PopInstruction} instr - Pop instruction
+    */
+   allocatePop(instr) {
+     const [dest] = instr.operands;
 
-    if (this.isVreg(dest)) {
-      const preg = this.allocateRegister(dest);
-      if (preg) {
-        instr.operands[0] = preg;
-      }
-    }
-  }
+     if (this.isVreg(dest)) {
+       const preg = this.allocateRegister(dest);
+       if (preg) {
+         instr.operands[0] = preg;
+       }
+     }
+   }
+
+  /**
+    * Allocates a load address instruction
+    * @param {LoadAddrInstruction} instr - Load address instruction
+    */
+   allocateLoadAddr(instr) {
+     const [dest, src] = instr.operands;
+
+     // Result is 16-bit address -> use HL
+     if (this.isVreg(dest)) {
+       this.vregToPreg.set(dest, 'hl');
+       this.pregToVreg.set('hl', dest);
+       this.usedRegs.push('hl');
+       instr.operands[0] = 'hl';
+     }
+   }
+
+  /**
+    * Allocates a dereference load instruction
+    * @param {DerefLoadInstruction} instr - Dereference load instruction
+    */
+   allocateDerefLoad(instr) {
+     const [dest, ptr] = instr.operands;
+
+     // ptr is a pointer address (16-bit)
+     if (this.isVreg(ptr)) {
+       const preg = this.getPhysicalRegister(ptr);
+       if (preg) {
+         instr.operands[1] = preg;
+       } else {
+         instr.operands[1] = 'hl';
+       }
+     }
+
+     // dest is 8-bit result
+     if (this.isVreg(dest)) {
+       const preg = this.allocateRegister(dest);
+       if (preg) {
+         instr.operands[0] = preg;
+       }
+     }
+   }
+
+  /**
+    * Allocates a dereference store instruction
+    * @param {DerefStoreInstruction} instr - Dereference store instruction
+    */
+   allocateDerefStore(instr) {
+     const [ptr, src] = instr.operands;
+
+     // ptr is a pointer address (16-bit)
+     if (this.isVreg(ptr)) {
+       const preg = this.getPhysicalRegister(ptr);
+       if (preg) {
+         instr.operands[0] = preg;
+       } else {
+         instr.operands[0] = 'hl';
+       }
+     }
+
+     // src is the value to store
+     if (this.isVreg(src)) {
+       const preg = this.getPhysicalRegister(src);
+       if (preg) {
+         instr.operands[1] = preg;
+       }
+     }
+   }
+
+  /**
+    * Allocates an indexed load instruction
+    * @param {IndexedLoadInstruction} instr - Indexed load instruction
+    */
+   allocateIndexedLoad(instr) {
+     const [dest, base, index, elemSize] = instr.operands;
+
+     if (this.isVreg(base)) {
+       const preg = this.getPhysicalRegister(base);
+       if (preg) {
+         instr.operands[1] = preg;
+       }
+     }
+
+     if (this.isVreg(index)) {
+       const preg = this.getPhysicalRegister(index);
+       if (preg) {
+         instr.operands[2] = preg;
+       }
+     }
+
+     if (this.isVreg(dest)) {
+       const preg = this.allocateRegister(dest);
+       if (preg) {
+         instr.operands[0] = preg;
+       }
+     }
+   }
+
+  /**
+    * Allocates an indexed store instruction
+    * @param {IndexedStoreInstruction} instr - Indexed store instruction
+    */
+   allocateIndexedStore(instr) {
+     const [base, index, src, elemSize] = instr.operands;
+
+     if (this.isVreg(base)) {
+       const preg = this.getPhysicalRegister(base);
+       if (preg) {
+         instr.operands[0] = preg;
+       }
+     }
+
+     if (this.isVreg(index)) {
+       const preg = this.getPhysicalRegister(index);
+       if (preg) {
+         instr.operands[1] = preg;
+       }
+     }
+
+     if (this.isVreg(src)) {
+       const preg = this.getPhysicalRegister(src);
+       if (preg) {
+         instr.operands[2] = preg;
+       }
+     }
+   }
 
   /**
    * Checks if a name is a virtual register

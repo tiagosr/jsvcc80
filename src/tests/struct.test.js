@@ -536,3 +536,79 @@ describe('Struct - Complex scenarios', () => {
     assert.strictEqual(structNode.fields.length, 6);
   });
 });
+
+describe('Struct member access - End-to-End', () => {
+  it('should compile struct member read', () => {
+    const source = `struct Point { int x; int y; }; int main() { struct Point p; p.x = 5; return p.x; }`;
+    const options = new CompilerOptions({ source: 'test.c' });
+    const compiler = new Compiler(options);
+    const result = compiler.compileSource(source);
+    assert.strictEqual(result.success, true);
+    assert.ok(result.code.length > 0);
+    assert.ok(result.code.includes('ld (hl), a'));
+  });
+
+  it('should compile struct member write', () => {
+    const source = `struct Point { int x; int y; }; int main() { struct Point p; p.x = 10; return 0; }`;
+    const options = new CompilerOptions({ source: 'test.c' });
+    const compiler = new Compiler(options);
+    const result = compiler.compileSource(source);
+    assert.strictEqual(result.success, true);
+    assert.ok(result.code.length > 0);
+    assert.ok(result.code.includes('ld hl, p'));
+  });
+
+  it('should compile struct second member access (offset > 0)', () => {
+    const source = `struct Point { int x; int y; }; int main() { struct Point p; p.y = 20; return p.y; }`;
+    const options = new CompilerOptions({ source: 'test.c' });
+    const compiler = new Compiler(options);
+    const result = compiler.compileSource(source);
+    assert.strictEqual(result.success, true);
+    assert.ok(result.code.length > 0);
+  });
+
+  it('should compile pointer member read', () => {
+    const source = `struct Point { int x; int y; }; int main() { struct Point p; struct Point *ptr; ptr = &p; return ptr->x; }`;
+    const options = new CompilerOptions({ source: 'test.c' });
+    const compiler = new Compiler(options);
+    const result = compiler.compileSource(source);
+    assert.strictEqual(result.success, true);
+    assert.ok(result.code.length > 0);
+  });
+
+  it('should compile pointer member write', () => {
+    const source = `struct Point { int x; int y; }; int main() { struct Point p; struct Point *ptr; ptr = &p; ptr->x = 42; return 0; }`;
+    const options = new CompilerOptions({ source: 'test.c' });
+    const compiler = new Compiler(options);
+    const result = compiler.compileSource(source);
+    assert.strictEqual(result.success, true);
+    assert.ok(result.code.length > 0);
+  });
+
+  it('should compile pointer member access with offset', () => {
+    const source = `struct Point { int x; int y; }; int main() { struct Point p; struct Point *ptr; ptr = &p; return ptr->y; }`;
+    const options = new CompilerOptions({ source: 'test.c' });
+    const compiler = new Compiler(options);
+    const result = compiler.compileSource(source);
+    assert.strictEqual(result.success, true);
+    assert.ok(result.code.length > 0);
+  });
+
+  it('should compile nested struct member access', () => {
+    const source = `struct Inner { int value; }; struct Outer { struct Inner inner; int extra; }; int main() { struct Outer o; o.inner.value = 100; return o.inner.value; }`;
+    const options = new CompilerOptions({ source: 'test.c' });
+    const compiler = new Compiler(options);
+    const result = compiler.compileSource(source);
+    assert.strictEqual(result.success, true);
+    assert.ok(result.code.length > 0);
+  });
+
+  it('should compile pointer to nested struct member access', () => {
+    const source = `struct Inner { int value; }; struct Outer { struct Inner inner; int extra; }; int main() { struct Outer o; struct Outer *ptr; ptr = &o; return ptr->inner.value; }`;
+    const options = new CompilerOptions({ source: 'test.c' });
+    const compiler = new Compiler(options);
+    const result = compiler.compileSource(source);
+    assert.strictEqual(result.success, true);
+    assert.ok(result.code.length > 0);
+  });
+});

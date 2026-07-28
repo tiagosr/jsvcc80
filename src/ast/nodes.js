@@ -547,8 +547,9 @@ export class FunctionNode extends ASTNode {
    * @param {StatementNode} body - Function body
    * @param {SourceLocation} location - Source location
    * @param {AttributeNode[]} [attributes] - Optional attribute annotations
+   * @param {boolean} [isInline] - Whether function has inline keyword
    */
-  constructor(name, returnType, parameters, body, location, attributes = []) {
+  constructor(name, returnType, parameters, body, location, attributes = [], isInline = false) {
     super('Function', location);
     this.name = name;
     this.returnType = returnType;
@@ -556,6 +557,7 @@ export class FunctionNode extends ASTNode {
     this.body = body;
     this.attributes = attributes;
     this.isVariadic = parameters.some(p => p && p.isVariadic);
+    this.isInline = isInline;
   }
 
   /**
@@ -569,6 +571,7 @@ export class FunctionNode extends ASTNode {
       returnType: this.returnType.toJSON ? this.returnType.toJSON() : 'unknown',
       parameters: this.parameters.map(p => p.toJSON ? p.toJSON() : p),
       isVariadic: this.isVariadic,
+      isInline: this.isInline,
       attributes: this.attributes.map(a => a.toJSON ? a.toJSON() : a)
     };
   }

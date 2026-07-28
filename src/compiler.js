@@ -441,8 +441,9 @@ export class Compiler {
    */
   optimize(ir) {
     let current = ir;
+    const flags = this.options.getOptimizationFlags();
     for (const pass of this.passManager.getPasses()) {
-      const result = pass.run(current);
+      const result = pass.run(current, { flags });
 
       if (result == null) {
         console.warn(`Optimization pass ${pass.getName()} returned null`);

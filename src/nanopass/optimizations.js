@@ -7,7 +7,8 @@ import {
   UnaryOpInstruction, CallInstruction, CallIndirectInstruction, ReturnInstruction, JumpIfInstruction,
   JumpInstruction, LabelInstruction, AllocStackInstruction, FreeStackInstruction,
   PushInstruction, PopInstruction, LoadAddrInstruction, DerefLoadInstruction, DerefStoreInstruction,
-  IndexedLoadInstruction, IndexedStoreInstruction, BasicBlock, FunctionIR, ProgramIR
+  IndexedLoadInstruction, IndexedStoreInstruction, BasicBlock, FunctionIR, ProgramIR,
+  CALLING_CONVENTION_DEFAULT, CALLING_CONVENTION_NEW_Sdcc
 } from './il.js';
 
 /**
@@ -551,6 +552,389 @@ export class PeepholeOptimizer extends OptimizationPass {
       case 'lognot': return val ? 0 : 1;
       default: return null;
     }
+  }
+
+  /**
+   * Returns statistics about the optimization performed
+   * @returns {Object} Statistics object
+   */
+  getStats() {
+    return this.stats;
+  }
+}
+
+/**
+ * Function inlining optimization pass - replaces function calls with inlined body
+ */
+export class InlineOptimizer extends OptimizationPass {
+  /**
+   * Creates a new inline optimizer
+   * @param {Object} [options] - Optimization options
+   * @param {boolean} [options.inlineOnce] - Also inline functions called only once
+   */
+  constructor(options = {}) {
+    super();
+    this.options = {
+      inlineOnce: options.inlineOnce !== false,
+      ...options
+    };
+    this.stats = {
+      functionsInlined: 0,
+      instructionsAdded: 0,
+      instructionsRemoved: 0
+    };
+  }
+
+  /**
+   * Returns the name of this pass
+   * @returns {string}
+   */
+  getName() {
+    return 'InlineOptimizer';
+  }
+
+  /**
+   * Executes the inline optimization on IR
+   * @param {ProgramIR|FunctionIR} ir - IR to optimize
+   * @param {Object} [context] - Pass context
+   * @returns {ProgramIR|FunctionIR} Optimized IR
+   */
+  run(ir, context = {}) {
+    this.stats = {
+      functionsInlined: 0,
+      instructionsAdded: 0,
+      instructionsRemoved: 0
+    };
+
+    const flags = context?.flags || {};
+    if (flags.noOpt) return ir;
+    if (!flags.inline && !this.options.forceInline) return ir;
+
+    if (ir instanceof ProgramIR) {
+      return this.inlineProgram(ir);
+    }
+    if (ir instanceof FunctionIR) {
+      return this.inlineFunction(ir);
+    }
+    return ir;
+  }
+
+  /**
+   * Inlines functions in a complete program
+   * @param {ProgramIR} program - Program to optimize
+   * @returns {ProgramIR} Optimized program
+   */
+  inlineProgram(program) {
+    const inlineable = new Map();
+
+    for (const func of program.functions) {
+      const shouldInline = func.metadata?.isInline === true
+        || (this.options.inlineOnce && this._countCalls(program, func.name) <= 1);
+      if (shouldInline) {
+        inlineable.set(func.name, func);
+      }
+    }
+
+    if (inlineable.size === 0) return program;
+
+    const newFunctions = [];
+    for (const func of program.functions) {
+      if (inlineable.has(func.name)) {
+        newFunctions.push(this.inlineFunction(func, inlineable));
+      } else {
+        newFunctions.push(this.inlineFunction(func, inlineable));
+      }
+    }
+
+    return new ProgramIR(newFunctions, program.globals);
+  }
+
+  /**
+   * Counts how many times a function is called across the program
+   * @param {ProgramIR} program - Program to search
+   * @param {string} funcName - Function name to count calls for
+   * @returns {number} Call count
+   */
+  _countCalls(program, funcName) {
+    let count = 0;
+    for (const func of program.functions) {
+      for (const block of func.blocks) {
+        for (const instr of block.instructions) {
+          if (instr instanceof CallInstruction && instr.operands[0] === funcName) {
+            count++;
+          }
+          if (instr instanceof CallIndirectInstruction) {
+            // Indirect calls cannot be inlined
+          }
+        }
+      }
+    }
+    return count;
+  }
+
+  /**
+   * Inlines functions in a single function
+   * @param {FunctionIR} func - Function to optimize
+   * @param {Map} [inlineable] - Map of inlineable function names to FunctionIR
+   * @returns {FunctionIR} Optimized function
+   */
+  inlineFunction(func, inlineable = new Map()) {
+    let changed = true;
+    let iterations = 0;
+
+    while (changed && iterations < 10) {
+      changed = false;
+      iterations++;
+
+      for (const block of func.blocks) {
+        const oldLen = block.instructions.length;
+        this.inlineCallsInBlock(block, inlineable);
+        if (block.instructions.length !== oldLen) {
+          changed = true;
+        }
+      }
+    }
+
+    return func;
+  }
+
+  /**
+   * Inlines function calls within a single basic block
+   * @param {BasicBlock} block - Block to process
+   * @param {Map} inlineable - Map of inlineable function names to FunctionIR
+   */
+  inlineCallsInBlock(block, inlineable) {
+    const newInstructions = [];
+
+    for (let i = 0; i < block.instructions.length; i++) {
+      const instr = block.instructions[i];
+
+      if (instr instanceof CallInstruction) {
+        const [funcName, ...args] = instr.operands;
+        const calledFunc = inlineable.get(funcName);
+
+        if (calledFunc) {
+          const inlined = this._inlineCall(block, instr, i, calledFunc, args);
+          newInstructions.push(...inlined);
+          this.stats.functionsInlined++;
+          continue;
+        }
+      }
+
+      newInstructions.push(instr);
+    }
+
+    block.instructions = newInstructions;
+  }
+
+  /**
+   * Inlines a single call instruction by replacing it with the called function's body
+   * @param {BasicBlock} block - Parent block containing the call
+   * @param {CallInstruction} callInstr - Call instruction to inline
+   * @param {number} index - Index of the call in the block
+   * @param {FunctionIR} calledFunc - IR of the function to inline
+   * @param {string[]} args - Arguments passed to the call
+   * @returns {Instruction[]} Inlined instructions
+   */
+  _inlineCall(block, callInstr, index, calledFunc, args) {
+    const inlined = [];
+    const callMeta = callInstr.meta || {};
+    const retDest = callMeta.result || this._findReturnDest(block, index);
+
+    const paramTypes = calledFunc.metadata?.paramTypes || [];
+    const paramNames = calledFunc.metadata?.parameters || [];
+
+    // Map arguments to registers based on calling convention
+    const convention = calledFunc.callingConvention || CALLING_CONVENTION_DEFAULT;
+    const argRegisters = this._mapArgsToRegisters(args, paramTypes, convention);
+
+    // Generate stack allocation for local variables in inlined function
+    const localStack = this._estimateLocalStack(calledFunc);
+    if (localStack > 0) {
+      inlined.push(new AllocStackInstruction(localStack));
+      this.stats.instructionsAdded++;
+    }
+
+    // Copy arguments to parameter locations in inlined function
+    for (let i = 0; i < paramNames.length; i++) {
+      const paramName = paramNames[i];
+      if (argRegisters[i]) {
+        inlined.push(new LoadInstruction(paramName, argRegisters[i], paramTypes[i]?.size || 2));
+        this.stats.instructionsAdded++;
+      }
+    }
+
+    // Copy instructions from called function's blocks
+    for (const srcBlock of calledFunc.blocks) {
+      for (const srcInstr of srcBlock.instructions) {
+        const adapted = this._adaptInstruction(srcInstr, paramNames, argRegisters);
+        if (adapted) {
+          inlined.push(adapted);
+          this.stats.instructionsAdded++;
+        }
+      }
+    }
+
+    // Handle return value
+    const retInstr = this._findReturnInstr(calledFunc);
+    if (retInstr && retInstr.operands[0] && retDest) {
+      const retSrc = retInstr.operands[0];
+      inlined.push(new LoadInstruction(retDest, retSrc));
+      this.stats.instructionsAdded++;
+    }
+
+    // Generate stack deallocation
+    if (localStack > 0) {
+      inlined.push(new FreeStackInstruction(localStack));
+      this.stats.instructionsAdded++;
+    }
+
+    // Remove the original call instruction
+    this.stats.instructionsRemoved++;
+
+    return inlined;
+  }
+
+  /**
+   * Maps arguments to Z80 registers based on calling convention
+   * @param {string[]} args - Argument registers
+   * @param {Object[]} paramTypes - Parameter type info
+   * @param {string} convention - Calling convention
+   * @returns {string[]} Register assignments for each parameter
+   */
+  _mapArgsToRegisters(args, paramTypes, convention) {
+    const regs = [];
+
+    if (convention === CALLING_CONVENTION_NEW_Sdcc) {
+      for (let i = 0; i < args.length; i++) {
+        const size = paramTypes[i]?.size || 1;
+        if (i === 0) {
+          if (size === 2) {
+            regs.push('h');
+            regs.push('l');
+          } else {
+            regs.push('a');
+          }
+        } else if (i === 1) {
+          if (size === 2) {
+            regs.push('d');
+            regs.push('e');
+          } else {
+            regs.push('l');
+          }
+        } else {
+          regs.push(args[i]);
+        }
+      }
+    } else {
+      for (let i = 0; i < args.length; i++) {
+        regs.push(args[i]);
+      }
+    }
+
+    return regs;
+  }
+
+  /**
+   * Estimates stack space needed for local variables in a function
+   * @param {FunctionIR} func - Function to analyze
+   * @returns {number} Estimated stack bytes
+   */
+  _estimateLocalStack(func) {
+    let stack = 0;
+    for (const block of func.blocks) {
+      for (const instr of block.instructions) {
+        if (instr instanceof AllocStackInstruction) {
+          stack += instr.operands[0];
+        }
+      }
+    }
+    return stack;
+  }
+
+  /**
+   * Finds the return instruction in a function
+   * @param {FunctionIR} func - Function to search
+   * @returns {Instruction|null} Return instruction or null
+   */
+  _findReturnInstr(func) {
+    for (const block of func.blocks) {
+      for (const instr of block.instructions) {
+        if (instr instanceof ReturnInstruction) {
+          return instr;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Finds the destination for return value in parent block
+   * @param {BasicBlock} block - Parent block
+   * @param {number} index - Index after the call
+   * @returns {string|null} Return destination register
+   */
+  _findReturnDest(block, index) {
+    if (index + 1 < block.instructions.length) {
+      const next = block.instructions[index + 1];
+      if (next instanceof LoadInstruction) {
+        return next.operands[0];
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Adapts an instruction from the called function for inlining
+   * Renames virtual registers to parameter names where appropriate
+   * @param {Instruction} instr - Instruction to adapt
+   * @param {string[]} paramNames - Parameter names in called function
+   * @param {string[]} argRegisters - Argument registers in caller
+   * @returns {Instruction|null} Adapted instruction or null
+   */
+  _adaptInstruction(instr, paramNames, argRegisters) {
+    if (instr instanceof ReturnInstruction) {
+      return null;
+    }
+
+    if (instr instanceof AllocStackInstruction || instr instanceof FreeStackInstruction) {
+      return null;
+    }
+
+    const newOperands = instr.operands.map(op => {
+      if (typeof op !== 'string') return op;
+      const idx = paramNames.indexOf(op);
+      if (idx !== -1 && argRegisters[idx]) {
+        return argRegisters[idx];
+      }
+      return op;
+    });
+
+    if (newOperands !== instr.operands) {
+      if (instr instanceof LoadInstruction) {
+        return new LoadInstruction(newOperands[0], newOperands[1], instr.size);
+      }
+      if (instr instanceof StoreInstruction) {
+        return new StoreInstruction(newOperands[0], newOperands[1], instr.size);
+      }
+      if (instr instanceof BinaryOpInstruction) {
+        return new BinaryOpInstruction(newOperands[0], newOperands[1], newOperands[2], newOperands[3]);
+      }
+      if (instr instanceof UnaryOpInstruction) {
+        return new UnaryOpInstruction(newOperands[0], newOperands[1], newOperands[2]);
+      }
+      if (instr instanceof JumpInstruction) {
+        return new JumpInstruction(newOperands[0]);
+      }
+      if (instr instanceof JumpIfInstruction) {
+        return new JumpIfInstruction(newOperands[0], newOperands[1], newOperands[2]);
+      }
+      if (instr instanceof LabelInstruction) {
+        return new LabelInstruction(newOperands[0]);
+      }
+    }
+
+    return instr;
   }
 
   /**

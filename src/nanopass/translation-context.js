@@ -183,6 +183,7 @@ export class TranslationContext {
           parameters: func.parameters.filter(p => p.name && !p.isVariadic).map(p => p.name),
           paramTypes,
           isVariadic: func.isVariadic,
+          isInline: func.isInline,
           line: func.name.location?.line || 0,
           sourceFile: func.name.location?.file || null
         },

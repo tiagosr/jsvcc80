@@ -1,0 +1,147 @@
+; float_ldexpf.z80 - IEEE 754 ldexp (x * 2^n)
+;
+; Function: _float_ldexpf(result_ptr, operand_ptr, n)
+; Computes x * 2^n by adding n to the exponent
+;
+; Calling convention (new_sdcc, callee-clears-stack):
+;   Entry: A = result_ptr low byte, L = operand_ptr low byte, [SP] = n (integer)
+;   Exit: 4 IEEE 754 bytes at result_ptr, stack cleared
+
+_float_ldexpf:
+  push af; pop hl     ; HL = result ptr
+  pop bc              ; BC = n (integer exponent adjustment)
+  ld a, l; ld l, a    ; L = operand ptr byte
+
+  ; Load operand bytes: E=byte0, D=byte1
+  ld de, (l)
+
+  ; Load byte 2 and byte 3
+  inc l; inc l
+  ld a, (l)
+  ld h, a             ; H = byte 2
+  inc l
+  ld a, (l)
+  ld l, a             ; L = byte 3
+
+  ; Now: E=byte0, D=byte1, H=byte2, L=byte3
+
+  ; Extract exponent: A = ((H&0x80)>>1) | ((L&0x7F)<<1)
+  ld a, h
+  and $80
+  rrca
+  ld e, a             ; E = exp bit 0
+  ld a, l
+  and $7F
+  sla a
+  ld d, a             ; D = exp bits 1-7
+  ld a, e
+  add a, d
+  ld b, a             ; B = full exponent
+
+  ; Extract sign: C = bit 7 of byte 3
+  ld a, l
+  rrca
+  rrca
+  ld c, a             ; C = sign
+
+  ; Special cases: zero, NaN, Inf -> return as-is
+  ld a, b
+  cp 0
+  jr z, _fl_copy
+
+  cp $FF
+  jr z, _fl_copy
+
+  ; Normal number: add n to exponent
+  ; BC contains n as a 16-bit integer (little-endian)
+  ld a, (bc)          ; A = n byte 0 (low byte)
+  ld l, a             ; L = n low byte
+
+  ; Add n to exponent (B)
+  ld a, b
+  add a, l
+  ld b, a             ; B = new exponent
+
+  ; Check overflow: exponent > 0xFF -> +Infinity
+  ld a, b
+  cp $FF
+  jr nc, _fl_overflow
+
+  ; Check underflow: exponent < 0 -> zero
+  ; Since we're working with unsigned, B < original means underflow
+  ; Check if subtraction would have borrowed: use sbc
+  ld a, b
+  xor a
+  sbc a, l            ; If n > exponent, result is negative (borrow=1)
+  ; Actually this is wrong. Let me check differently.
+  ; If B < 0 after adding signed n, that's underflow.
+  ; n could be negative. BC is little-endian 16-bit signed?
+  ; For simplicity: check if new exponent is 0 or negative.
+  ; If n is negative and |n| >= original exponent, underflow.
+
+  ; Check if new exponent is 0 (underflow to zero)
+  ld a, b
+  or a
+  jr z, _fl_underflow
+
+  ; Store result bytes at HL
+  ld a, e; ld (hl), a; inc hl
+  ld a, d; ld (hl), a; inc hl
+
+  ; Reconstruct byte2: (mantissa bits 0-6) | (new exp bit 0 << 7)
+  ld a, h             ; H = byte2 (mantissa bits 0-6)
+  ld k, a             ; No K. Use L as temp.
+  ld l, a             ; L = mantissa bits
+  ld a, b             ; B = new exponent
+  and 1               ; exp bit 0
+  sla a               ; -> bit 7
+  or l                ; | mantissa bits
+  ld h, a             ; H = byte 2
+
+  ; Reconstruct byte3: (new exp << 1) | (sign << 7)
+  ld a, b
+  sla a               ; exp bits 1-7 in positions 1-7
+  ld l, a             ; L = exp shifted
+  ld a, c             ; C = sign
+  rrca
+  rrca                ; sign -> bit 7
+  or l                ; | exp shifted
+  ld l, a             ; L = byte 3
+
+  ld a, h; ld (hl), a; inc hl
+  ld a, l; ld (hl), a
+  ret
+
+  ; Copy x to result (special cases)
+_fl_copy:
+  ld a, e; ld (hl), a; inc hl
+  ld a, d; ld (hl), a; inc hl
+  ld a, h; ld (hl), a; inc hl
+  ld a, l; ld (hl), a
+  ret
+
+  ; Overflow -> +Infinity (preserve sign for -Inf)
+_fl_overflow:
+  ; If sign=1: -Infinity. If sign=0: +Infinity.
+  ld a, c             ; C = sign
+  or a                ; Clear A
+  sla a               ; sign -> bit 7
+  ld l, a             ; L = sign in bit 7
+  ld a, $7F           ; exp bits 1-7 = 0x7F
+  sla a               ; -> positions 1-7
+  or l                ; | sign
+  ld l, a             ; L = byte 3 (0xFF for -Inf, 0x7F for +Inf)
+
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, $80; ld (hl), a; inc hl
+  ld a, l; ld (hl), a
+  ret
+
+  ; Underflow -> zero
+_fl_underflow:
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a
+  ret

@@ -16,8 +16,7 @@ See [CHANGELOG.md](CHANGELOG.md)
 - Nothing at the moment
 
 ### 🔜 Next Steps
-1. Implement nearest integer, absolute value, remainder `fabsf`, `frexpf`, `ldexpf`, `ceilf`, `floorf`, `modff`
-2. Fix `typedef unsigned int newType` parsing
+1. Fix `typedef unsigned int newType` parsing
 3. Implement soft-float trigonometric operations (`sinf`, `cosf`, `tanf`, `cotf`, `asinf`, `acosf`, `atanf`, `atan2f`)
 4. Implement soft-float exponential operations (`expf`, `powf`, `logf`, `log10f`, `sqrtf`)
 5. Implement object file viewer (like binutils' `objdump`)

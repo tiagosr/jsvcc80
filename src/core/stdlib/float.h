@@ -48,4 +48,30 @@ void _float_abs(float* result, float* a);
 int _float_ceil(float* result, float* a);
 int _float_floor(float* result, float* a);
 
+/* Float absolute value */
+float fabsf(float x);
+
+/* Float rounding - round toward negative infinity */
+float floorf(float x);
+
+/* Float rounding - round toward positive infinity */
+float ceilf(float x);
+
+/* Float decomposition - split into integer and fractional parts */
+float modff(float x, float* iptr);
+
+/* Float exponent decomposition - normalize to mantissa*2^exponent */
+float frexpf(float x, int* exponent);
+
+/* Float scaling - multiply by 2^exponent */
+float ldexpf(float x, int exponent);
+
+/* Internal float functions */
+void _float_abs(float* result, float* a);
+int _float_floor(float* result, float* a);
+int _float_ceil(float* result, float* a);
+void _float_modf(float* result, float* frac, float* a);
+void _float_frexpf(float* mantissa, float* a, int exponent);
+void _float_ldexpf(float* result, float* a, int exponent);
+
 #endif

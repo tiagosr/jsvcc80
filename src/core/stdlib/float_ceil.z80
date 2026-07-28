@@ -1,0 +1,140 @@
+; float_ceil.z80 - IEEE 754 ceil (round toward positive infinity)
+;
+; Function: _float_ceil(result_ptr, operand_ptr)
+; Computes ceil(x)
+;
+; Calling convention (new_sdcc):
+;   Entry: A = result_ptr low byte, L = operand_ptr low byte
+;   Exit: 4 IEEE 754 bytes at result_ptr, stack cleared
+
+_float_ceil:
+  ; Reconstruct result pointer: HL
+  ld h, 0
+  ld l, a           ; HL = result pointer
+
+  ; Build operand pointer: BC
+  ld b, l           ; B = operand_ptr low byte
+  ld c, 0           ; BC = operand pointer
+
+  ; Load operand bytes: E=byte0, D=byte1
+  ld de, (bc)
+
+  ; Load byte 2 and byte 3
+  ld a, (bc)
+  inc bc
+  inc bc
+  ld h, a           ; H = byte 2
+  ld l, (bc)        ; L = byte 3
+
+  ; Now: E=byte0, D=byte1, H=byte2, L=byte3
+
+  ; Save mantissa low 16 bits: C = byte0 | byte1
+  ld a, e
+  or d
+  ld c, a
+
+  ; Save mantissa high 7 bits: D = byte2 & 0x7F
+  ld a, h
+  and $7F
+  ld d, a
+
+  ; Extract sign: B = bit 7 of byte 3
+  ld a, l
+  rrca
+  rrca
+  ld b, a           ; B = sign (0 or 1)
+
+  ; Extract exponent: L = ((H&0x80)>>1) | ((L&0x7F)<<1)
+  ld a, h
+  and $80
+  rrca
+  ld e, a           ; E = exp bit 0
+  ld a, l
+  and $7F
+  sla a
+  ld d, a           ; D = exp bits 1-7
+  ld a, e
+  add a, d
+  ld l, a           ; L = full exponent
+
+  ; Special case: exponent = 0 (zero or denormal) -> return as-is
+  ld a, l
+  cp 0
+  jr z, _fc_out
+
+  ; Special case: exponent = 0xFF (NaN or Inf) -> return as-is
+  cp $FF
+  jr z, _fc_out
+
+  ; Normal number: check if mantissa != 0 (has fractional part)
+  ld a, c
+  or d
+  jr z, _fc_out     ; mantissa=0 -> already integer, no change
+
+  ; Has fractional part. Check sign.
+  ld a, b           ; A = sign
+  jr nz, _fc_pos    ; sign=1 (negative): add 1 to mantissa (round toward +Inf)
+  ; sign=0 (positive): ceil = no change (already rounded toward +Inf)
+  jr _fc_out
+
+_fc_pos:
+  ; Negative with fraction: add 1 to mantissa (round toward +Inf)
+  ; Mantissa = byte0(E) + (byte1(D)<<8) + (byte2_mant(H)<<16)
+  ; Add 1 to byte0
+  ld a, e
+  add a, 1
+  ld e, a
+  jr nz, _fc_no_carry1
+
+  ; Carry to byte1
+  ld a, d
+  adc a, 0
+  ld d, a
+  jr nz, _fc_no_carry2
+
+  ; Carry to byte2_mant
+  ld a, h
+  adc a, 0
+  ld h, a
+  jr nz, _fc_no_overflow
+
+  ; Mantissa overflow -> increment exponent
+  ld a, l           ; A = exponent
+  add a, 1
+  ld l, a           ; L = exponent+1
+  jr nz, _fc_exp_ok
+
+  ; Exponent overflow -> result is -Infinity (preserving sign)
+  ld e, 0           ; byte0 = 0
+  ld d, 0           ; byte1 = 0
+  ld h, $80         ; byte2: exp bit 0 = 1, mantissa = 0
+  ld l, $FF         ; byte3: exp=0x7F, sign=1 (-Inf)
+  jr _fc_out
+
+_fc_no_carry1:
+  jr _fc_out
+
+_fc_no_carry2:
+  jr _fc_out
+
+_fc_no_overflow:
+  jr _fc_out
+
+_fc_exp_ok:
+  jr _fc_out
+
+_fc_out:
+  ; Store result bytes at HL (result pointer)
+  ld a, e           ; byte 0
+  ld (hl), a
+  inc hl
+  ld a, d           ; byte 1
+  ld (hl), a
+  inc hl
+  ld a, h           ; byte 2
+  ld (hl), a
+  inc hl
+  ld a, l           ; byte 3
+  ld (hl), a
+
+  ret

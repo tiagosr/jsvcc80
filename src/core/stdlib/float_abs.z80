@@ -1,0 +1,49 @@
+; float_abs.z80 - IEEE 754 absolute value
+;
+; Function: _float_abs(result_ptr, operand_ptr)
+; Computes |x| - clears sign bit of operand
+;
+; Calling convention (new_sdcc):
+;   Entry: A = result_ptr low byte, L = operand_ptr low byte
+;   Exit: 4 IEEE 754 bytes at result_ptr, stack cleared
+
+_float_abs:
+  ; Reconstruct full 16-bit result pointer
+  ld h, 0
+  ld l, a           ; HL = result pointer (A low byte, H=0)
+
+  ; Save operand_ptr byte, build operand pointer BC
+  ld b, l           ; B = operand_ptr low byte
+  ld c, 0           ; BC = operand pointer
+
+  ; Load operand bytes: E=byte0, D=byte1
+  ld de, (bc)
+
+  ; Load byte 2 and byte 3
+  ld a, (bc)
+  inc bc
+  inc bc
+  ld h, a           ; H = byte 2
+  ld l, (bc)        ; L = byte 3
+
+  ; Now: E=byte0, D=byte1, H=byte2, L=byte3
+
+  ; Clear sign bit (bit 7 of byte 3 = bit 7 of L)
+  ld a, l
+  and $7F
+  ld l, a
+
+  ; Store result bytes at HL (result pointer)
+  ld a, e           ; byte 0
+  ld (hl), a
+  inc hl
+  ld a, d           ; byte 1
+  ld (hl), a
+  inc hl
+  ld a, h           ; byte 2
+  ld (hl), a
+  inc hl
+  ld a, l           ; byte 3 (sign cleared)
+  ld (hl), a
+
+  ret

@@ -161,11 +161,11 @@ export class ExpressionTranslator {
   }
 
   /**
-   * Translate a function call node (dispatches to direct or indirect call)
-   * @param {AST.CallNode} call - Call node
-   * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
-   */
-  translateCallNode(call) {
+    * Translate a function call node (dispatches to direct or indirect call)
+    * @param {AST.CallNode} call - Call node
+    * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
+    */
+   translateCallNode(call) {
     const calleeName = call.callee?.name || (typeof call.callee === 'string' ? call.callee : null);
     if (calleeName && this.context.state.symbolTable) {
       const sym = this.context.state.symbolTable.lookup(calleeName);
@@ -176,6 +176,18 @@ export class ExpressionTranslator {
     // Check if callee is an IndexNode (array element call like fp[0]())
     if (call.callee instanceof AST.IndexNode) {
       return this.context.callMemoryTranslator.translateFuncPtrCallForIndexCall(call);
+    }
+    // Handle float-returning standard library functions with special IR generation
+    const floatFuncMapping = {
+      'fabsf': { internal: '_float_abs', hasResultPtr: true },
+      'floorf': { internal: '_float_floor', hasResultPtr: true },
+      'ceilf': { internal: '_float_ceil', hasResultPtr: true },
+      'modff': { internal: '_float_modf', hasResultPtr: true },
+      'frexpf': { internal: '_float_frexpf', hasResultPtr: true },
+      'ldexpf': { internal: '_float_ldexpf', hasResultPtr: true }
+    };
+    if (floatFuncMapping[calleeName]) {
+      return this.translateFloatCall(calleeName, floatFuncMapping[calleeName], call.args);
     }
     return this.context.callMemoryTranslator.translateCall(call);
   }
@@ -503,12 +515,65 @@ export class ExpressionTranslator {
     };
   }
 
-   /**
+  /**
+    * Translate a float-returning function call with special IR generation.
+    * Emits a float data label, calls the internal _float_* function,
+    * and returns the result pointer with isFloat: true.
+    * @param {string} cFuncName - C function name (e.g., 'fabsf')
+    * @param {Object} mapping - Mapping with internal function name and hasResultPtr flag
+    * @param {AST.ASTNode[]} args - Argument AST nodes
+    * @returns {{blocks: IL.BasicBlock[], result: string, isFloat: boolean}} Blocks and result register
+    */
+   translateFloatCall(cFuncName, mapping, args) {
+    const internalFuncName = mapping.internal;
+    const hasResultPtr = mapping.hasResultPtr;
+    const operandResult = this.translateExpression(args[0]);
+    const blocks = [...operandResult.blocks];
+
+    const resultLabel = this.context.floatCollector.emitFloatData(0);
+    const resultTemp = this.context.state.temp();
+    const block = new IL.BasicBlock(this.context.state.label('fltc'));
+    block.add(new IL.LoadAddrInstruction(resultTemp, resultLabel));
+
+    let callArgs;
+    if (cFuncName === 'modff') {
+      const iptrResult = this.translateExpression(args[1]);
+      blocks.push(...iptrResult.blocks);
+      const iptrTemp = this.context.state.temp();
+      const iptrBlock = new IL.BasicBlock(this.context.state.label('modf_iptr'));
+      iptrBlock.add(new IL.LoadAddrInstruction(iptrTemp, iptrResult.result));
+      blocks.push(iptrBlock);
+      callArgs = [resultTemp, iptrTemp, operandResult.result];
+    } else if (cFuncName === 'frexpf') {
+      const expResult = this.translateExpression(args[1]);
+      blocks.push(...expResult.blocks);
+      const expTemp = this.context.state.temp();
+      const expBlock = new IL.BasicBlock(this.context.state.label('frexp_exp'));
+      expBlock.add(new IL.LoadAddrInstruction(expTemp, expResult.result));
+      blocks.push(expBlock);
+      callArgs = [resultTemp, operandResult.result, expTemp];
+    } else if (cFuncName === 'ldexpf') {
+      const expResult = this.translateExpression(args[1]);
+      blocks.push(...expResult.blocks);
+      callArgs = [resultTemp, operandResult.result, expResult.result];
+    } else {
+      callArgs = [resultTemp, operandResult.result];
+    }
+
+    block.add(new IL.CallInstruction(internalFuncName, ...callArgs, CALLING_CONVENTION_DEFAULT, { floatResult: true }));
+    return {
+      blocks: [...blocks, block],
+      result: resultTemp,
+      isFloat: true
+    };
+  }
+
+  /**
     * Translate a unary operation expression
    * @param {AST.UnaryOpNode} unaryOp - Unary operation
    * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
    */
-  translateUnaryOp(unaryOp) {
+   translateUnaryOp(unaryOp) {
     // Handle postfix increment/decrement (inc/dec)
     if (unaryOp.op === 'inc' || unaryOp.op === 'dec') {
       return this.translateIncDec(unaryOp);

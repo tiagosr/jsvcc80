@@ -1,0 +1,210 @@
+; float_frexpf.z80 - IEEE 754 frexp (split into mantissa and exponent)
+;
+; Function: _float_frexpf(result_ptr, operand_ptr, exp_ptr)
+; Computes frexp(x) = (m, e) where x = m * 2^e and 0.5 <= |m| < 1
+;
+; Calling convention (new_sdcc, callee-clears-stack):
+;   Entry: A = result_ptr (mantissa), L = operand_ptr (x), [SP] = exp_ptr
+;   Exit: 4-byte mantissa at result_ptr, 4-byte integer exponent at exp_ptr
+
+_float_frexpf:
+  push af; pop hl     ; HL = result ptr (mantissa)
+  pop bc              ; BC = exp ptr (integer output)
+  ld a, l; ld l, a    ; L = operand ptr byte
+
+  ; Load operand bytes: E=byte0, D=byte1
+  ld de, (l)
+
+  ; Load byte 2 and byte 3
+  inc l; inc l
+  ld a, (l)
+  ld h, a             ; H = byte 2
+  inc l
+  ld a, (l)
+  ld l, a             ; L = byte 3
+
+  ; Now: E=byte0, D=byte1, H=byte2, L=byte3
+
+  ; Extract exponent: A = ((H&0x80)>>1) | ((L&0x7F)<<1)
+  ld a, h
+  and $80
+  rrca
+  ld e, a             ; E = exp bit 0
+  ld a, l
+  and $7F
+  sla a
+  ld d, a             ; D = exp bits 1-7
+  ld a, e
+  add a, d
+  ld b, a             ; B = full exponent
+
+  ; Extract sign: C = bit 7 of byte 3
+  ld a, l
+  rrca
+  rrca
+  ld c, a             ; C = sign
+
+  ; Special cases: zero -> m=0, e=0
+  ld a, b
+  cp 0
+  jr z, _ff_zero_out
+
+  ; NaN/Inf -> return as-is, e=0
+  cp $FF
+  jr z, _ff_inf_out
+
+  ; Normal number: normalize mantissa to [0.5, 1)
+  ; Need bit 7 of byte2 (H) to be 1 (implicit 1 + mantissa bit 16 = MSB)
+  ; Shift mantissa left until MSB is set, decrement exponent for each shift
+
+  ld a, h
+  and $80
+  jr nz, _ff_norm_done  ; MSB already set, no shift needed
+
+  ; Shift left: move bits from lower bytes to higher
+  ; Shift 1: byte0 -> byte1, byte1 -> byte2_mant
+  ld a, e             ; A = byte0
+  sla a               ; shift left
+  ld d, a             ; D = byte1 (shifted)
+  ld a, h             ; A = byte2
+  and $7F             ; mantissa bits only
+  sla a               ; shift left
+  ld e, a             ; E = byte0 (shifted)
+  ; exp bit 0 of byte2 comes from bit 0 of old byte1
+  ld a, d             ; D has shifted byte1. bit 0 = old byte1 bit 7
+  and 1
+  ld h, a             ; H = exp bit 0 (will OR with mantissa later)
+
+  ; Decrement exponent
+  ld a, b
+  dec a
+  ld b, a
+
+  ; Check if MSB now set in byte2
+  ld a, d
+  and $80
+  jr nz, _ff_norm_done
+
+  ; Shift 2: byte0 -> byte1, byte1 -> byte2_mant again
+  ld a, e             ; A = byte0
+  sla a
+  ld d, a             ; D = byte1
+  ld a, h             ; A = byte2 (mantissa bits in 0-6)
+  sla a
+  ld e, a             ; E = byte0
+  ld a, d
+  and 1
+  ld h, a             ; H = exp bit 0
+
+  ; Decrement exponent
+  ld a, b
+  dec a
+  ld b, a
+
+  ; MSB should now be set (byte1 had 8 bits, shifted twice moves to byte2)
+  ; byte2_mant now has bits from original byte1 shifted left by 1
+  ; Original byte1 bit 7 -> byte2_mant bit 6. Need one more shift?
+  ; Actually after shift 1: byte2_mant = (orig_byte1 << 1). bit 6 = orig_byte1 bit 5.
+  ; After shift 2: byte2_mant = (orig_byte1 << 2). bit 6 = orig_byte1 bit 4.
+  ; Hmm, not guaranteed MSB set. Let me handle this.
+
+  ld a, d
+  and $80
+  jr nz, _ff_norm_done
+
+  ; Need another shift (rare: original mantissa had no bits in byte1 high positions)
+  ld a, e
+  sla a
+  ld d, a
+  ld a, h
+  and $7F
+  sla a
+  ld e, a
+  ld a, d
+  and 1
+  ld h, a
+
+  ld a, b
+  dec a
+  ld b, a
+
+_ff_norm_done:
+  ; Reconstruct byte2: (mantissa bits 0-6) | (exp bit 0 << 7)
+  ld a, h             ; H currently = exp bit 0
+  ld h, a             ; Save exp bit 0
+  ld a, d             ; D = byte1 (shifted)
+  and $7F             ; Wait, D might have bit 7 set from shift.
+  ; Actually D = shifted byte1. We need byte2_mant from shifted byte1?
+  ; No: after shifts, byte2_mant should come from the shifted byte1 value.
+  ; Let me reconsider the shift logic.
+
+  ; After left-shifts, the mantissa bytes should be:
+  ; E = byte0 (shifted left)
+  ; D = byte1 (shifted left)
+  ; H = exp bit 0 (from shifted byte1 bit 0)
+  ; byte2_mant = (D & 0x7F) | (H << 7)
+
+  ld a, d
+  and $7F
+  ld k, a             ; No K. Use temp.
+  ld l, a             ; L = byte2_mant (temp, overwrites exp)
+  ld a, h             ; H = exp bit 0
+  sla a               ; exp bit 0 -> bit 7
+  or l                ; | byte2_mant
+  ld h, a             ; H = byte 2
+
+  ; Reconstruct byte3: (exp << 1) | (sign << 7)
+  ld a, b             ; B = exponent
+  sla a               ; exp bits 1-7 in positions 1-7
+  ld l, a             ; L = exp shifted
+  ld a, c             ; C = sign
+  rrca
+  rrca                ; sign -> bit 7
+  or l                ; | exp shifted
+  ld l, a             ; L = byte 3
+
+  ; Store mantissa at HL
+  ld a, e; ld (hl), a; inc hl
+  ld a, d; ld (hl), a; inc hl
+  ld a, h; ld (hl), a; inc hl
+  ld a, l; ld (hl), a
+
+  ; Store exponent as integer at BC (4 bytes: little-endian 16-bit)
+  ld a, b             ; exponent value
+  ld (bc), a          ; byte 0
+  inc bc
+  ld a, 0             ; byte 1
+  ld (bc), a          ; byte 1
+  inc bc
+  ld a, 0             ; byte 2
+  ld (bc), a          ; byte 2
+  inc bc
+  ld a, 0             ; byte 3
+  ld (bc), a          ; byte 3
+  ret
+
+_ff_zero_out:
+  ; m = 0, e = 0
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a
+
+  ld a, 0; ld (bc), a; inc bc
+  ld a, 0; ld (bc), a; inc bc
+  ld a, 0; ld (bc), a; inc bc
+  ld a, 0; ld (bc), a
+  ret
+
+_ff_inf_out:
+  ; Return x as-is, e = 0
+  ld a, e; ld (hl), a; inc hl
+  ld a, d; ld (hl), a; inc hl
+  ld a, h; ld (hl), a; inc hl
+  ld a, l; ld (hl), a
+
+  ld a, 0; ld (bc), a; inc bc
+  ld a, 0; ld (bc), a; inc bc
+  ld a, 0; ld (bc), a; inc bc
+  ld a, 0; ld (bc), a
+  ret

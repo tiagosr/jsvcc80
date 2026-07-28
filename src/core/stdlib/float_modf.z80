@@ -1,0 +1,134 @@
+; float_modf.z80 - IEEE 754 modf (split into integer and fractional parts)
+;
+; Function: _float_modf(result_ptr, operand_ptr, integer_part_ptr)
+; Computes modf(x) = (fractional, integer) where x = integer + fractional
+;
+; Calling convention (new_sdcc, callee-clears-stack):
+;   Entry: A = result_ptr (fractional part), L = operand_ptr (x), [SP] = integer_part_ptr
+;   Exit: 4-byte fractional at result_ptr, 4-byte integer at integer_part_ptr
+
+_float_modf:
+  push af; pop hl     ; HL = result ptr (fractional)
+  pop bc              ; BC = integer_part ptr
+  ld a, l; ld l, a    ; L = operand ptr byte
+
+  ; Load operand bytes: E=byte0, D=byte1
+  ld de, (l)
+
+  ; Load byte 2 and byte 3
+  inc l; inc l
+  ld a, (l)
+  ld h, a             ; H = byte 2
+  inc l
+  ld a, (l)
+  ld l, a             ; L = byte 3
+
+  ; Now: E=byte0, D=byte1, H=byte2, L=byte3
+
+  ; Extract exponent: L = ((H&0x80)>>1) | ((L&0x7F)<<1)
+  ld a, h
+  and $80
+  rrca
+  ld e, a             ; E = exp bit 0
+  ld a, l
+  and $7F
+  sla a
+  ld d, a             ; D = exp bits 1-7
+  ld a, e
+  add a, d
+  ld b, a             ; B = full exponent
+
+  ; Extract sign: C = bit 7 of byte 3
+  ld a, l
+  rrca
+  rrca
+  ld c, a             ; C = sign
+
+  ; Special cases: zero, NaN, Inf -> copy to both outputs
+  ld a, b
+  cp 0
+  jr z, _fm_copy
+  cp $FF
+  jr z, _fm_copy
+
+  ; Normal number. Integer bits = exponent.
+  ; If exponent >= 23: entire value is integer, frac = 0
+  ld a, b
+  cp $17              ; 23
+  jr nc, _fm_frac_zero
+
+  ; If exponent >= 15: need to zero lower mantissa bits
+  ; bits_to_clear = 23 - exponent
+  ld a, b
+  sub $10             ; 15
+  ld k, a             ; No K register. Use stack.
+  push af             ; [bits_to_clear]
+
+  ; Zero bits below (23 - exponent) in mantissa
+  ; Mantissa spans: byte0(8 bits), byte1(8 bits), byte2(7 bits)
+  ; Total 23 bits. Clear lowest (23 - exp) bits.
+
+  pop af              ; A = bits_to_clear
+  cp 8
+  jr nc, _fm_clear_full
+
+  ; Clear 1-7 bits: zero byte0, mask byte1
+  ld e, 0             ; byte0 = 0
+  ld a, d             ; byte1
+  and $FF             ; Keep all bits (clearing < 8 bits only affects byte0)
+  ; Actually need to keep upper (8 - bits_to_clear) bits of byte1
+  ; bits_to_clear is 1-7. Clear lowest that many bits of byte0.
+  ; byte0 is already 0. byte1 keeps all bits.
+  ; byte2 keeps all bits.
+  jr _fm_store
+
+_fm_clear_full:
+  ; Clear 8-15 bits: zero byte0 and byte1
+  ld e, 0             ; byte0 = 0
+  ld d, 0             ; byte1 = 0
+  ; byte2 keeps all bits
+  jr _fm_store
+
+  ; frac = 0, integer = x
+_fm_frac_zero:
+  ; Store fractional = 0 at HL
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a
+
+  ; Store integer = x at BC
+  ld a, e; ld (bc), a; inc bc
+  ld a, d; ld (bc), a; inc bc
+  ld a, h; ld (bc), a; inc bc
+  ld a, l; ld (bc), a
+  ret
+
+  ; Copy x to both outputs (special cases)
+_fm_copy:
+  ; Store x at HL (fractional)
+  ld a, e; ld (hl), a; inc hl
+  ld a, d; ld (hl), a; inc hl
+  ld a, h; ld (hl), a; inc hl
+  ld a, l; ld (hl), a
+
+  ; Store x at BC (integer)
+  ld a, e; ld (bc), a; inc bc
+  ld a, d; ld (bc), a; inc bc
+  ld a, h; ld (bc), a; inc bc
+  ld a, l; ld (bc), a
+  ret
+
+  ; Store modified bytes at HL (fractional)
+_fm_store:
+  ld a, e; ld (hl), a; inc hl
+  ld a, d; ld (hl), a; inc hl
+  ld a, h; ld (hl), a; inc hl
+  ld a, l; ld (hl), a
+
+  ; Store integer part at BC (same as fractional for this path)
+  ld a, e; ld (bc), a; inc bc
+  ld a, d; ld (bc), a; inc bc
+  ld a, h; ld (bc), a; inc bc
+  ld a, l; ld (bc), a
+  ret

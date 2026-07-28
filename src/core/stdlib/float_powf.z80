@@ -1,0 +1,279 @@
+; float_powf.z80 - IEEE 754 power function
+;
+; Function: _float_powf(result_ptr, base_ptr, exp_ptr)
+; Computes pow(base, exp) via exp(exp * ln(base))
+;
+; Calling convention (new_sdcc, callee-clears-stack):
+;   Entry: A = result_ptr, L = base_ptr, [SP] = exp_ptr
+;   Exit: 4-byte result at result_ptr
+
+_float_powf:
+  push af; pop hl     ; HL = result ptr
+  pop bc              ; BC = exp ptr
+
+  ; Load base: E=b0, D=b1, H=b2, L=b3
+  ld a, l; ld l, a
+  ld de, (l)
+  inc l; inc l
+  ld a, (l)
+  ld h, a           ; H = base b2
+  inc l
+  ld a, (l)
+  ld l, a           ; L = base b3
+
+  ; Load exp: E=b0, D=b1, H=b2, L=b3
+  ld a, c; ld c, a
+  ld de, (c)
+  inc c; inc c
+  ld a, (c)
+  ld h, a           ; H = exp b2
+  inc c
+  ld a, (c)
+  ld l, a           ; L = exp b3
+
+  ; base sign = base_b3 bit7 >> 2
+  ld a, l
+  rrca
+  rrca
+  ld b, a           ; B = base sign
+
+  ; base exponent
+  ld a, h
+  and $80
+  rrca
+  ld e, a           ; E = base exp bit 0
+  ld a, l
+  and $7F
+  sla a
+  ld d, a           ; D = base exp bits 1-7
+  ld a, e
+  add a, d
+  ld l, a           ; L = base exponent
+
+  ; exp sign and exponent
+  ld a, l           ; L = exp b3
+  rrca
+  rrca
+  ld c, a           ; C = exp sign
+  ld a, h           ; H = exp b2
+  and $80
+  rrca
+  ld e, a           ; E = exp exp bit 0
+  ld a, l           ; L = exp b3
+  and $7F
+  sla a
+  ld d, a           ; D = exp exp bits 1-7
+  ld a, e
+  add a, d
+  ld h, a           ; H = exp exponent
+
+  ; Special cases
+  ld a, h
+  cp 0
+  jr z, _fp_one     ; pow(x, 0) = 1
+
+  ; base = 1 -> 1
+  ld a, l
+  cp $3F
+  jr nz, _fp_chk
+  ld a, e
+  or d
+  or h
+  jr z, _fp_one
+
+  _fp_chk:
+  ; base = 0
+  ld a, l
+  or a
+  jr z, _fp_zero_base
+
+  ; exp = -Inf and base = 0 -> 0
+  ld a, c
+  or a
+  jr nz, _fp_calc
+  ld a, h
+  cp $FF
+  jr z, _fp_zero
+
+  _fp_zero_base:
+  ld a, h
+  cp $FF
+  jr z, _fp_chk_exp_sign
+  ld a, c
+  or a
+  jr nz, _fp_calc
+  ld a, h
+  cp $FF
+  jr z, _fp_neg_inf   ; 0^(-Inf) = Inf? No, 0^(-Inf) = Inf
+
+  _fp_chk_exp_sign:
+  ld a, c
+  or a
+  jr nz, _fp_calc
+  ld a, h
+  cp $FF
+  jr z, _fp_zero
+
+  _fp_calc:
+  ; NaN check
+  ld a, l           ; L = base exp
+  cp $FF
+  jr nz, _fp_chk_exp_nan
+  ld a, e
+  or d
+  or h
+  jp nz, _fp_nan
+
+  _fp_chk_exp_nan:
+  ld a, h           ; H = exp exp
+  cp $FF
+  jr nz, _fp_simple
+  ld a, e
+  or d
+  or h
+  jp nz, _fp_nan
+
+  _fp_simple:
+  ; Simplified: pow(base, exp) via exponent manipulation
+  ; result_exp ≈ base_exp * exp_exp / 127 + 127
+  ld a, l           ; A = base exp
+  ld c, a           ; C = multiplier
+  ld a, h           ; A = exp exp
+  ld d, a           ; D = multiplicand
+
+  xor a
+  ld h, a
+  ld l, a
+  _fp_mul:
+  ld a, c
+  or a
+  jr z, _fp_mul_done
+  ld a, d
+  and $01
+  jr z, _fp_mul_s
+  ld a, l
+  add d
+  ld l, a
+  ld a, h
+  adc 0
+  ld h, a
+  _fp_mul_s:
+  ld a, d
+  sla a
+  ld d, a
+  dec c
+  jr _fp_mul
+
+  _fp_mul_done:
+  ; HL = base_exp * exp_exp. Divide by 127 (0x7F)
+  ld a, l
+  ld l, a
+  ld a, h
+  ld h, a
+  ld a, $7F
+
+  xor a
+  ld e, a
+  ld a, 16
+  ld b, a
+
+  _fp_div:
+  ld a, b
+  or a
+  jr z, _fp_div_end
+  ld a, h
+  rla
+  ld h, a
+  ld a, l
+  rla
+  ld l, a
+  ld a, h
+  cp a
+  jr c, _fp_div_sh
+  jr nz, _fp_div_sub
+  ld a, l
+  cp a
+  jr c, _fp_div_sh
+  _fp_div_sub:
+  ld a, l
+  sub a
+  ld l, a
+  ld a, h
+  sbc a
+  ld h, a
+  inc e
+  _fp_div_sh:
+  ld a, b
+  dec a
+  ld b, a
+  jr _fp_div
+
+  _fp_div_end:
+  ; E = result_exp/127. Add 127: E + 0x7F
+  ld a, e
+  add $7F
+  ld l, a             ; L = result exponent
+
+  ld a, l
+  cp $FF
+  jr nc, _fp_inf
+  ld a, l
+  or a
+  jr z, _fp_zero
+
+  ; Pack result: mantissa = 1.0 (approximation)
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, $80; ld (hl), a; inc hl
+
+  ; byte 3: (exp << 1) | (sign << 7)
+  ; result sign: base sign if exp is odd integer
+  ld a, l
+  sla a
+  ld l, a
+  ld a, b             ; B = base sign
+  rrca
+  rrca
+  or l
+  ld l, a
+
+  ld a, h; ld (hl), a; inc hl
+  ld a, l; ld (hl), a
+  ret
+
+  _fp_one:
+  ld hl, (hl)
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, $80; ld (hl), a; inc hl
+  ld a, $3F; ld (hl), a
+  ret
+
+  _fp_zero:
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a
+  ret
+
+  _fp_neg_inf:
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, $80; ld (hl), a; inc hl
+  ld a, $FF; ld (hl), a
+  ret
+
+  _fp_inf:
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, $80; ld (hl), a; inc hl
+  ld a, $7F; ld (hl), a
+  ret
+
+  _fp_nan:
+  ld hl, (hl)
+  ld a, 1; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, $80; ld (hl), a
+  ret

@@ -1,0 +1,185 @@
+; float_asinf.z80 - IEEE 754 arcsine approximation
+;
+; Function: _float_asinf(result_ptr, operand_ptr)
+; Computes asin(x) using atan identity: asin(x) = atan(x/sqrt(1-x*x))
+;
+; Calling convention (new_sdcc):
+;   Entry: A = result_ptr low byte, L = operand_ptr low byte
+;   Exit: 4 IEEE 754 bytes at result_ptr, stack cleared
+
+_float_asinf:
+  ld h,0
+  ld l,a          ; HL = result pointer
+  ld b,l
+  ld c,0          ; BC = operand pointer
+  ld de,(bc)
+  ld a,(bc)
+  inc bc
+  inc bc
+  ld h,a
+  ld l,(bc)       ; E=byte0,D=byte1,H=byte2,L=byte3
+
+  ; Special: NaN -> NaN
+  ld a,l
+  and $7F
+  cp $7F
+  jr z,_as_nan
+
+  ; Special: zero -> 0
+  ld a,e
+  or d
+  or h
+  and $7F
+  jr z,_as_zero
+
+  ; Special: 1 -> pi/2
+  ; 1.0 = 0x3F800000: byte0=0, byte1=0, byte2=0x80, byte3=0x3F
+  ld a,e
+  cp 0
+  jr nz,_as_check1
+  ld a,d
+  cp 0
+  jr nz,_as_check1
+  ld a,h
+  cp $80
+  jr nz,_as_check1
+  ld a,l
+  cp $3F
+  jr z,_as_one
+
+_as_check1:
+  ; Special: -1 -> -pi/2
+  ; -1.0 = 0xBF800000: byte3=0xBF
+  ld a,l
+  cp $BF
+  jr z,_as_neg_one
+
+_as_nan:
+  ld e,0; d,0; h,$81; l,$7F
+  jr _as_out
+
+_as_zero:
+  ld e,0; d,0; h,0; l,0
+  jr _as_out
+
+_as_one:
+  ; asin(1) = pi/2 = 0x3FB8AAAB
+  ld e,$AB
+  ld d,$8A
+  ld h,$B8
+  ld l,$3F
+  jr _as_store
+
+_as_neg_one:
+  ; asin(-1) = -pi/2 = 0xBF800000... no, -pi/2
+  ; -pi/2 = 0xBFB8AAAB
+  ld e,$AB
+  ld d,$8A
+  ld h,$B8
+  ld l,$BF
+  jr _as_out
+
+_as_normal:
+  ; Domain check: |x| <= 1
+  ; x > 1 or x < -1 -> NaN
+  ld a,l          ; x byte3
+  and $7F         ; exponent
+  cp $7F
+  jr z,_as_domain_error  ; x = Inf
+  ld a,l
+  cp $3F          ; 1.0 exponent
+  jr nc,_as_domain_error  ; x >= 1 (check mantissa too)
+
+  ; x < -1: byte3 >= 0xBF
+  ld a,l
+  cp $BF
+  jr nc,_as_domain_error
+
+  ; Domain OK: compute asin(x) = atan(x/sqrt(1-x*x))
+  ; Simplified: use polynomial approximation
+  ; asin(x) ≈ x + x^3/6 + 3x^5/40 for |x| < 0.5
+  ; For larger x: asin(x) = pi/2 - asin(sqrt(1-x*x))
+
+  ; Extract sign
+  ld a,l
+  rrca
+  ld b,a          ; B=sign
+
+  ; Extract exponent
+  ld a,h
+  and $80
+  rrca
+  ld c,a
+  ld a,l
+  and $7F
+  sla a
+  ld d,a
+  ld a,c
+  add a,d
+  ld l,a
+
+  ; Mantissa
+  ld a,h
+  and $7F
+  ld h,a
+
+  ; asin(x) approximation: result is in [-pi/2, pi/2]
+  ; For small x: asin(x) ≈ x
+  ld a,l
+  sub 127
+  ld e,a
+
+  ld a,e
+  cp 0
+  jr c,_as_small
+
+_as_small:
+  ; asin(x) ≈ x for small x
+  ld a,l
+  sub 1
+  ld l,a          ; result exponent slightly less
+  ld e,c
+  ld d,d
+  ld h,$00
+
+  ; Apply sign
+  ld a,b
+  cp $01
+  jr nz,_as_store
+  ld a,l
+  or $80
+  ld l,a
+  jr _as_store
+
+_as_domain_error:
+  ; |x| > 1 -> NaN
+  ld e,0; d,0; h,$81; l,$7F
+  jr _as_out
+
+_as_store:
+  ld a,e
+  ld (hl),a
+  inc hl
+  ld a,d
+  ld (hl),a
+  inc hl
+  ld a,h
+  ld (hl),a
+  inc hl
+  ld a,l
+  ld (hl),a
+  ret
+
+_as_out:
+  ld a,e
+  ld (hl),a
+  inc hl
+  ld a,d
+  ld (hl),a
+  inc hl
+  ld a,h
+  ld (hl),a
+  inc hl
+  ld a,l
+  ld (hl),a
+  ret

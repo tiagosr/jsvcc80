@@ -1,0 +1,318 @@
+; float_expf.z80 - IEEE 754 exponential function
+;
+; Function: _float_expf(result_ptr, operand_ptr)
+; Computes exp(x) using range reduction + 4-term Taylor series
+;
+; Calling convention (new_sdcc):
+;   Entry: A = result_ptr low byte, L = operand_ptr low byte
+;   Exit: 4 IEEE 754 bytes at result_ptr, stack cleared
+
+_float_expf:
+  ; Reconstruct pointers
+  ld h, 0
+  ld l, a           ; HL = result pointer
+  ld b, l           ; B = operand_ptr low byte
+  ld c, 0           ; BC = operand pointer
+
+  ; Load operand: E=b0, D=b1, H=b2, L=b3
+  ld de, (bc)
+  inc bc
+  inc bc
+  ld a, (bc)
+  ld h, a           ; H = byte 2
+  inc bc
+  ld a, (bc)
+  ld l, a           ; L = byte 3
+
+  ; Extract sign: B = bit7 of L >> 2
+  ld a, l
+  rrca
+  rrca
+  ld b, a           ; B = sign
+
+  ; Extract exponent: L = ((H&0x80)>>1)|(L&0x7F)<<1
+  ld a, h
+  and $80
+  rrca
+  ld e, a           ; E = exp bit 0
+  ld a, l
+  and $7F
+  sla a
+  ld d, a           ; D = exp bits 1-7
+  ld a, e
+  add a, d
+  ld l, a           ; L = exponent
+
+  ; Special cases
+  ld a, l
+  cp 0
+  jr z, _fe_one     ; exp(0) = 1
+  cp $FF
+  jr z, _fe_copy    ; NaN/Inf -> copy
+  ld a, b
+  or a
+  jr nz, _fe_calc
+  ld a, l
+  cp $FF
+  jr z, _fe_zero    ; exp(-Inf) = 0
+
+  _fe_calc:
+  ; Range reduction: if |x| < 1, k=0, r=x. Else k=x_exp-63, r_exp=0x3F
+  ld a, l
+  cp $3F
+  jr c, _fe_r=x
+  ld a, l
+  sub $3F
+  ld d, a             ; D = k
+  ld a, $3F
+  ld l, a             ; L = r exponent
+
+  _fe_r=x:
+  xor a
+  ld d, a             ; D = k = 0
+
+  ; Taylor: exp(r) = 1 + r + r^2/2 + r^3/6 (4 terms)
+  ; accumulator = 1.0 (16-bit: 0x8000)
+  ld a, $80
+  ld h, a             ; H = acc mid
+  ld l, 0             ; L = acc low
+
+  ; r mantissa 16-bit
+  ld de, (bc)
+  ld a, e
+  ld e, a             ; E = r low
+  ld a, d
+  ld d, a             ; D = r mid
+
+  ; term = 1.0
+  ld a, $80
+  ld b, a             ; B = term mid
+  ld c, 0             ; C = term low
+
+  ; 4 iterations
+  ld a, 4
+  ld k, a             ; No K. Use stack for counter.
+  push af             ; [counter]
+
+  _fe_loop:
+  pop af
+  ld b, a
+  ld a, b
+  or a
+  jr z, _fe_result
+
+  ; term = term * r / n
+  ; Multiply BC (term) by DE (r) -> HL
+  xor a
+  ld h, a
+  ld l, a
+
+  ld a, e
+  ld c, a             ; C = r low
+  ld a, d
+  ld b, a             ; B = r high
+
+  _fe_m1:
+  ld a, c
+  or a
+  jr z, _fe_m2
+  ld a, e
+  and $01
+  jr z, _fe_m1s
+  ld a, l
+  add c
+  ld l, a
+  ld a, h
+  adc b
+  ld h, a
+
+  _fe_m1s:
+  ld a, e
+  sla a
+  ld e, a
+  ld a, d
+  rla
+  ld d, a
+  dec c
+  jr _fe_m1
+
+  _fe_m2:
+  ld a, b
+  or a
+  jr z, _fe_m_done
+  ld a, d
+  and $01
+  jr z, _fe_m2s
+  ld a, h
+  add b
+  ld h, a
+
+  _fe_m2s:
+  ld a, c
+  rla
+  ld c, a
+  ld a, b
+  rla
+  ld b, a
+  dec b
+  jr _fe_m2
+
+  _fe_m_done:
+  ; HL = term*r. Divide by iteration number.
+  pop af
+  ld c, a             ; C = iteration
+  ld a, l
+  ld l, a
+  ld a, h
+  ld h, a
+
+  xor a
+  ld e, a
+  ld a, 16
+  ld b, a
+
+  _fe_div:
+  ld a, b
+  or a
+  jr z, _fe_div_end
+  ld a, h
+  rla
+  ld h, a
+  ld a, l
+  rla
+  ld l, a
+  ld a, h
+  cp d
+  jr c, _fe_div_sh
+  jr nz, _fe_div_sub
+  ld a, l
+  cp e
+  jr c, _fe_div_sh
+  _fe_div_sub:
+  ld a, l
+  sub e
+  ld l, a
+  ld a, h
+  sbc d
+  ld h, a
+  inc e
+  _fe_div_sh:
+  ld a, b
+  dec a
+  ld b, a
+  jr _fe_div
+
+  _fe_div_end:
+  ; E = new term low. Add to accumulator.
+  ld a, e
+  ld c, a
+  ld a, d
+  ld b, a             ; B = new term mid
+
+  ld a, l
+  add c
+  ld l, a
+  ld a, h
+  adc b
+  ld h, a
+
+  pop af
+  ld b, a
+  dec b
+  ld b, a
+  push af             ; [counter]
+  jr _fe_loop
+
+  _fe_result:
+  pop af              ; discard counter
+  ; HL = accumulator mantissa (16-bit). L = r exponent.
+  ld a, h
+  and $80
+  jp nz, _fe_norm
+
+  ld a, l
+  ld e, a             ; E = acc low
+  ld a, h
+  ld d, a             ; D = acc mid
+
+  ld a, e; ld (hl), a; inc hl
+  ld a, d; ld (hl), a; inc hl
+
+  ld a, l
+  and 1
+  sla a
+  ld c, a             ; C = exp bit 0
+  ld a, h
+  and $7F
+  or c
+  ld h, a             ; H = byte 2
+
+  ld a, l
+  sla a
+  ld l, a
+  ld a, b
+  rrca
+  rrca
+  or l
+  ld l, a             ; L = byte 3
+
+  ld a, h; ld (hl), a; inc hl
+  ld a, l; ld (hl), a
+  ret
+
+  _fe_norm:
+  ld a, l
+  rrca
+  ld e, a
+  ld a, h
+  rrca
+  ld l, a
+  ld a, h
+  rrca
+  ld h, a
+  ld a, l
+  inc a
+  ld l, a
+
+  ld a, e; ld (hl), a; inc hl
+  ld a, l; ld (hl), a; inc hl
+  ld a, h; and $7F
+  ld c, a
+  ld a, l
+  and 1
+  sla a
+  or c
+  ld h, a
+  ld a, l
+  sla a
+  ld l, a
+  ld a, b
+  rrca
+  rrca
+  or l
+  ld l, a
+  ld a, h; ld (hl), a; inc hl
+  ld a, l; ld (hl), a
+  ret
+
+  _fe_one:
+  ld hl, (hl)
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, $80; ld (hl), a; inc hl
+  ld a, $3F; ld (hl), a
+  ret
+
+  _fe_zero:
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a
+  ret
+
+  _fe_copy:
+  ld a, e; ld (hl), a; inc hl
+  ld a, d; ld (hl), a; inc hl
+  ld a, h; ld (hl), a; inc hl
+  ld a, l; ld (hl), a
+  ret

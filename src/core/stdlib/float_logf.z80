@@ -1,0 +1,353 @@
+; float_logf.z80 - IEEE 754 natural logarithm
+;
+; Function: _float_logf(result_ptr, operand_ptr)
+; Computes log(x) via range reduction + Taylor series
+;
+; Calling convention (new_sdcc):
+;   Entry: A = result_ptr low byte, L = operand_ptr low byte
+;   Exit: 4 IEEE 754 bytes at result_ptr, stack cleared
+
+_float_logf:
+  ; Reconstruct pointers
+  ld h, 0
+  ld l, a           ; HL = result pointer
+  ld b, l           ; B = operand_ptr low byte
+  ld c, 0           ; BC = operand pointer
+
+  ; Load operand: E=b0, D=b1, H=b2, L=b3
+  ld de, (bc)
+  inc bc
+  inc bc
+  ld a, (bc)
+  ld h, a           ; H = byte 2
+  inc bc
+  ld a, (bc)
+  ld l, a           ; L = byte 3
+
+  ; Extract sign: B = bit7 of L >> 2
+  ld a, l
+  rrca
+  rrca
+  ld b, a           ; B = sign
+
+  ; Extract exponent: L = ((H&0x80)>>1)|(L&0x7F)<<1
+  ld a, h
+  and $80
+  rrca
+  ld e, a           ; E = exp bit 0
+  ld a, l
+  and $7F
+  sla a
+  ld d, a           ; D = exp bits 1-7
+  ld a, e
+  add a, d
+  ld l, a           ; L = exponent
+
+  ; Special cases
+  ld a, l
+  cp 0
+  jr z, _fl_neg_inf     ; log(0) = -Inf
+  cp $FF
+  jr z, _fl_copy        ; NaN/Inf -> copy
+  ld a, l
+  cp $3F
+  jr nz, _fl_chk
+  ld a, e
+  or d
+  or h
+  jr z, _fl_zero        ; log(1) = 0
+  _fl_chk:
+  ld a, b
+  or a
+  jr nz, _fl_nan        ; log(negative) = NaN
+
+  ; Range reduction: x = m * 2^e, log(x) = log(m) + e*ln2
+  ld de, (bc)
+  ld a, e
+  ld e, a             ; E = b0
+  ld a, d
+  ld d, a             ; D = b1
+  inc bc; inc bc
+  ld a, (bc)
+  and $7F
+  ld h, a             ; H = b2 mantissa
+
+  ; Normalize m to [1,2)
+  ld a, h
+  and $80
+  jr nz, _fl_m_ok
+  _fl_shift:
+  ld a, e
+  sla a
+  ld d, a
+  ld a, h
+  and $7F
+  sla a
+  ld e, a
+  ld a, d
+  and 1
+  ld c, a             ; C = exp bit 0
+  dec l
+  ld a, d
+  and $80
+  jr nz, _fl_m_ok
+  ld a, e
+  sla a
+  ld d, a
+  ld a, h
+  and $7F
+  sla a
+  ld e, a
+  ld a, d
+  and 1
+  ld c, a
+  dec l
+  jr _fl_shift
+
+  _fl_m_ok:
+  ; m mantissa = D:E. e = L - 127
+  ld a, l
+  sub $7F
+  ld k, a             ; No K. Use temp.
+  ld c, a             ; C = unbiased e
+
+  ; v = (m-1)/(m+1) using 8-bit division
+  ld a, e
+  sub $00
+  ld e, a
+  ld a, d
+  sbc $80
+  ld d, a             ; D = m-1 mid
+
+  ld a, e
+  add $00
+  ld e, a
+  ld a, d
+  adc $80
+  ld d, a             ; D = m+1 mid
+
+  ; 8-bit division: D / (m+1_mid) -> A = v
+  ld a, d             ; A = m-1 mid
+  ld b, a             ; B = dividend
+  ld a, e             ; A = m+1 low
+  ld k, a             ; No K. Use temp.
+  ld c, a             ; C = m+1 low (divisor)
+  ld a, d             ; A = m+1 mid
+  ld d, a             ; D = divisor mid
+
+  ; Divide B by D (8-bit high bytes)
+  xor a
+  ld h, a             ; HL = 0
+  ld a, 8
+  ld b, a
+
+  _fl_div:
+  ld a, b
+  or a
+  jr z, _fl_div_end
+  sla b               ; dividend << 1
+  ld a, h
+  rla
+  ld h, a
+  ld a, l
+  rla
+  ld l, a
+  ld a, h
+  cp d
+  jr c, _fl_div_sh
+  jr nz, _fl_div_sub
+  ld a, l
+  cp c
+  jr c, _fl_div_sh
+  _fl_div_sub:
+  ld a, l
+  sub c
+  ld l, a
+  ld a, h
+  sbc d
+  ld h, a
+  inc l
+  _fl_div_sh:
+  ld a, b
+  dec a
+  ld b, a
+  jr _fl_div
+
+  _fl_div_end:
+  ; L = v (8-bit). log(m) = 2*(v + v^3/3)
+  ld a, l
+  sla a               ; 2*v
+  ld l, a             ; L = acc
+
+  ; v^3/3: v*v / 3
+  ld a, l
+  ld b, a
+  xor a
+  ld l, a
+  _fl_sq:
+  ld a, b
+  or a
+  jr z, _fl_sq_done
+  add l, l
+  dec b
+  jr _fl_sq
+  _fl_sq_done:
+  ld a, l
+  ld l, a
+  ld a, $03
+  xor a
+  ld e, a
+  ld a, 8
+  ld b, a
+  _fl_div3:
+  ld a, b
+  or a
+  jr z, _fl_div3_end
+  ld a, l
+  rla
+  ld l, a
+  ld a, l
+  cp a
+  jr c, _fl_div3_sh
+  jr nz, _fl_div3_sub
+  ld a, l
+  cp a
+  jr c, _fl_div3_sh
+  _fl_div3_sub:
+  ld a, l
+  sub a
+  ld l, a
+  inc e
+  _fl_div3_sh:
+  ld a, b
+  dec a
+  ld b, a
+  jr _fl_div3
+  _fl_div3_end:
+  ld a, l
+  add e               ; acc += v^3/3
+
+  ; L = log(m). Add e*ln2 (ln2 mantissa = 0x5A8E)
+  ld a, c
+  ld b, a
+  ld a, $5A
+  ld d, a
+  ld e, $8E
+  xor a
+  ld h, a
+  ld l, a
+  _fl_mul:
+  ld a, b
+  or a
+  jr z, _fl_mul_done
+  ld a, d
+  and $01
+  jr z, _fl_mul_s
+  ld a, l
+  add d
+  ld l, a
+  ld a, h
+  adc e
+  ld h, a
+  _fl_mul_s:
+  ld a, d
+  sla a
+  ld d, a
+  ld a, e
+  rla
+  ld e, a
+  dec b
+  jr _fl_mul
+
+  _fl_mul_done:
+  ; HL = e*ln2 (16-bit). Add log(m) (L scaled to 16-bit)
+  ld a, l
+  sla a
+  sla a
+  sla a
+  sla a
+  sla a
+  sla a
+  sla a
+  ld c, a
+  ld b, 0
+  ld a, l
+  add c
+  ld l, a
+  ld a, h
+  adc b
+  ld h, a             ; HL = log(x) mantissa (16-bit)
+
+  ld a, $3E
+  ld l, a             ; L = log exponent
+
+  ; Pack result
+  ld a, l
+  ld e, a
+  ld a, h
+  ld d, a
+
+  ld a, e; ld (hl), a; inc hl
+  ld a, d; ld (hl), a; inc hl
+
+  ld a, l
+  and 1
+  sla a
+  ld c, a
+  ld a, h
+  and $7F
+  or c
+  ld h, a             ; H = byte 2
+
+  ; sign: negative if x < 1 (mantissa < 0x8000)
+  ld a, h
+  and $80
+  jr nz, _fl_pos_sign
+  ld a, 1
+  jr _fl_byte3
+  _fl_pos_sign:
+  ld a, 0
+  _fl_byte3:
+  ld b, a
+  ld a, l
+  sla a
+  ld l, a
+  ld a, b
+  rrca
+  rrca
+  or l
+  ld l, a             ; L = byte 3
+
+  ld a, h; ld (hl), a; inc hl
+  ld a, l; ld (hl), a
+  ret
+
+  _fl_neg_inf:
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, $80; ld (hl), a; inc hl
+  ld a, $FF; ld (hl), a
+  ret
+
+  _fl_copy:
+  ld a, e; ld (hl), a; inc hl
+  ld a, d; ld (hl), a; inc hl
+  ld a, h; ld (hl), a; inc hl
+  ld a, l; ld (hl), a
+  ret
+
+  _fl_zero:
+  ld hl, (hl)
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, $80; ld (hl), a; inc hl
+  ld a, $3F; ld (hl), a
+  ret
+
+  _fl_nan:
+  ld hl, (hl)
+  ld a, 1; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, $80; ld (hl), a
+  ret

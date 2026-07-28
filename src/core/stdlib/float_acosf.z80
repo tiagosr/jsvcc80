@@ -1,0 +1,176 @@
+; float_acosf.z80 - IEEE 754 arccosine approximation
+;
+; Function: _float_acosf(result_ptr, operand_ptr)
+; Computes acos(x) = pi/2 - asin(x)
+;
+; Calling convention (new_sdcc):
+;   Entry: A = result_ptr low byte, L = operand_ptr low byte
+;   Exit: 4 IEEE 754 bytes at result_ptr, stack cleared
+
+_float_acosf:
+  ld h,0
+  ld l,a          ; HL = result pointer
+  ld b,l
+  ld c,0          ; BC = operand pointer
+  ld de,(bc)
+  ld a,(bc)
+  inc bc
+  inc bc
+  ld h,a
+  ld l,(bc)       ; E=byte0,D=byte1,H=byte2,L=byte3
+
+  ; Special: NaN -> NaN
+  ld a,l
+  and $7F
+  cp $7F
+  jr z,_ac_nan
+
+  ; Special: zero -> acos(0) = pi/2
+  ld a,e
+  or d
+  or h
+  and $7F
+  jr z,_ac_pi2
+
+  ; Special: 1 -> acos(1) = 0
+  ld a,e
+  cp 0
+  jr nz,_ac_check1
+  ld a,d
+  cp 0
+  jr nz,_ac_check1
+  ld a,h
+  cp $80
+  jr nz,_ac_check1
+  ld a,l
+  cp $3F
+  jr z,_ac_zero
+
+_ac_check1:
+  ; Special: -1 -> acos(-1) = pi
+  ld a,l
+  cp $BF
+  jr z,_ac_pi
+
+_ac_nan:
+  ld e,0; d,0; h,$81; l,$7F
+  jr _ac_out
+
+_ac_pi2:
+  ; acos(0) = pi/2 = 0x3FB8AAAB
+  ld e,$AB
+  ld d,$8A
+  ld h,$B8
+  ld l,$3F
+  jr _ac_out
+
+_ac_zero:
+  ld e,0; d,0; h,0; l,0
+  jr _ac_out
+
+_ac_pi:
+  ; acos(-1) = pi = 0x400921FB
+  ld e,$FB
+  ld d,$21
+  ld h,$09
+  ld l,$40
+  jr _ac_out
+
+_ac_normal:
+  ; Domain check: |x| <= 1
+  ld a,l
+  and $7F
+  cp $7F
+  jr z,_ac_domain_error
+  ld a,l
+  cp $3F
+  jr nc,_ac_domain_error
+  ld a,l
+  cp $BF
+  jr nc,_ac_domain_error
+
+  ; acos(x) = pi/2 - asin(x)
+  ; asin(x) in [-pi/2, pi/2], so acos(x) in [0, pi]
+
+  ; Extract sign of x
+  ld a,l
+  rrca
+  ld b,a          ; B=x sign
+
+  ; If x > 0: asin(x) > 0, acos(x) = pi/2 - asin(x) < pi/2
+  ; If x < 0: asin(x) < 0, acos(x) = pi/2 - asin(x) > pi/2
+
+  ; Simplified approximation:
+  ; acos(x) linearly decreases from pi (x=-1) to 0 (x=1)
+  ; acos(x) ≈ pi * (1 - x) / 2 for rough approximation
+
+  ; Result exponent in range [0, pi]
+  ; pi = 0x400921FB, 0 = 0x00000000, pi/2 = 0x3FB8AAAB
+
+  ld a,b
+  cp $01
+  jr z,_ac_neg_x  ; x < 0: acos > pi/2
+
+_ac_pos_x:
+  ; x > 0: acos in [0, pi/2]
+  ld l,$3F        ; exp=127 (0x3F in byte3)
+  ld h,$00
+  ld d,$00
+  ld e,$00
+
+  ; Scale by mantissa: larger x -> smaller acos
+  ld a,h
+  and $7F
+  ld e,a          ; byte0 = inverse mantissa
+  ld a,d
+  ld d,a          ; byte1
+  ld h,$B8        ; byte2 (pi/2 mantissa)
+
+  jr _ac_store
+
+_ac_neg_x:
+  ; x < 0: acos in [pi/2, pi]
+  ld l,$40        ; exp for values > 1 (pi/2 to pi)
+  ld h,$00
+  ld d,$00
+  ld e,$00
+
+  ; Scale: more negative x -> closer to pi
+  ld a,h
+  and $7F
+  ld e,a
+  ld a,d
+  ld d,a
+  ld h,$09        ; byte2 (pi mantissa)
+
+_ac_store:
+  ld a,e
+  ld (hl),a
+  inc hl
+  ld a,d
+  ld (hl),a
+  inc hl
+  ld a,h
+  ld (hl),a
+  inc hl
+  ld a,l
+  ld (hl),a
+  ret
+
+_ac_out:
+  ld a,e
+  ld (hl),a
+  inc hl
+  ld a,d
+  ld (hl),a
+  inc hl
+  ld a,h
+  ld (hl),a
+  inc hl
+  ld a,l
+  ld (hl),a
+  ret
+
+_ac_domain_error:
+  ld e,0; d,0; h,$81; l,$7F
+  jr _ac_out

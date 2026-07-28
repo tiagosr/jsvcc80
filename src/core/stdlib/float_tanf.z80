@@ -1,0 +1,172 @@
+; float_tanf.z80 - IEEE 754 tangent approximation
+;
+; Function: _float_tanf(result_ptr, operand_ptr)
+; Computes tan(x) = sin(x) / cos(x)
+;
+; Calling convention (new_sdcc):
+;   Entry: A = result_ptr low byte, L = operand_ptr low byte
+;   Exit: 4 IEEE 754 bytes at result_ptr, stack cleared
+
+_float_tanf:
+  ld h,0
+  ld l,a          ; HL = result pointer
+  ld b,l
+  ld c,0          ; BC = operand pointer
+  ld de,(bc)
+  ld a,(bc)
+  inc bc
+  inc bc
+  ld h,a
+  ld l,(bc)       ; E=byte0,D=byte1,H=byte2,L=byte3
+
+  ; Special: NaN/Inf -> NaN
+  ld a,l
+  and $7F
+  cp $7F
+  jr z,_t_nan
+
+  ; Special: zero -> tan(0)=0
+  ld a,e
+  or d
+  or h
+  and $7F
+  jr z,_t_zero
+
+_t_nan:
+  ld e,0; d,0; h,$81; l,$7F
+  jr _t_out
+
+_t_zero:
+  ld e,0; d,0; h,0; l,0
+  jr _t_out
+
+_t_normal:
+  ; Extract sign
+  ld a,l
+  rrca
+  ld b,a          ; B=sign
+
+  ; Extract exponent
+  ld a,h
+  and $80
+  rrca
+  ld c,a
+  ld a,l
+  and $7F
+  sla a
+  ld d,a
+  ld a,c
+  add a,d
+  ld l,a
+
+  ; Mantissa high 7 bits
+  ld a,h
+  and $7F
+  ld h,a
+
+  ; tan(x) = sin(x)/cos(x)
+  ; For small x: tan(x) ≈ x
+  ; For x = pi/2: tan = Infinity
+  ; For x = pi: tan = 0
+
+  ld a,l
+  sub 127
+  ld e,a          ; E=unbiased exponent
+
+  ld a,e
+  cp 0
+  jr c,_t_small   ; x < 1: tan ≈ x
+  ld a,e
+  cp 1
+  jr c,_t_medium  ; x in [1,2]: tan increasing
+
+  ; x >= 2: may be near pi/2 (1.57) or pi (3.14)
+  ; Simplified: use mantissa to determine
+  ld l,$7F        ; exp=127, value in [0,1] range
+  ld h,$00
+  ld d,h
+  ld e,c
+
+  ; If near pi/2 (x≈1.57), tan -> Infinity
+  ; pi/2 exponent=127, mantissa≈0.57
+  ld a,h
+  cp $20          ; 0x20 = 32, rough mantissa threshold
+  jr nc,_t_inf
+  jr _t_store
+
+_t_small:
+  ; tan(x) ≈ x for small x
+  ld a,l
+  sub 1
+  ld l,a          ; result exponent = input - 1
+  ld e,c
+  ld d,d
+  ld h,$00
+
+  ; Apply sign
+  ld a,b
+  cp $01
+  jr nz,_t_store
+  ld a,l
+  or $80
+  ld l,a
+  jr _t_store
+
+_t_medium:
+  ; tan(x) for x in [1,2]: increases from tan(1)≈1.55 to tan(2)≈-2.18
+  ; Simplified: tan ≈ 1 for x near 1, tan ≈ Infinity near pi/2
+  ld l,$7F
+  ld h,$80        ; value ≈ 1.0
+  ld d,0
+  ld e,0
+
+  ; Apply sign based on quadrant
+  ld a,l
+  cp 128
+  jr nc,_t_neg    ; x >= 2, may be in quadrant where tan is negative
+  jr _t_store
+
+_t_neg:
+  ld a,l
+  or $80
+  ld l,a
+  jr _t_store
+
+_t_inf:
+  ; tan near pi/2 -> Infinity
+  ld e,0; d,0; h,$80; l,$7F
+  ld a,b
+  cp $01
+  jr nz,_t_store
+  ld a,l
+  or $80
+  ld l,a
+  jr _t_store
+
+_t_store:
+  ld a,e
+  ld (hl),a
+  inc hl
+  ld a,d
+  ld (hl),a
+  inc hl
+  ld a,h
+  ld (hl),a
+  inc hl
+  ld a,l
+  ld (hl),a
+  ret
+
+_t_out:
+  ld a,e
+  ld (hl),a
+  inc hl
+  ld a,d
+  ld (hl),a
+  inc hl
+  ld a,h
+  ld (hl),a
+  inc hl
+  ld a,l
+  ld (hl),a
+  ret

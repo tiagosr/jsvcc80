@@ -184,7 +184,20 @@ export class ExpressionTranslator {
       'ceilf': { internal: '_float_ceil', hasResultPtr: true },
       'modff': { internal: '_float_modf', hasResultPtr: true },
       'frexpf': { internal: '_float_frexpf', hasResultPtr: true },
-      'ldexpf': { internal: '_float_ldexpf', hasResultPtr: true }
+      'ldexpf': { internal: '_float_ldexpf', hasResultPtr: true },
+      'sinf': { internal: '_float_sinf', hasResultPtr: true },
+      'cosf': { internal: '_float_cosf', hasResultPtr: true },
+      'tanf': { internal: '_float_tanf', hasResultPtr: true },
+      'cotf': { internal: '_float_cotf', hasResultPtr: true },
+      'asinf': { internal: '_float_asinf', hasResultPtr: true },
+      'acosf': { internal: '_float_acosf', hasResultPtr: true },
+      'atanf': { internal: '_float_atanf', hasResultPtr: true },
+      'atan2f': { internal: '_float_atan2f', hasResultPtr: true },
+      'sqrtf': { internal: '_float_sqrtf', hasResultPtr: true },
+      'expf': { internal: '_float_expf', hasResultPtr: true },
+      'powf': { internal: '_float_powf', hasResultPtr: true },
+      'logf': { internal: '_float_logf', hasResultPtr: true },
+      'log10f': { internal: '_float_log10f', hasResultPtr: true }
     };
     if (floatFuncMapping[calleeName]) {
       return this.translateFloatCall(calleeName, floatFuncMapping[calleeName], call.args);
@@ -525,40 +538,51 @@ export class ExpressionTranslator {
     * @returns {{blocks: IL.BasicBlock[], result: string, isFloat: boolean}} Blocks and result register
     */
    translateFloatCall(cFuncName, mapping, args) {
-    const internalFuncName = mapping.internal;
-    const hasResultPtr = mapping.hasResultPtr;
-    const operandResult = this.translateExpression(args[0]);
-    const blocks = [...operandResult.blocks];
+     const internalFuncName = mapping.internal;
+     const hasResultPtr = mapping.hasResultPtr;
+     const argsArray = Array.isArray(args) ? args : [args];
+     const operandResult = this.translateExpression(argsArray[0]);
+     const blocks = [...operandResult.blocks];
 
-    const resultLabel = this.context.floatCollector.emitFloatData(0);
-    const resultTemp = this.context.state.temp();
-    const block = new IL.BasicBlock(this.context.state.label('fltc'));
-    block.add(new IL.LoadAddrInstruction(resultTemp, resultLabel));
+     const resultLabel = this.context.floatCollector.emitFloatData(0);
+     const resultTemp = this.context.state.temp();
+     const block = new IL.BasicBlock(this.context.state.label('fltc'));
+     block.add(new IL.LoadAddrInstruction(resultTemp, resultLabel));
 
-    let callArgs;
-    if (cFuncName === 'modff') {
-      const iptrResult = this.translateExpression(args[1]);
-      blocks.push(...iptrResult.blocks);
-      const iptrTemp = this.context.state.temp();
-      const iptrBlock = new IL.BasicBlock(this.context.state.label('modf_iptr'));
-      iptrBlock.add(new IL.LoadAddrInstruction(iptrTemp, iptrResult.result));
-      blocks.push(iptrBlock);
-      callArgs = [resultTemp, iptrTemp, operandResult.result];
-    } else if (cFuncName === 'frexpf') {
-      const expResult = this.translateExpression(args[1]);
-      blocks.push(...expResult.blocks);
-      const expTemp = this.context.state.temp();
-      const expBlock = new IL.BasicBlock(this.context.state.label('frexp_exp'));
-      expBlock.add(new IL.LoadAddrInstruction(expTemp, expResult.result));
-      blocks.push(expBlock);
-      callArgs = [resultTemp, operandResult.result, expTemp];
-    } else if (cFuncName === 'ldexpf') {
-      const expResult = this.translateExpression(args[1]);
-      blocks.push(...expResult.blocks);
-      callArgs = [resultTemp, operandResult.result, expResult.result];
-    } else {
-      callArgs = [resultTemp, operandResult.result];
-    }
+     let callArgs;
+     if (cFuncName === 'modff') {
+       const iptrResult = this.translateExpression(argsArray[1]);
+       blocks.push(...iptrResult.blocks);
+       const iptrTemp = this.context.state.temp();
+       const iptrBlock = new IL.BasicBlock(this.context.state.label('modf_iptr'));
+       iptrBlock.add(new IL.LoadAddrInstruction(iptrTemp, iptrResult.result));
+       blocks.push(iptrBlock);
+       callArgs = [resultTemp, iptrTemp, operandResult.result];
+     } else if (cFuncName === 'frexpf') {
+       const expResult = this.translateExpression(argsArray[1]);
+       blocks.push(...expResult.blocks);
+       const expTemp = this.context.state.temp();
+       const expBlock = new IL.BasicBlock(this.context.state.label('frexp_exp'));
+       expBlock.add(new IL.LoadAddrInstruction(expTemp, expResult.result));
+       blocks.push(expBlock);
+       callArgs = [resultTemp, operandResult.result, expTemp];
+     } else if (cFuncName === 'ldexpf') {
+       const expResult = this.translateExpression(argsArray[1]);
+       blocks.push(...expResult.blocks);
+       callArgs = [resultTemp, operandResult.result, expResult.result];
+     } else if (cFuncName === 'atan2f') {
+       const yResult = this.translateExpression(argsArray[0]);
+       const xResult = this.translateExpression(argsArray[1]);
+       blocks.push(...yResult.blocks, ...xResult.blocks);
+       callArgs = [resultTemp, yResult.result, xResult.result];
+     } else if (cFuncName === 'powf') {
+       const baseResult = this.translateExpression(argsArray[0]);
+       const expResult = this.translateExpression(argsArray[1]);
+       blocks.push(...baseResult.blocks, ...expResult.blocks);
+       callArgs = [resultTemp, baseResult.result, expResult.result];
+     } else {
+       callArgs = [resultTemp, operandResult.result];
+     }
 
     block.add(new IL.CallInstruction(internalFuncName, ...callArgs, CALLING_CONVENTION_DEFAULT, { floatResult: true }));
     return {

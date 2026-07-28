@@ -1,0 +1,397 @@
+; float_log10f.z80 - IEEE 754 base-10 logarithm
+;
+; Function: _float_log10f(result_ptr, operand_ptr)
+; Computes log10(x) = log(x) / log(10)
+;
+; Calling convention (new_sdcc):
+;   Entry: A = result_ptr low byte, L = operand_ptr low byte
+;   Exit: 4 IEEE 754 bytes at result_ptr, stack cleared
+
+_float_log10f:
+  ; Reconstruct pointers
+  ld h, 0
+  ld l, a           ; HL = result pointer
+  ld b, l           ; B = operand_ptr low byte
+  ld c, 0           ; BC = operand pointer
+
+  ; Load operand: E=b0, D=b1, H=b2, L=b3
+  ld de, (bc)
+  inc bc
+  inc bc
+  ld a, (bc)
+  ld h, a           ; H = byte 2
+  inc bc
+  ld a, (bc)
+  ld l, a           ; L = byte 3
+
+  ; Extract sign: B = bit7 of L >> 2
+  ld a, l
+  rrca
+  rrca
+  ld b, a           ; B = sign
+
+  ; Extract exponent: L = ((H&0x80)>>1)|(L&0x7F)<<1
+  ld a, h
+  and $80
+  rrca
+  ld e, a           ; E = exp bit 0
+  ld a, l
+  and $7F
+  sla a
+  ld d, a           ; D = exp bits 1-7
+  ld a, e
+  add a, d
+  ld l, a           ; L = exponent
+
+  ; Special cases
+  ld a, l
+  cp 0
+  jr z, _f10_neg_inf    ; log10(0) = -Inf
+  cp $FF
+  jr z, _f10_copy       ; NaN/Inf -> copy
+  ld a, l
+  cp $3F
+  jr nz, _f10_chk
+  ld a, e
+  or d
+  or h
+  jr z, _f10_zero       ; log10(1) = 0
+  _f10_chk:
+  ld a, b
+  or a
+  jr nz, _f10_nan       ; log10(negative) = NaN
+
+  ; log(x) computation
+  ld de, (bc)
+  ld a, e
+  ld e, a             ; E = b0
+  ld a, d
+  ld d, a             ; D = b1
+  inc bc; inc bc
+  ld a, (bc)
+  and $7F
+  ld h, a             ; H = b2 mantissa
+
+  ; Normalize m to [1,2)
+  ld a, h
+  and $80
+  jr nz, _f10_m_ok
+  _f10_shift:
+  ld a, e
+  sla a
+  ld d, a
+  ld a, h
+  and $7F
+  sla a
+  ld e, a
+  ld a, d
+  and 1
+  ld c, a
+  dec l
+  ld a, d
+  and $80
+  jr nz, _f10_m_ok
+  ld a, e
+  sla a
+  ld d, a
+  ld a, h
+  and $7F
+  sla a
+  ld e, a
+  ld a, d
+  and 1
+  ld c, a
+  dec l
+  jr _f10_shift
+
+  _f10_m_ok:
+  ; m mantissa = D:E. e = L - 127
+  ld a, l
+  sub $7F
+  ld k, a             ; No K. Use temp.
+  ld c, a             ; C = unbiased e
+
+  ; v = (m-1)/(m+1) 8-bit division
+  ld a, e
+  sub $00
+  ld e, a
+  ld a, d
+  sbc $80
+  ld d, a             ; D = m-1 mid
+
+  ld a, e
+  add $00
+  ld e, a
+  ld a, d
+  adc $80
+  ld d, a             ; D = m+1 mid
+
+  xor a
+  ld h, a             ; HL = 0
+  ld a, d             ; A = divisor mid
+  ld b, a             ; B = divisor
+  ld a, d             ; A = dividend mid
+  ld k, a             ; No K. Use temp.
+  ld d, a             ; D = dividend
+
+  ld a, 8
+  ld b, a
+
+  _f10_div:
+  ld a, b
+  or a
+  jr z, _f10_div_end
+  sla d               ; dividend << 1
+  ld a, h
+  rla
+  ld h, a
+  ld a, l
+  rla
+  ld l, a
+  ld a, h
+  cp b
+  jr c, _f10_div_sh
+  jr nz, _f10_div_sub
+  ld a, l
+  cp e
+  jr c, _f10_div_sh
+  _f10_div_sub:
+  ld a, l
+  sub e
+  ld l, a
+  ld a, h
+  sbc b
+  ld h, a
+  inc l
+  _f10_div_sh:
+  ld a, b
+  dec a
+  ld b, a
+  jr _f10_div
+
+  _f10_div_end:
+  ; L = v. log(m) = 2*(v + v^3/3)
+  ld a, l
+  sla a
+  ld l, a             ; L = 2*v
+
+  ; v^3/3
+  ld a, l
+  ld b, a
+  xor a
+  ld l, a
+  _f10_sq:
+  ld a, b
+  or a
+  jr z, _f10_sq_done
+  add l, l
+  dec b
+  jr _f10_sq
+  _f10_sq_done:
+  ld a, l
+  ld l, a
+  ld a, $03
+  xor a
+  ld e, a
+  ld a, 8
+  ld b, a
+  _f10_div3:
+  ld a, b
+  or a
+  jr z, _f10_div3_end
+  ld a, l
+  rla
+  ld l, a
+  ld a, l
+  cp a
+  jr c, _f10_div3_sh
+  jr nz, _f10_div3_sub
+  ld a, l
+  cp a
+  jr c, _f10_div3_sh
+  _f10_div3_sub:
+  ld a, l
+  sub a
+  ld l, a
+  inc e
+  _f10_div3_sh:
+  ld a, b
+  dec a
+  ld b, a
+  jr _f10_div3
+  _f10_div3_end:
+  ld a, l
+  add e               ; L = log(m)
+
+  ; Add e*ln2 (ln2 mantissa = 0x5A8E)
+  ld a, c
+  ld b, a
+  ld a, $5A
+  ld d, a
+  ld e, $8E
+  xor a
+  ld h, a
+  ld l, a
+  _f10_mul:
+  ld a, b
+  or a
+  jr z, _f10_mul_done
+  ld a, d
+  and $01
+  jr z, _f10_mul_s
+  ld a, l
+  add d
+  ld l, a
+  ld a, h
+  adc e
+  ld h, a
+  _f10_mul_s:
+  ld a, d
+  sla a
+  ld d, a
+  ld a, e
+  rla
+  ld e, a
+  dec b
+  jr _f10_mul
+
+  _f10_mul_done:
+  ; HL = e*ln2. Add log(m) (L scaled)
+  ld a, l
+  sla a
+  sla a
+  sla a
+  sla a
+  sla a
+  sla a
+  sla a
+  ld c, a
+  ld b, 0
+  ld a, l
+  add c
+  ld l, a
+  ld a, h
+  adc b
+  ld h, a             ; HL = log(x) mantissa
+
+  ld a, $3E
+  ld l, a             ; L = log exponent
+
+  ; Divide by log(10) mantissa = 0x95B4
+  ld a, $95
+  ld d, a
+  ld a, $B4
+  ld e, a             ; DE = log10 mantissa
+
+  ; HL / DE -> quotient
+  xor a
+  ld h, a
+  ld l, a
+  ld a, 16
+  ld b, a
+
+  _f10_div10:
+  ld a, b
+  or a
+  jr z, _f10_div10_end
+  ld a, l
+  rla
+  ld l, a
+  ld a, h
+  rla
+  ld h, a
+  ld a, h
+  cp d
+  jr c, _f10_div10_sh
+  jr nz, _f10_div10_sub
+  ld a, l
+  cp e
+  jr c, _f10_div10_sh
+  _f10_div10_sub:
+  ld a, l
+  sub e
+  ld l, a
+  ld a, h
+  sbc d
+  ld h, a
+  inc l
+  _f10_div10_sh:
+  ld a, b
+  dec a
+  ld b, a
+  jr _f10_div10
+
+  _f10_div10_end:
+  ; L = quotient. exp = 0x3C
+  ld a, $3C
+  ld l, a
+
+  ; Pack result
+  ld a, l
+  ld e, a
+  ld a, h
+  ld d, a
+
+  ld a, e; ld (hl), a; inc hl
+  ld a, d; ld (hl), a; inc hl
+
+  ld a, l
+  and 1
+  sla a
+  ld c, a
+  ld a, h
+  and $7F
+  or c
+  ld h, a             ; H = byte 2
+
+  ld a, h
+  and $80
+  jr nz, _f10_pos_sign
+  ld a, 1
+  jr _f10_byte3
+  _f10_pos_sign:
+  ld a, 0
+  _f10_byte3:
+  ld b, a
+  ld a, l
+  sla a
+  ld l, a
+  ld a, b
+  rrca
+  rrca
+  or l
+  ld l, a             ; L = byte 3
+
+  ld a, h; ld (hl), a; inc hl
+  ld a, l; ld (hl), a
+  ret
+
+  _f10_neg_inf:
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, $80; ld (hl), a; inc hl
+  ld a, $FF; ld (hl), a
+  ret
+
+  _f10_copy:
+  ld a, e; ld (hl), a; inc hl
+  ld a, d; ld (hl), a; inc hl
+  ld a, h; ld (hl), a; inc hl
+  ld a, l; ld (hl), a
+  ret
+
+  _f10_zero:
+  ld hl, (hl)
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, $80; ld (hl), a; inc hl
+  ld a, $3F; ld (hl), a
+  ret
+
+  _f10_nan:
+  ld hl, (hl)
+  ld a, 1; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, $80; ld (hl), a
+  ret

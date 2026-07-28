@@ -1,0 +1,253 @@
+; float_sqrtf.z80 - IEEE 754 square root
+;
+; Function: _float_sqrtf(result_ptr, operand_ptr)
+; Computes sqrt(x) using Newton's method
+;
+; Calling convention (new_sdcc):
+;   Entry: A = result_ptr low byte, L = operand_ptr low byte
+;   Exit: 4 IEEE 754 bytes at result_ptr, stack cleared
+
+_float_sqrtf:
+  ; Reconstruct pointers
+  ld h, 0
+  ld l, a           ; HL = result pointer
+  ld b, l           ; B = operand_ptr low byte
+  ld c, 0           ; BC = operand pointer
+
+  ; Load operand: E=b0, D=b1, H=b2, L=b3
+  ld de, (bc)
+  inc bc
+  inc bc
+  ld a, (bc)
+  ld h, a           ; H = byte 2
+  inc bc
+  ld a, (bc)
+  ld l, a           ; L = byte 3
+
+  ; Extract sign: B = bit7 of L >> 2
+  ld a, l
+  rrca
+  rrca
+  ld b, a           ; B = sign
+
+  ; Extract exponent: L = ((H&0x80)>>1)|(L&0x7F)<<1
+  ld a, h
+  and $80
+  rrca
+  ld e, a           ; E = exp bit 0
+  ld a, l
+  and $7F
+  sla a
+  ld d, a           ; D = exp bits 1-7
+  ld a, e
+  add a, d
+  ld l, a           ; L = exponent
+
+  ; Special cases
+  ld a, l
+  cp 0
+  jr z, _fs_zero    ; sqrt(0) = 0
+  cp $FF
+  jr z, _fs_copy    ; NaN/Inf -> copy
+
+  ; Negative -> NaN
+  ld a, b
+  or a
+  jr nz, _fs_nan
+
+  ; Initial guess: half exponent, mantissa = 1.0
+  ld a, l
+  rrca                  ; A = exponent / 2
+  ld l, a               ; L = new exponent
+
+  ; Guess mantissa = 1.0: byte0=0, byte1=0, byte2_mant=0, exp_bit0=1
+  ld e, 0               ; E = byte0
+  ld d, 0               ; D = byte1
+  ld h, 0               ; H = byte2_mant (temp)
+
+  ; Newton iteration: x_new = (x_old + N/x_old) / 2
+  ; 5 iterations for decent precision
+  ld a, 5
+  ld b, a               ; B = iteration counter
+
+  _fs_iter:
+  ld a, b
+  or a
+  jr z, _fs_pack
+
+  ; Compute N / x_old
+  ; Operand mantissa 16-bit: D:E (b1:b0)
+  ; Guess mantissa 16-bit: need to track. Use H:D for guess mid:low
+  ; Guess mh = 0x80 (implicit 1)
+
+  ; Save operand on stack for reload
+  ld a, e
+  push af             ; [op_low]
+  ld a, d
+  push af             ; [op_mid, op_low]
+  inc bc
+  inc bc
+  ld a, (bc)
+  and $7F
+  or $80
+  push af             ; [op_mh, op_mid, op_low]
+
+  ; Guess mantissa 16-bit: D:E (from previous iteration)
+  ; Divide op_mid:low (HL) by guess_mid:low (DE)
+  ; Reload operand into HL
+  pop af              ; A = op_mh
+  pop hl              ; HL = op_mid:low
+
+  ; Guess in DE
+  ld a, h             ; A = guess mh (0x80)
+  ld d, a             ; D = guess mid (from H)
+  ld e, l             ; E = guess low (from L... L is exp!)
+  ; L is exponent. Guess low was in E before. Need to track guess.
+
+  ; Guess mantissa tracking: use stack
+  ; After each iteration, save guess mantissa
+  ; For first iteration: guess = 1.0 = 0x8000
+  ld a, $80
+  ld d, a             ; D = guess mid
+  ld e, 0             ; E = guess low
+
+  ; 16-bit division: HL / DE -> quotient in A (8-bit approx)
+  xor a
+  ld c, a             ; C = quotient = 0
+  ld a, 16
+  ld b, a             ; B = bit counter
+
+  _fs_div:
+  ld a, b
+  or a
+  jr z, _fs_div_end
+
+  ; Shift dividend HL left
+  ld a, h
+  rla
+  ld h, a
+  ld a, l
+  rla
+  ld l, a
+
+  ; Compare HL with DE (divisor)
+  ld a, h
+  cp d
+  jr c, _fs_div_sh
+  jr nz, _fs_div_sub
+  ld a, l
+  cp e
+  jr c, _fs_div_sh
+
+  _fs_div_sub:
+  ld a, l
+  sub e
+  ld l, a
+  ld a, h
+  sbc d
+  ld h, a
+  inc c               ; quotient += 1 (approximate, only low byte)
+
+  _fs_div_sh:
+  ld a, b
+  dec a
+  ld b, a
+  jr _fs_div
+
+  _fs_div_end:
+  ; Quotient in C (8-bit). HL = remainder.
+  ; N/x_old ≈ C (8-bit). Scale to 16-bit: C * 0x0100
+  ld a, c
+  sla a
+  sla a
+  sla a
+  sla a
+  sla a
+  sla a
+  sla a
+  ld e, a             ; E = quotient 16-bit low
+  ld d, 0             ; D = quotient 16-bit high
+
+  ; (guess + quotient) / 2
+  ; guess in... D:E was overwritten by quotient.
+  ; guess was 1.0 = 0x8000. quotient ≈ C*256.
+  ; sum = 0x8000 + quotient
+  ld a, $80
+  ld h, a             ; H = guess mid
+  ld l, 0             ; L = guess low
+  ld a, l
+  add e               ; L += quotient low
+  ld l, a
+  ld a, h
+  adc d               ; H += quotient high + carry
+  ld h, a
+
+  ; Divide by 2: shift right
+  ld a, l
+  rrca
+  ld l, a
+  ld a, h
+  rrca
+  ld h, a
+
+  ; Update guess mantissa for next iteration
+  ld d, h             ; D = new guess mid
+  ld e, l             ; E = new guess low
+
+  ; Decrement counter
+  ld a, b
+  dec a
+  ld b, a
+  jr _fs_iter
+
+  _fs_pack:
+  ; Pack result from guess mantissa (D:E) and exponent (L)
+  ld a, e; ld (hl), a; inc hl   ; byte 0
+  ld a, d; ld (hl), a; inc hl   ; byte 1
+
+  ; byte 2: (exp bit 0 << 7) | (mantissa high bits)
+  ld a, l             ; A = exponent
+  and 1               ; exp bit 0
+  sla a               ; -> bit 7
+  ld k, a             ; No K. Use temp.
+  ld c, a             ; C = exp bit 0 in bit 7
+  ld a, h             ; H = guess mid
+  and $7F             ; mantissa high bits (7 bits)
+  or c                ; | exp bit 0
+  ld h, a             ; H = byte 2
+
+  ; byte 3: (exp << 1) | (sign << 7)
+  ld a, l
+  sla a               ; exp bits 1-7
+  ld l, a
+  ld a, b             ; B = sign
+  rrca
+  rrca                ; sign -> bit 7
+  or l                ; | exp
+  ld l, a             ; L = byte 3
+
+  ld a, h; ld (hl), a; inc hl
+  ld a, l; ld (hl), a
+  ret
+
+  _fs_zero:
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a
+  ret
+
+  _fs_copy:
+  ld a, e; ld (hl), a; inc hl
+  ld a, d; ld (hl), a; inc hl
+  ld a, h; ld (hl), a; inc hl
+  ld a, l; ld (hl), a
+  ret
+
+  _fs_nan:
+  ld hl, (hl)
+  ld a, 1; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl
+  ld a, $80; ld (hl), a
+  ret

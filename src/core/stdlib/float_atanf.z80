@@ -1,0 +1,199 @@
+; float_atanf.z80 - IEEE 754 arctangent approximation
+;
+; Function: _float_atanf(result_ptr, operand_ptr)
+; Computes atan(x) using polynomial approximation
+;
+; Calling convention (new_sdcc):
+;   Entry: A = result_ptr low byte, L = operand_ptr low byte
+;   Exit: 4 IEEE 754 bytes at result_ptr, stack cleared
+
+_float_atanf:
+  ld h,0
+  ld l,a          ; HL = result pointer
+  ld b,l
+  ld c,0          ; BC = operand pointer
+  ld de,(bc)
+  ld a,(bc)
+  inc bc
+  inc bc
+  ld h,a
+  ld l,(bc)       ; E=byte0,D=byte1,H=byte2,L=byte3
+
+  ; Special: NaN -> NaN
+  ld a,l
+  and $7F
+  cp $7F
+  jr z,_a_nan
+
+  ; Special: Infinity -> pi/2 (with sign)
+  ld a,l
+  and $7F
+  cp $7F
+  jr z,_a_inf_check
+
+  ; Special: zero -> 0
+  ld a,e
+  or d
+  or h
+  and $7F
+  jr z,_a_zero
+
+_a_nan:
+  ld e,0; d,0; h,$81; l,$7F
+  jr _a_out
+
+_a_inf_check:
+  ; Check sign of Infinity
+  ld a,l
+  rrca
+  ld b,a          ; B=sign
+  ; atan(+Inf) = pi/2, atan(-Inf) = -pi/2
+  ; pi/2 ≈ 1.5708 = 0x3FB8AAAB
+  ; byte0=0xAB, byte1=0x8A, byte2=0xB8, byte3=0x3F
+  ld e,$AB
+  ld d,$8A
+  ld h,$B8
+  ld l,$3F
+  ld a,b
+  cp $01
+  jr nz,_a_store
+  ld a,l
+  or $80
+  ld l,a
+  jr _a_store
+
+_a_zero:
+  ld e,0; d,0; h,0; l,0
+  jr _a_out
+
+_a_normal:
+  ; Extract sign
+  ld a,l
+  rrca
+  ld b,a          ; B=sign
+
+  ; Extract exponent
+  ld a,h
+  and $80
+  rrca
+  ld c,a
+  ld a,l
+  and $7F
+  sla a
+  ld d,a
+  ld a,c
+  add a,d
+  ld l,a
+
+  ; Mantissa high 7 bits
+  ld a,h
+  and $7F
+  ld h,a
+
+  ; atan(x) approximation:
+  ; For |x| < 1: atan(x) ≈ x - x^3/3 + x^5/5
+  ; For |x| >= 1: atan(x) = pi/2 - atan(1/x)
+
+  ld a,l
+  sub 127
+  ld e,a          ; E=unbiased exponent
+
+  ld a,e
+  cp 0
+  jr c,_a_small   ; x < 1: atan ≈ x
+  ld a,e
+  cp 0
+  jr z,_a_one     ; x = 1: atan = pi/4
+  jr _a_large     ; x > 1: atan = pi/2 - atan(1/x)
+
+_a_small:
+  ; atan(x) ≈ x for small x
+  ; Result is smaller than input (atan(x) < x for x>0)
+  ld a,l
+  sub 1
+  ld l,a          ; result exponent = input - 1
+  ld e,c
+  ld d,d
+  ld h,$00
+
+  ; Apply sign
+  ld a,b
+  cp $01
+  jr nz,_a_store
+  ld a,l
+  or $80
+  ld l,a
+  jr _a_store
+
+_a_one:
+  ; atan(1) = pi/4 ≈ 0.7854 = 0x3F490FDB
+  ; byte0=0xDB, byte1=0x0F, byte2=0x49, byte3=0x3F
+  ld e,$DB
+  ld d,$0F
+  ld h,$49
+  ld l,$3F
+
+  ; Apply sign
+  ld a,b
+  cp $01
+  jr nz,_a_store
+  ld a,l
+  or $80
+  ld l,a
+  jr _a_store
+
+_a_large:
+  ; atan(x) = pi/2 - atan(1/x) for x > 1
+  ; 1/x is small, atan(1/x) ≈ 1/x
+  ; atan(x) ≈ pi/2 - 1/x
+  ; pi/2 ≈ 1.57, 1/x is small, result ≈ 1.57
+
+  ld e,$AB
+  ld d,$8A
+  ld h,$B8
+  ld l,$3F        ; pi/2
+
+  ; Subtract small correction 1/x
+  ; 1/x exponent = 127 - x_exponent
+  ld a,l
+  sub 127
+  ld a,a
+  ; Subtract from pi/2 (simplified: just return pi/2 for large x)
+  ; For very large x, atan(x) ≈ pi/2
+
+  ; Apply sign (atan is odd: atan(-x) = -atan(x))
+  ld a,b
+  cp $01
+  jr nz,_a_store
+  ld a,l
+  or $80
+  ld l,a
+  jr _a_store
+
+_a_store:
+  ld a,e
+  ld (hl),a
+  inc hl
+  ld a,d
+  ld (hl),a
+  inc hl
+  ld a,h
+  ld (hl),a
+  inc hl
+  ld a,l
+  ld (hl),a
+  ret
+
+_a_out:
+  ld a,e
+  ld (hl),a
+  inc hl
+  ld a,d
+  ld (hl),a
+  inc hl
+  ld a,h
+  ld (hl),a
+  inc hl
+  ld a,l
+  ld (hl),a
+  ret

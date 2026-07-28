@@ -66,6 +66,23 @@ float frexpf(float x, int* exponent);
 /* Float scaling - multiply by 2^exponent */
 float ldexpf(float x, int exponent);
 
+/* Trigonometric functions */
+float sinf(float x);
+float cosf(float x);
+float tanf(float x);
+float cotf(float x);
+float asinf(float x);
+float acosf(float x);
+float atanf(float x);
+float atan2f(float y, float x);
+
+/* Exponential and power functions */
+float sqrtf(float x);
+float expf(float x);
+float powf(float base, float exponent);
+float logf(float x);
+float log10f(float x);
+
 /* Internal float functions */
 void _float_abs(float* result, float* a);
 int _float_floor(float* result, float* a);
@@ -73,5 +90,18 @@ int _float_ceil(float* result, float* a);
 void _float_modf(float* result, float* frac, float* a);
 void _float_frexpf(float* mantissa, float* a, int exponent);
 void _float_ldexpf(float* result, float* a, int exponent);
+void _float_sinf(float* result, float* a);
+void _float_cosf(float* result, float* a);
+void _float_tanf(float* result, float* a);
+void _float_cotf(float* result, float* a);
+void _float_asinf(float* result, float* a);
+void _float_acosf(float* result, float* a);
+void _float_atanf(float* result, float* a);
+void _float_atan2f(float* result, float* y, float* x);
+void _float_sqrtf(float* result, float* a);
+void _float_expf(float* result, float* a);
+void _float_powf(float* result, float* base, float* exponent);
+void _float_logf(float* result, float* a);
+void _float_log10f(float* result, float* a);
 
 #endif

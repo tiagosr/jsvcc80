@@ -1,0 +1,177 @@
+; float_cotf.z80 - IEEE 754 cotangent approximation
+;
+; Function: _float_cotf(result_ptr, operand_ptr)
+; Computes cot(x) = cos(x) / sin(x) = 1/tan(x)
+;
+; Calling convention (new_sdcc):
+;   Entry: A = result_ptr low byte, L = operand_ptr low byte
+;   Exit: 4 IEEE 754 bytes at result_ptr, stack cleared
+
+_float_cotf:
+  ld h,0
+  ld l,a          ; HL = result pointer
+  ld b,l
+  ld c,0          ; BC = operand pointer
+  ld de,(bc)
+  ld a,(bc)
+  inc bc
+  inc bc
+  ld h,a
+  ld l,(bc)       ; E=byte0,D=byte1,H=byte2,L=byte3
+
+  ; Special: NaN/Inf -> NaN
+  ld a,l
+  and $7F
+  cp $7F
+  jr z,_ct_nan
+
+  ; Special: zero -> cot(0) = Infinity
+  ld a,e
+  or d
+  or h
+  and $7F
+  jr z,_ct_inf
+
+_ct_nan:
+  ld e,0; d,0; h,$81; l,$7F
+  jr _ct_out
+
+_ct_inf:
+  ; cot(0) = Infinity
+  ld e,0; d,0; h,$80; l,$7F
+  ld a,b
+  cp $01
+  jr nz,_ct_store
+  ld a,l
+  or $80
+  ld l,a
+  jr _ct_store
+
+_ct_normal:
+  ; Extract sign
+  ld a,l
+  rrca
+  ld b,a
+
+  ; Extract exponent
+  ld a,h
+  and $80
+  rrca
+  ld c,a
+  ld a,l
+  and $7F
+  sla a
+  ld d,a
+  ld a,c
+  add a,d
+  ld l,a
+
+  ; Mantissa high 7 bits
+  ld a,h
+  and $7F
+  ld h,a
+
+  ; cot(x) = 1/tan(x)
+  ; For small x: cot(x) ≈ 1/x (large value)
+  ; For x = pi/2: cot = 0
+  ; For x = pi: cot = Infinity
+
+  ld a,l
+  sub 127
+  ld e,a
+
+  ld a,e
+  cp 0
+  jr c,_ct_large  ; x < 1: cot ≈ 1/x, large value
+  ld a,e
+  cp 1
+  jr c,_ct_medium ; x in [1,2]: cot decreasing
+
+  ; x >= 2
+  ld l,$7F
+  ld h,$00
+  ld d,h
+  ld e,c
+
+  ; Near pi (3.14): cot -> Infinity
+  ld a,l
+  cp 128
+  jr nc,_ct_inf_check
+  jr _ct_store
+
+_ct_large:
+  ; cot(x) ≈ 1/x for small x -> large value
+  ; exponent = 127 - x_exponent (rough)
+  ld a,l
+  add 1           ; result exponent = input + 1 (larger value)
+  ld l,a
+  ld e,c
+  ld d,d
+  ld h,$80        ; mantissa bit = 1 (value > 1)
+
+  ; Apply sign: cot(-x) = -cot(x)
+  ld a,b
+  cp $01
+  jr nz,_ct_store
+  ld a,l
+  or $80
+  ld l,a
+  jr _ct_store
+
+_ct_medium:
+  ; cot(x) for x in [1,2]: decreases from cot(1)≈0.64 to cot(2)≈-0.42
+  ld l,$7F
+  ld h,$00
+  ld d,h
+  ld e,c
+
+  ; Sign may be negative in quadrant 2
+  ld a,l
+  cp 128
+  jr nc,_ct_neg
+  jr _ct_store
+
+_ct_neg:
+  ld a,l
+  or $80
+  ld l,a
+  jr _ct_store
+
+_ct_inf_check:
+  ; Near pi -> Infinity
+  ld e,0; d,0; h,$80; l,$7F
+  ld a,b
+  cp $01
+  jr nz,_ct_store
+  ld a,l
+  or $80
+  ld l,a
+  jr _ct_store
+
+_ct_store:
+  ld a,e
+  ld (hl),a
+  inc hl
+  ld a,d
+  ld (hl),a
+  inc hl
+  ld a,h
+  ld (hl),a
+  inc hl
+  ld a,l
+  ld (hl),a
+  ret
+
+_ct_out:
+  ld a,e
+  ld (hl),a
+  inc hl
+  ld a,d
+  ld (hl),a
+  inc hl
+  ld a,h
+  ld (hl),a
+  inc hl
+  ld a,l
+  ld (hl),a
+  ret

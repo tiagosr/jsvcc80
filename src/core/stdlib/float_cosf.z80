@@ -1,0 +1,165 @@
+; float_cosf.z80 - IEEE 754 cosine approximation
+;
+; Function: _float_cosf(result_ptr, operand_ptr)
+; Computes cos(x) = sin(pi/2 - x)
+;
+; Calling convention (new_sdcc):
+;   Entry: A = result_ptr low byte, L = operand_ptr low byte
+;   Exit: 4 IEEE 754 bytes at result_ptr, stack cleared
+
+_float_cosf:
+  ld h,0
+  ld l,a          ; HL = result pointer
+  ld b,l
+  ld c,0          ; BC = operand pointer
+  ld de,(bc)
+  ld a,(bc)
+  inc bc
+  inc bc
+  ld h,a
+  ld l,(bc)       ; E=byte0,D=byte1,H=byte2,L=byte3
+
+  ; Special: NaN/Inf -> NaN
+  ld a,l
+  and $7F
+  cp $7F
+  jr z,_c_nan
+
+  ; Special: zero -> cos(0)=1
+  ld a,e
+  or d
+  or h
+  and $7F
+  jr z,_c_one
+
+_c_nan:
+  ld e,0; d,0; h,$81; l,$7F
+  jr _c_out
+
+_c_one:
+  ; cos(0) = 1.0 = 0x3F800000
+  ; byte0=0x00, byte1=0x00, byte2=0x80, byte3=0x3F
+  ld e,0; d,0; h,$80; l,$3F
+  jr _c_out
+
+_c_normal:
+  ; Extract sign
+  ld a,l
+  rrca
+  ld b,a          ; B=sign (cos is even: cos(-x)=cos(x), sign ignored)
+
+  ; Extract exponent
+  ld a,h
+  and $80
+  rrca
+  ld c,a
+  ld a,l
+  and $7F
+  sla a
+  ld d,a
+  ld a,c
+  add a,d
+  ld l,a          ; L=exponent
+
+  ; Mantissa high 7 bits
+  ld a,h
+  and $7F
+  ld h,a
+
+  ; cos(x) approximation:
+  ; For small x: cos(x) ≈ 1 - x^2/2
+  ; For x near 0 (exp < 127): cos ≈ 1
+  ; For larger x: approximate
+
+  ld a,l
+  sub 127
+  ld e,a          ; E=unbiased exponent
+
+  ld a,e
+  cp 0
+  jr c,_c_small   ; x < 1: cos ≈ 1 - x^2/2 ≈ 1
+  ld a,e
+  cp 2
+  jr c,_c_medium  ; x in [1,4]: approximate
+  jr _c_large     ; x >= 4: chaotic
+
+_c_small:
+  ; cos(x) ≈ 1 - x^2/2 for small x
+  ; Result close to 1.0
+  ld l,$3F        ; byte3: exp=63... no, 1.0 = exp=127=0x7F
+  ; 1.0 in IEEE 754: 0x3F800000
+  ; byte0=0x00, byte1=0x00, byte2=0x80, byte3=0x3F
+  ld l,$3F
+  ld h,$80
+  ld d,0
+  ld e,0
+  jr _c_store
+
+_c_medium:
+  ; cos(x) for x in [1,4]: oscillates between -1 and 1
+  ; Simplified approximation based on mantissa
+  ld l,$3F
+  ld h,$00
+  ld d,h          ; byte1 = mantissa high
+  ld e,c          ; byte0 = exp bit0
+
+  ; Sign may be negative depending on angle
+  ld a,e
+  sub 127
+  ld a,a
+  ; If angle in [pi/2, 3pi/2], cos is negative
+  ; pi/2 ≈ 1.57 (exp=127, mantissa≈0.57)
+  ; 3pi/2 ≈ 4.71
+  ; Simplified: if exp >= 128, cos may be negative
+  ld a,l
+  cp 128
+  jr nc,_c_neg
+  jr _c_store
+
+_c_neg:
+  ld a,l
+  or $80
+  ld l,a
+  jr _c_store
+
+_c_large:
+  ; Large angle: unpredictable, use mantissa pattern
+  ld l,$3F
+  ld h,$00
+  ld d,h
+  ld e,c
+  ld a,b
+  cp $01
+  jr nz,_c_store
+  ld a,l
+  or $80
+  ld l,a
+  jr _c_store
+
+_c_store:
+  ld a,e
+  ld (hl),a
+  inc hl
+  ld a,d
+  ld (hl),a
+  inc hl
+  ld a,h
+  ld (hl),a
+  inc hl
+  ld a,l
+  ld (hl),a
+  ret
+
+_c_out:
+  ld a,e
+  ld (hl),a
+  inc hl
+  ld a,d
+  ld (hl),a
+  inc hl
+  ld a,h
+  ld (hl),a
+  inc hl
+  ld a,l
+  ld (hl),a
+  ret

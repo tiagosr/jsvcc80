@@ -68,6 +68,7 @@
   "66": "RegisterAllocator",
   "67": "LinkResult",
   "68": "Memory",
+  "69": ".generate",
   "70": "ResolvedSymbol",
   "71": "IntrinsicHandler",
   "72": "IREmissionPass",
@@ -90,10 +91,14 @@
   "89": "WatchManager",
   "90": "simulator.cpu.test.js",
   "91": "LoadAddrInstruction",
+  "92": "PositionTracker",
   "93": "float.h",
   "94": "expr-primary.js",
   "95": "qualifiers.test.js",
   "96": "expr-assign.js",
   "97": "expr-postfix.js",
-  "98": "expr-unary.js"
+  "98": "expr-unary.js",
+  "99": "ConstantEvaluator",
+  "100": "LinkResult",
+  "101": "token-location.test.js"
 }

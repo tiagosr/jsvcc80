@@ -16,10 +16,10 @@ See [CHANGELOG.md](CHANGELOG.md)
 - Nothing at the moment
 
 ### 🔜 Next Steps
-1. Implement soft-float trigonometric operations (`sinf`, `cosf`, `tanf`, `cotf`, `asinf`, `acosf`, `atanf`, `atan2f`)
-2. Implement soft-float exponential operations (`expf`, `powf`, `logf`, `log10f`, `sqrtf`)
+1. Fix deep call nesting compilation failure (is it still happening?)
+2. Implement soft-float trigonometric operations (`sinf`, `cosf`, `tanf`, `cotf`, `asinf`, `acosf`, `atanf`, `atan2f`)
+3. Implement soft-float exponential operations (`expf`, `powf`, `logf`, `log10f`, `sqrtf`)
 
 
 ### 📔 Backlog (issues identified during implementation for later priorization)
 - Fix long files issue?
-- Fix deep call nesting compilation failure

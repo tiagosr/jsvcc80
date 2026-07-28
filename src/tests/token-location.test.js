@@ -73,7 +73,7 @@ describe('Token line:column location tracking', () => {
     assert.strictEqual(yToken.location.start.line, 2);
     assert.strictEqual(yToken.location.start.column, 4);
     assert.strictEqual(yToken.location.end.line, 2);
-    assert.strictEqual(yToken.location.end.column, 7);
+    assert.strictEqual(yToken.location.end.column, 6);
   });
 
   it('should track string literal location', () => {

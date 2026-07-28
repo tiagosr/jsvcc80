@@ -1,16 +1,16 @@
 # Graph Report - jsvcc80  (2026-07-28)
 
 ## Corpus Check
-- 158 files · ~162,613 words
+- 161 files · ~167,838 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1328 nodes · 2527 edges · 97 communities (62 shown, 35 thin omitted)
+- 1357 nodes · 2590 edges · 102 communities (64 shown, 38 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 6 edges (avg confidence: 0.83)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `bfe5c3f4`
+- Built from commit: `b6c1d210`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -75,6 +75,7 @@
 - RegisterAllocator
 - LinkResult
 - Memory
+- .generate
 - ResolvedSymbol
 - IntrinsicHandler
 - Simulator
@@ -85,9 +86,12 @@
 - IOHandler
 - WatchManager
 - simulator.cpu.test.js
+- PositionTracker
 - expr-primary.js
 - expr-assign.js
 - expr-postfix.js
+- ConstantEvaluator
+- LinkResult
 
 ## God Nodes (most connected - your core abstractions)
 1. `Z80Codegen` - 49 edges
@@ -120,11 +124,11 @@
 - **Compilation Pipeline Stages** — agents_preprocessor_lexer, agents_parser_cparser, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_backend_z80codegen [INFERRED]
 - **Core Modules Read Order** — agents_compiler_entry, agents_preprocessor_lexer, agents_parser_combinators, agents_parser_cparser, agents_nanopass_il, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_nanopass_register_passes, agents_backend_z80codegen [INFERRED]
 
-## Communities (97 total, 35 thin omitted)
+## Communities (102 total, 38 thin omitted)
 
 ### Community 0 - "AST Node Definitions"
 Cohesion: 0.04
-Nodes (27): AddressOfNode, AnnotatedDeclNode, AttributeNode, BinaryOpNode, CompoundNode, ControlFlowNode, DerefNode, EnumNode (+19 more)
+Nodes (22): AddressOfNode, AttributeNode, BinaryOpNode, CallNode, CaseClauseNode, CompoundNode, ControlFlowNode, DeclNode (+14 more)
 
 ### Community 1 - "Parser Combinators"
 Cohesion: 0.12
@@ -135,20 +139,12 @@ Cohesion: 0.18
 Nodes (6): BinaryDisassembler, BinaryDisassembly, bytesToHex(), disassembleBinary(), disassembleBinaryFromFile(), resolveSymbolForAddress()
 
 ### Community 3 - "Z80 Codegen & IR Base"
-Cohesion: 0.09
-Nodes (14): AllocStackInstruction, BinaryOpInstruction, CallInstruction, FreeStackInstruction, Instruction, JumpIfInstruction, JumpInstruction, LabelInstruction (+6 more)
+Cohesion: 0.06
+Nodes (21): AllocStackInstruction, BinaryOpInstruction, CallIndirectInstruction, CallInstruction, DerefLoadInstruction, DerefStoreInstruction, FreeStackInstruction, IndexedLoadInstruction (+13 more)
 
 ### Community 4 - "Plugin Interfaces"
-Cohesion: 0.07
-Nodes (7): AttributeHandler, CodegenPass, IREmissionPass, OptimizationPass, PluginLoader, PreprocessorExtension, SemanticsPass
-
-### Community 6 - "AST to IR Translation"
 Cohesion: 0.06
-Nodes (8): CodegenError, CompilerError, LexerError, ParserError, SemanticError, PositionTracker, ConstantEvaluator, PreprocessedSource
-
-### Community 8 - "Z80 Code Generator"
-Cohesion: 0.09
-Nodes (3): Z80Codegen, compileToAssembly(), compileToAssembly()
+Nodes (8): AttributeHandler, CodegenPass, IREmissionPass, OptimizationPass, ParserExtension, PluginLoader, PreprocessorExtension, SemanticsPass
 
 ### Community 9 - "Lexer & C Parser"
 Cohesion: 0.22
@@ -175,8 +171,8 @@ Cohesion: 0.18
 Nodes (8): Archive, ArchiveMember, createArchive(), deserializeArchive(), isArchive(), loadArchive(), saveArchive(), serializeArchive()
 
 ### Community 18 - "Object File & Relocations"
-Cohesion: 0.18
-Nodes (11): link(), LinkerOptions, LinkResult, ObjectRelocation, ObjectSymbol, RelocationType, SectionType, SymbolType (+3 more)
+Cohesion: 0.20
+Nodes (12): getCrt0Size(), resolveCrt0Relocations(), link(), LinkerOptions, ObjectRelocation, ObjectSymbol, RelocationType, SectionType (+4 more)
 
 ### Community 19 - "BinaryOpNode"
 Cohesion: 0.31
@@ -187,8 +183,8 @@ Cohesion: 0.20
 Nodes (9): `CB`-prefixed instructions (bit operations), `ED`-prefixed instructions (extended), Flags effect legend, Implicit uses, Instruction set, `IX`/`IY`-indexed instructions (`0xDD`/`0xFD`), Registers, Unprefixed instructions (`0x00`–`0xFF`) (+1 more)
 
 ### Community 22 - "Compiler Options & Loading"
-Cohesion: 0.47
-Nodes (5): __dirname, __filename, main(), parseArgs(), processFile()
+Cohesion: 0.13
+Nodes (20): __dirname, __filename, main(), parseArgs(), processFile(), buildSymbolMap(), formatCodeSection(), formatDataSection() (+12 more)
 
 ### Community 23 - "Binary Reader"
 Cohesion: 0.15
@@ -202,9 +198,17 @@ Nodes (4): buildSymbolMap(), disassembleObjectFile(), disassembleSection(), Obje
 Cohesion: 0.50
 Nodes (4): Linker, Binary Object File Format, Static Library Support, WLA DX Code Generator
 
+### Community 28 - "DerefStoreInstruction"
+Cohesion: 0.10
+Nodes (3): Compiler, CompilerOptions, PassManager
+
 ### Community 29 - "IR Instruction Base"
 Cohesion: 0.11
 Nodes (47): alt(), AltParser, any(), lazy(), LazyParser, lit(), LocationParser, many() (+39 more)
+
+### Community 31 - "Resolved Symbol"
+Cohesion: 0.15
+Nodes (6): Registers, AstToIr, CPegParser, compile(), compile(), compileToAssembly()
 
 ### Community 32 - "PluginRegistry"
 Cohesion: 0.40
@@ -215,16 +219,16 @@ Cohesion: 0.17
 Nodes (4): ASTNode, CastNode, FunctionNode, ParameterNode
 
 ### Community 34 - "CompoundNode"
-Cohesion: 0.10
-Nodes (7): CallIndirectInstruction, DerefLoadInstruction, DerefStoreInstruction, IndexedLoadInstruction, IndexedStoreInstruction, IntrinsicInstruction, LoadAddrInstruction
+Cohesion: 0.18
+Nodes (5): CodegenError, CompilerError, LexerError, ParserError, SemanticError
 
 ### Community 40 - "GotoNode"
-Cohesion: 0.06
-Nodes (13): CallNode, CaseClauseNode, LabelNode, MemberNode, SwitchNode, makeLocation(), AnyParser, LitParser (+5 more)
+Cohesion: 0.05
+Nodes (19): AnnotatedDeclNode, EnumNode, JumpNode, LiteralNode, MemberNode, PragmacNode, PreprocNode, ReturnNode (+11 more)
 
 ### Community 42 - "WlaDxCodegen"
-Cohesion: 0.14
-Nodes (5): createCrt0(), getCrt0Size(), resolveCrt0Relocations(), ObjectFile, ObjectSection
+Cohesion: 0.15
+Nodes (3): createCrt0(), ObjectFile, ObjectSection
 
 ### Community 43 - "IndexedLoadInstruction"
 Cohesion: 0.50
@@ -243,12 +247,12 @@ Cohesion: 0.40
 Nodes (4): Context scale issues, Philosophical findings, Software design issues, Tooling issues
 
 ### Community 54 - "BinaryOpNode"
-Cohesion: 0.12
+Cohesion: 0.13
 Nodes (3): IntrinsicHandler, IntrinsicMap, TranslationState
 
 ### Community 55 - "CaseClauseNode"
-Cohesion: 0.07
-Nodes (12): Registers, CompilerOptions, AstToIr, CPegParser, Lexer, Keywords, TokenType, compile() (+4 more)
+Cohesion: 0.17
+Nodes (3): Lexer, Keywords, TokenType
 
 ### Community 56 - "CompoundNode"
 Cohesion: 0.08
@@ -261,6 +265,10 @@ Nodes (16): arrayDimParser, basicFuncPointerPattern, buildExtendedTypeSpecifier(
 ### Community 65 - "serializeObjectFile"
 Cohesion: 0.32
 Nodes (4): BinaryWriter, encodeString(), saveObjectFile(), serializeObjectFile()
+
+### Community 66 - "RegisterAllocator"
+Cohesion: 0.43
+Nodes (3): compile(), parse(), translate()
 
 ### Community 70 - "ResolvedSymbol"
 Cohesion: 0.73
@@ -277,22 +285,22 @@ Nodes (3): buildPrimaryExpr(), kw(), locFromToken()
 ## Knowledge Gaps
 - **78 isolated node(s):** `🧪 Test Results`, `✅ Completed`, `✅ Completed`, `🔄 In Progress`, `🔜 Next Steps` (+73 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **35 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **38 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Z80Codegen` connect `Z80 Code Generator` to `GotoNode`, `CaseClauseNode`?**
-  _High betweenness centrality (0.057) - this node is a cross-community bridge._
-- **Why does `CallAndMemoryTranslator` connect `LoadAddrInstruction` to `BinaryOpNode`?**
-  _High betweenness centrality (0.027) - this node is a cross-community bridge._
-- **Why does `Lexer` connect `CaseClauseNode` to `GotoNode`?**
-  _High betweenness centrality (0.026) - this node is a cross-community bridge._
+- **Why does `Z80Codegen` connect `Z80 Code Generator` to `GotoNode`, `RegisterAllocator`, `.generate`, `Resolved Symbol`?**
+  _High betweenness centrality (0.050) - this node is a cross-community bridge._
+- **Why does `Lexer` connect `CaseClauseNode` to `GotoNode`, `AST Node Definitions`, `RegisterAllocator`, `Resolved Symbol`?**
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._
+- **Why does `BlockRegisterAllocator` connect `Register Allocator` to `CompoundNode`?**
+  _High betweenness centrality (0.025) - this node is a cross-community bridge._
 - **What connects `🧪 Test Results`, `✅ Completed`, `✅ Completed` to the rest of the system?**
   _78 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AST Node Definitions` be split into smaller, more focused modules?**
-  _Cohesion score 0.03571428571428571 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.04163265306122449 - nodes in this community are weakly interconnected._
 - **Should `Parser Combinators` be split into smaller, more focused modules?**
   _Cohesion score 0.11764705882352941 - nodes in this community are weakly interconnected._
 - **Should `Z80 Codegen & IR Base` be split into smaller, more focused modules?**
-  _Cohesion score 0.0928030303030303 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.061683599419448475 - nodes in this community are weakly interconnected._

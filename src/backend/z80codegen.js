@@ -330,78 +330,118 @@ export class Z80Codegen {
     * Generates a LOAD instruction
     * @param {LoadInstruction} instr - Load instruction
     */
-   generateLoad(instr) {
-     const [dest, src] = instr.operands;
+    generateLoad(instr) {
+      const [dest, src] = instr.operands;
 
-     // Immediate/numeric load
-     if (typeof src === 'number' || (typeof src === 'string' && (/^\d+$/.test(src) || src.startsWith('#')))) {
-       this.codeLines.push(`  ld hl, ${this.formatValue(src)}`);
-       if (dest !== 'hl') {
-         if (/^[a-z]$/.test(dest) && ['a','b','c','d','e','h','l'].includes(dest)) {
-           // 8-bit physical register - store low byte
-           this.codeLines.push(`  ld ${dest}, l`);
-         } else {
-           // Variable/spill - store 16-bit
-           this.codeLines.push(`  ld (${dest}), hl`);
-         }
-       }
-       return;
-     }
-
-      // Load from memory address or register
-      if (typeof src === 'string') {
-        if (src === 'ret_val') {
-          // Return value is in A after a call - zero-extend to 16-bit and store
-          if (dest !== 'a') {
-            this.codeLines.push(`  ld l, a`);
-            this.codeLines.push(`  ld h, 0`);
-            this.codeLines.push(`  ld (${dest}), hl`);
-          }
-          return;
-        }
-        if (src === 'hl') {
-          // Source is HL register - copy to dest
-          if (dest !== 'hl') {
-            this.codeLines.push(`  ld (${dest}), hl`);
-          }
-        } else if (['a','b','c','d','e'].includes(src)) {
-          // Source is 8-bit register - load into HL (low byte only)
-          this.codeLines.push(`  ld l, ${src}`);
-          this.codeLines.push(`  ld h, 0`);
-          if (dest !== 'hl') {
-            this.codeLines.push(`  ld (${dest}), hl`);
-          }
-        } else {
-          // Source is a memory variable/label
-          this.codeLines.push(`  ld hl, (${src})`);
-          if (dest !== 'hl') {
+      // Immediate/numeric load
+      if (typeof src === 'number' || (typeof src === 'string' && (/^\d+$/.test(src) || src.startsWith('#')))) {
+        this.codeLines.push(`  ld hl, ${this.formatValue(src)}`);
+        if (dest !== 'hl') {
+          if (/^[a-z]$/.test(dest) && ['a','b','c','d','e','h','l'].includes(dest)) {
+            // 8-bit physical register - store low byte
+            this.codeLines.push(`  ld ${dest}, l`);
+          } else {
+            // Variable/spill - store 16-bit
             this.codeLines.push(`  ld (${dest}), hl`);
           }
         }
+        return;
       }
-   }
+
+       // Load from memory address or register
+       if (typeof src === 'string') {
+         if (src === 'ret_val') {
+           // Return value is in A after a call - zero-extend to 16-bit and store
+           if (dest !== 'a') {
+             this.codeLines.push(`  ld l, a`);
+             this.codeLines.push(`  ld h, 0`);
+             this.codeLines.push(`  ld (${dest}), hl`);
+           }
+           return;
+         }
+         if (src === 'hl') {
+           // Source is HL register - copy to dest
+           if (dest !== 'hl') {
+             this.codeLines.push(`  ld (${dest}), hl`);
+           }
+         } else if (['a','b','c','d','e'].includes(src)) {
+           // Source is 8-bit register - load into HL (low byte only)
+           this.codeLines.push(`  ld l, ${src}`);
+           this.codeLines.push(`  ld h, 0`);
+           if (dest !== 'hl') {
+             this.codeLines.push(`  ld (${dest}), hl`);
+           }
+         } else if (src.startsWith('flt_')) {
+           // Float label source - load 4 bytes (IEEE 754 single-precision)
+           this.codeLines.push(`  ld hl, (${src})`);    // HL = bytes 0-1
+           this.codeLines.push(`  inc hl`);
+           this.codeLines.push(`  inc hl`);
+           this.codeLines.push(`  ld de, (hl)`);       // DE = bytes 2-3
+           if (dest !== 'hl') {
+             this.codeLines.push(`  ld (${dest}), hl`);
+           }
+           return;
+          } else {
+            // Source is a memory variable/label
+            const size = instr.size || 2;
+            if (size === 4) {
+              // 4-byte load (IEEE 754 single-precision float)
+              this.codeLines.push(`  ld hl, (${src})`);    // HL = bytes 0-1
+              this.codeLines.push(`  inc hl`);
+              this.codeLines.push(`  inc hl`);
+              this.codeLines.push(`  ld de, (hl)`);       // DE = bytes 2-3
+              if (dest !== 'hl') {
+                this.codeLines.push(`  ld (${dest}), hl`);
+              }
+            } else {
+              this.codeLines.push(`  ld hl, (${src})`);
+              if (dest !== 'hl') {
+                this.codeLines.push(`  ld (${dest}), hl`);
+              }
+            }
+          }
+       }
+    }
 
   /**
     * Generates a STORE instruction
     * @param {StoreInstruction} instr - Store instruction
     */
-   generateStore(instr) {
-     const [dest, src] = instr.operands;
+    generateStore(instr) {
+      const [dest, src] = instr.operands;
+      const size = instr.size || 2;
 
-     // Store HL to memory address
-     if (src === 'hl') {
-       this.codeLines.push(`  ld (${dest}), hl`);
-     } else if (['a','b','c','d','e','h','l'].includes(src)) {
-       // 8-bit register - zero-extend to 16-bit then store
-       this.codeLines.push(`  ld l, ${src}`);
-       this.codeLines.push(`  ld h, 0`);
-       this.codeLines.push(`  ld (${dest}), hl`);
-     } else {
-       // src is a memory variable/label holding 16-bit value
-       this.codeLines.push(`  ld hl, (${src})`);
-       this.codeLines.push(`  ld (${dest}), hl`);
-     }
-   }
+      if (size === 4 && src === 'hl') {
+        // Store 4 bytes from HL+DE to memory (IEEE 754 single-precision, little-endian)
+        this.codeLines.push(`  ld hl, (${dest})`);
+        this.codeLines.push(`  ld a, e`);
+        this.codeLines.push(`  ld (hl), a`);    // byte 0 (low)
+        this.codeLines.push(`  inc hl`);
+        this.codeLines.push(`  ld a, d`);
+        this.codeLines.push(`  ld (hl), a`);    // byte 1
+        this.codeLines.push(`  inc hl`);
+        this.codeLines.push(`  ld a, l`);
+        this.codeLines.push(`  ld (hl), a`);    // byte 2
+        this.codeLines.push(`  inc hl`);
+        this.codeLines.push(`  ld a, h`);
+        this.codeLines.push(`  ld (hl), a`);    // byte 3 (high)
+        return;
+      }
+
+      // Store HL to memory address
+      if (src === 'hl') {
+        this.codeLines.push(`  ld (${dest}), hl`);
+      } else if (['a','b','c','d','e','h','l'].includes(src)) {
+        // 8-bit register - zero-extend to 16-bit then store
+        this.codeLines.push(`  ld l, ${src}`);
+        this.codeLines.push(`  ld h, 0`);
+        this.codeLines.push(`  ld (${dest}), hl`);
+      } else {
+        // src is a memory variable/label holding 16-bit value
+        this.codeLines.push(`  ld hl, (${src})`);
+        this.codeLines.push(`  ld (${dest}), hl`);
+      }
+    }
 
   /**
    * Generates a binary operation instruction
@@ -840,7 +880,17 @@ export class Z80Codegen {
       }
 
       // Return value loading (heuristic based on arg types)
-      if (args.length >= 1 && argTypes[0] === 2) {
+      const isFloatReturn = funcName.startsWith('_float_');
+      if (isFloatReturn) {
+        // A holds result pointer (passed as first arg, still in A after call)
+        // Load 4 bytes from pointer: bytes 0-1 into DE, bytes 2-3 into HL
+        codeLines.push(`  ld l, a`);
+        codeLines.push(`  ld h, 0`);
+        codeLines.push(`  ld de, (hl)`);   // DE = bytes 0-1 at result pointer
+        codeLines.push(`  inc hl`);
+        codeLines.push(`  inc hl`);
+        codeLines.push(`  ld hl, (hl)`);   // HL = bytes 2-3 at result pointer+2
+      } else if (args.length >= 1 && argTypes[0] === 2) {
         codeLines.push('  ld a, d');
       } else {
         codeLines.push('  ld a, a');
@@ -1863,100 +1913,136 @@ export class Z80Codegen {
     * Generates a DEREF_STORE instruction (store value to pointer address)
     * @param {DerefStoreInstruction} instr - Dereference store instruction
     */
-   generateDerefStore(instr) {
-     const [ptr, src] = instr.operands;
-     // ptr can be a physical register (hl) or a memory variable/spill location
-     if (ptr === 'hl') {
-       // Address already in HL
-     } else {
-       this.codeLines.push(`  ld hl, (${ptr})`);
-     }
-     // src is a memory location, HL, or 8-bit register holding the value
-     if (src === 'hl') {
-       this.codeLines.push(`  ld (hl), l`);
-       this.codeLines.push(`  inc hl`);
-       this.codeLines.push(`  ld (hl), h`);
-     } else if (['a','b','c','d','e','h','l'].includes(src)) {
-       // 8-bit register - store byte at address in HL
-       this.codeLines.push(`  ld a, ${src}`);
-       this.codeLines.push(`  ld (hl), a`);
-     } else {
-       // src is a memory variable/label holding 16-bit value
-       this.codeLines.push(`  ld hl, (${src})`);
-       this.codeLines.push(`  ld (hl), l`);
-       this.codeLines.push(`  inc hl`);
-       this.codeLines.push(`  ld (hl), h`);
-     }
-   }
+    generateDerefStore(instr) {
+      const [ptr, src] = instr.operands;
+      // ptr can be a physical register (hl) or a memory variable/spill location
+      if (ptr === 'hl') {
+        // Address already in HL
+      } else {
+        this.codeLines.push(`  ld hl, (${ptr})`);
+      }
+      // src is a memory location, HL, or 8-bit register holding the value
+      if (src === 'hl') {
+        // Store 4 bytes from HL+DE (IEEE 754 single-precision, little-endian)
+        this.codeLines.push(`  ld a, e`);
+        this.codeLines.push(`  ld (hl), a`);    // byte 0 (low)
+        this.codeLines.push(`  inc hl`);
+        this.codeLines.push(`  ld a, d`);
+        this.codeLines.push(`  ld (hl), a`);    // byte 1
+        this.codeLines.push(`  inc hl`);
+        this.codeLines.push(`  ld a, l`);
+        this.codeLines.push(`  ld (hl), a`);    // byte 2
+        this.codeLines.push(`  inc hl`);
+        this.codeLines.push(`  ld a, h`);
+        this.codeLines.push(`  ld (hl), a`);    // byte 3 (high)
+      } else if (['a','b','c','d','e','h','l'].includes(src)) {
+        // 8-bit register - store byte at address in HL
+        this.codeLines.push(`  ld a, ${src}`);
+        this.codeLines.push(`  ld (hl), a`);
+      } else {
+        // src is a memory variable/label holding 16-bit value
+        this.codeLines.push(`  ld hl, (${src})`);
+        this.codeLines.push(`  ld (hl), l`);
+        this.codeLines.push(`  inc hl`);
+        this.codeLines.push(`  ld (hl), h`);
+      }
+    }
 
   /**
    * Generates an INDEXED_LOAD instruction (array index with element size)
    * @param {IndexedLoadInstruction} instr - Indexed load instruction
    */
-  generateIndexedLoad(instr) {
-    const [dest, base, index, elemSize] = instr.operands;
-    if (elemSize === 1) {
-      this.codeLines.push(`  ld hl, ${base}`);
-      this.codeLines.push(`  ld e, ${index}`);
-      this.codeLines.push(`  ld d, 0`);
-      this.codeLines.push(`  add hl, de`);
-      this.codeLines.push(`  ld a, (hl)`);
-    } else if (elemSize === 2) {
-      this.codeLines.push(`  ld hl, ${base}`);
-      this.codeLines.push(`  ld de, ${index}`);
-      this.codeLines.push(`  add hl, de`);
-      this.codeLines.push(`  add hl, de`);
-      this.codeLines.push(`  ld a, (hl)`);
-    } else {
-      this.codeLines.push(`  ld hl, ${base}`);
-      this.codeLines.push(`  ld de, ${index}`);
-      this.codeLines.push(`  add hl, de`);
-      const loopLabel = this.label('idx');
-      this.codeLines.push(`${loopLabel}:`);
-      this.codeLines.push(`  add hl, de`);
-      this.codeLines.push(`  dec d`);
-      this.codeLines.push(`  ld a, d`);
-      this.codeLines.push(`  or a`);
-      this.codeLines.push(`  jp nz, ${loopLabel}`);
-      this.codeLines.push(`  ld a, (hl)`);
-    }
-    const reg = this.formatRegister(dest, true);
-    if (reg !== 'a') {
-      this.codeLines.push(`  ld ${reg}, a`);
-    }
-  }
+   generateIndexedLoad(instr) {
+     const [dest, base, index, elemSize] = instr.operands;
+     if (elemSize === 1) {
+       this.codeLines.push(`  ld hl, ${base}`);
+       this.codeLines.push(`  ld e, ${index}`);
+       this.codeLines.push(`  ld d, 0`);
+       this.codeLines.push(`  add hl, de`);
+       this.codeLines.push(`  ld a, (hl)`);
+     } else if (elemSize === 2) {
+       this.codeLines.push(`  ld hl, ${base}`);
+       this.codeLines.push(`  ld de, ${index}`);
+       this.codeLines.push(`  add hl, de`);
+       this.codeLines.push(`  add hl, de`);
+       this.codeLines.push(`  ld a, (hl)`);
+     } else if (elemSize === 4) {
+       // Float array element - load 4 bytes: bytes 0-1 into DE, bytes 2-3 into HL
+       this.codeLines.push(`  ld hl, ${base}`);
+       this.codeLines.push(`  ld e, ${index}`);
+       this.codeLines.push(`  ld d, 0`);
+       this.codeLines.push(`  add hl, de`);
+       this.codeLines.push(`  ld de, (hl)`);   // DE = bytes 0-1
+       this.codeLines.push(`  inc hl`);
+       this.codeLines.push(`  inc hl`);
+       this.codeLines.push(`  ld hl, (hl)`);   // HL = bytes 2-3
+     } else {
+       this.codeLines.push(`  ld hl, ${base}`);
+       this.codeLines.push(`  ld de, ${index}`);
+       this.codeLines.push(`  add hl, de`);
+       const loopLabel = this.label('idx');
+       this.codeLines.push(`${loopLabel}:`);
+       this.codeLines.push(`  add hl, de`);
+       this.codeLines.push(`  dec d`);
+       this.codeLines.push(`  ld a, d`);
+       this.codeLines.push(`  or a`);
+       this.codeLines.push(`  jp nz, ${loopLabel}`);
+       this.codeLines.push(`  ld a, (hl)`);
+     }
+     const reg = this.formatRegister(dest, true);
+     if (reg !== 'a') {
+       this.codeLines.push(`  ld ${reg}, a`);
+     }
+   }
 
   /**
    * Generates an INDEXED_STORE instruction (array index store with element size)
    * @param {IndexedStoreInstruction} instr - Indexed store instruction
    */
-  generateIndexedStore(instr) {
-    const [base, index, src, elemSize] = instr.operands;
-    if (elemSize === 1) {
-      this.codeLines.push(`  ld hl, ${base}`);
-      this.codeLines.push(`  ld e, ${index}`);
-      this.codeLines.push(`  ld d, 0`);
-      this.codeLines.push(`  add hl, de`);
-    } else if (elemSize === 2) {
-      this.codeLines.push(`  ld hl, ${base}`);
-      this.codeLines.push(`  ld de, ${index}`);
-      this.codeLines.push(`  add hl, de`);
-      this.codeLines.push(`  add hl, de`);
-    } else {
-      this.codeLines.push(`  ld hl, ${base}`);
-      this.codeLines.push(`  ld de, ${index}`);
-      this.codeLines.push(`  add hl, de`);
-      const loopLabel = this.label('idx');
-      this.codeLines.push(`${loopLabel}:`);
-      this.codeLines.push(`  add hl, de`);
-      this.codeLines.push(`  dec d`);
-      this.codeLines.push(`  ld a, d`);
-      this.codeLines.push(`  or a`);
-      this.codeLines.push(`  jp nz, ${loopLabel}`);
-    }
-    this.codeLines.push(`  ld a, ${src}`);
-    this.codeLines.push(`  ld (hl), a`);
-  }
+   generateIndexedStore(instr) {
+     const [base, index, src, elemSize] = instr.operands;
+     if (elemSize === 1) {
+       this.codeLines.push(`  ld hl, ${base}`);
+       this.codeLines.push(`  ld e, ${index}`);
+       this.codeLines.push(`  ld d, 0`);
+       this.codeLines.push(`  add hl, de`);
+     } else if (elemSize === 2) {
+       this.codeLines.push(`  ld hl, ${base}`);
+       this.codeLines.push(`  ld de, ${index}`);
+       this.codeLines.push(`  add hl, de`);
+       this.codeLines.push(`  add hl, de`);
+     } else if (elemSize === 4) {
+       // Float array element - store 4 bytes: bytes 0-1 from DE, bytes 2-3 from HL
+       this.codeLines.push(`  ld hl, ${base}`);
+       this.codeLines.push(`  ld e, ${index}`);
+       this.codeLines.push(`  ld d, 0`);
+       this.codeLines.push(`  add hl, de`);
+       this.codeLines.push(`  ld a, e`);
+       this.codeLines.push(`  ld (hl), a`);    // byte 0 (low)
+       this.codeLines.push(`  inc hl`);
+       this.codeLines.push(`  ld a, d`);
+       this.codeLines.push(`  ld (hl), a`);    // byte 1
+       this.codeLines.push(`  inc hl`);
+       this.codeLines.push(`  ld a, l`);
+       this.codeLines.push(`  ld (hl), a`);    // byte 2
+       this.codeLines.push(`  inc hl`);
+       this.codeLines.push(`  ld a, h`);
+       this.codeLines.push(`  ld (hl), a`);    // byte 3 (high)
+     } else {
+       this.codeLines.push(`  ld hl, ${base}`);
+       this.codeLines.push(`  ld de, ${index}`);
+       this.codeLines.push(`  add hl, de`);
+       const loopLabel = this.label('idx');
+       this.codeLines.push(`${loopLabel}:`);
+       this.codeLines.push(`  add hl, de`);
+       this.codeLines.push(`  dec d`);
+       this.codeLines.push(`  ld a, d`);
+       this.codeLines.push(`  or a`);
+       this.codeLines.push(`  jp nz, ${loopLabel}`);
+     }
+     this.codeLines.push(`  ld a, ${src}`);
+     this.codeLines.push(`  ld (hl), a`);
+   }
 
   /**
    * Formats a register name for output

@@ -1,0 +1,48 @@
+; float_isnan.z80 - IEEE 754 NaN detection
+;
+; Function: _float_isnan
+; Returns 1 if operand is NaN, 0 otherwise
+;
+; Calling convention (new_sdcc):
+;   Entry: A = pointer to float operand (address byte)
+;   Exit: A = 1 (NaN) or 0 (not NaN)
+;   Stack: not used, no arguments on stack
+
+_float_isnan:
+  ; Load operand bytes
+  ld hl, (a)          ; HL = bytes 0-1
+  inc hl
+  inc hl
+  ld a, (hl)          ; A = byte 2
+  inc hl
+  ld b, (hl)          ; B = byte 3 (sign + exponent)
+
+  ; NaN: exponent = 0xFF, mantissa != 0
+  ; exponent = ((byte2 & 0x80) >> 7) | ((byte3 & 0x7F) << 1)
+  ; exponent = 0xFF means byte3 & 0x7F = 0x7F AND byte2 & 0x80 = 0x80
+  ld a, b
+  and $7F
+  cp $7F              ; byte3 exp bits = 0x7F?
+  jr nz, _isnan_not   ; not NaN
+
+  ld a, a             ; A = byte 2
+  and $80
+  cp $80              ; byte 2 exp bit 0 = 1?
+  jr nz, _isnan_not   ; not NaN
+
+  ; exponent = 0xFF. Check mantissa != 0.
+  ; mantissa = byte0 | (byte1 << 8) | ((byte2 & 0x7F) << 16)
+  ld a, l             ; byte 0
+  or e                ; byte 1 (E = byte 1 from HL)
+  ld a, a             ; A = byte 2
+  and $7F
+  or a
+  jp nz, _isnan_yes   ; mantissa != 0 -> NaN
+
+_isnan_not:
+  xor a               ; A = 0
+  ret
+
+_isnan_yes:
+  ld a, 1             ; A = 1
+  ret

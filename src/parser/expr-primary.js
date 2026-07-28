@@ -20,7 +20,7 @@ function buildPrimaryExpr(ctx) {
   const identifierOrLiteral = map(
     alt(
       pred(t => t.type === 'IDENTIFIER'),
-      pred(t => t.type === 'INTEGER' || t.type === 'STRING'),
+      pred(t => t.type === 'INTEGER' || t.type === 'FLOAT' || t.type === 'STRING'),
       pred(t => t.type === 'KEYWORD' && t.value === 'NULL')
     ),
     (token) => {
@@ -30,6 +30,9 @@ function buildPrimaryExpr(ctx) {
       }
       if (token.type === 'INTEGER') {
         return new AST.LiteralNode('int', parseInt(token.value, 10), loc);
+      }
+      if (token.type === 'FLOAT') {
+        return new AST.LiteralNode('float', parseFloat(token.value), loc);
       }
       if (token.type === 'STRING') {
         return new AST.LiteralNode('string', token.value, loc);

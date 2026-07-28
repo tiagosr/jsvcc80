@@ -52,15 +52,17 @@ export class Instruction {
  */
 export class LoadInstruction extends Instruction {
   /**
-   * Creates a load instruction
-   * @param {string} dest - Destination (register name or 'mem')
-   * @param {*} src - Source value, label, or immediate
-   * @returns {LoadInstruction}
-   */
-  constructor(dest, src) {
-    super('LOAD', [dest, src]);
-  }
-}
+    * Creates a load instruction
+    * @param {string} dest - Destination (register name or 'mem')
+    * @param {*} src - Source value, label, or immediate
+    * @param {number} [size=2] - Byte size of the value (1=8-bit, 2=16-bit, 4=32-bit)
+    * @returns {LoadInstruction}
+    */
+   constructor(dest, src, size = 2) {
+     super('LOAD', [dest, src]);
+     this.size = size;
+   }
+ }
 
 /**
  * Instruction for storing a value from register to memory
@@ -70,10 +72,12 @@ export class StoreInstruction extends Instruction {
    * Creates a store instruction
    * @param {string} dest - Destination memory location
    * @param {string} src - Source register
+   * @param {number} [size=2] - Byte size of the value (1=8-bit, 2=16-bit, 4=32-bit)
    * @returns {StoreInstruction}
    */
-  constructor(dest, src) {
+  constructor(dest, src, size = 2) {
     super('STORE', [dest, src]);
+    this.size = size;
   }
 }
 
@@ -121,10 +125,10 @@ export class CallInstruction extends Instruction {
     * @param {string} [callingConvention] - Calling convention for the call
     * @returns {CallInstruction}
     */
-   constructor(func, args = [], callingConvention = CALLING_CONVENTION_DEFAULT) {
-     super('CALL', [func, ...args]);
-     this.callingConvention = callingConvention;
-   }
+   constructor(func, args = [], callingConvention = CALLING_CONVENTION_DEFAULT, meta = {}) {
+      super('CALL', [func, ...args], meta);
+      this.callingConvention = callingConvention;
+    }
 }
 
 /**

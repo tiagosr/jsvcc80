@@ -1,0 +1,229 @@
+; float_sub.z80 - IEEE 754 single-precision subtraction
+;
+; Function: _float_sub(result_ptr, op1_ptr, op2_ptr)
+; Computes op1 - op2 by flipping op2 sign and adding
+;
+; Calling convention (new_sdcc, callee-clears-stack):
+;   Entry: A = result_ptr, L = op1_ptr, [SP] = op2_ptr
+;   Exit: 4-byte result at result_ptr
+
+_float_sub:
+  ; Load operands same as float_add
+  push af; pop hl     ; HL = result ptr
+  pop bc              ; BC = op2 ptr
+
+  ; Load op1 bytes onto stack [b3, b2, b1, b0]
+  ld a, l; ld l, a
+  ld de, (l)
+  ld a, e; push af
+  ld a, d; push af
+  inc l; inc l
+  ld a, (l); push af
+  inc l; ld a, (l); push af
+
+  ; Load op2 bytes onto stack
+  ld a, c; ld c, a
+  ld de, (c)
+  ld a, e; push af
+  ld a, d; push af
+  inc c; inc c
+  ld a, (c); push af
+  inc c; ld a, (c); push af
+
+  ; === EXTRACT EXPONENTS ===
+  pop a; ld c, a      ; C = op2_b3
+  pop a; ld h, a      ; H = op1_b3
+
+  ld a, h; and $7F; sla a; ld e, a
+  pop a; and $80; rrca; add a, e; ld d, a      ; D = op1_exp
+  ld a, h; rrca; rrca; ld h, a   ; H = op1 sign
+
+  ld a, c; and $7F; sla a; ld e, a
+  pop a; and $80; rrca; add a, e; ld b, a      ; B = op2_exp
+  ld a, c; rrca; rrca; ld c, a   ; C = op2 sign
+
+  ; === FLIP OP2 SIGN FOR SUBTRACTION ===
+  ; op1 - op2 = op1 + (-op2)
+  ; Flip op2 sign: XOR with 0x80
+  ld a, c
+  xor $80
+  ld c, a             ; C = flipped op2 sign
+
+  ; === SPECIAL CASES ===
+  ; NaN propagation: if either operand is NaN, result is NaN
+  ld a, d; cp $FF; jr nz, _fa_chk_op2
+  ld a, l; or e
+  pop a; and $F8; or a
+  jp nz, _fs_nan_out
+  ; op1 is Inf. op1 - op2:
+  ;   Inf - x = Inf (x != Inf)
+  ;   Inf - Inf = NaN
+  ;   Inf - (-Inf) = Inf
+  jr _fs_inf_handler
+
+_fa_chk_op2:
+  ld a, b; cp $FF; jr nz, _fs_add
+  ld a, e; or l
+  pop a; and $F8; or a
+  jp nz, _fs_nan_out
+  ; op2 is Inf. op1 - Inf:
+  ;   x - Inf = -Inf (x != Inf)
+  ;   Inf - Inf = NaN
+  ;   (-Inf) - Inf = -Inf
+  ; Check op1 Inf
+  ld a, d; cp $FF; jr nz, _fs_neg_inf_out
+  ld a, h; xor c; jp z, _fs_nan_out; jp nz, _fs_neg_inf_out
+
+_fs_inf_handler:
+  ld a, b; cp $FF; jr nz, _fs_inf_out
+  ld a, h; xor c; jp z, _fs_nan_out; jp nz, _fs_inf_out
+
+_fs_inf_out:
+  ; Result = +Infinity (op1 sign after flip)
+  ld hl, (hl)
+  ld a, 0; ld (hl), a; inc hl; ld (hl), a; inc hl; ld (hl), a; inc hl
+  ld a, h; sla a; ld (hl), a
+  ret
+
+_fs_neg_inf_out:
+  ; Result = -Infinity
+  ld hl, (hl)
+  ld a, 0; ld (hl), a; inc hl; ld (hl), a; inc hl; ld (hl), a; inc hl
+  ld a, $80; ld (hl), a
+  ret
+
+_fs_nan_out:
+  ld hl, (hl)
+  ld a, 1; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl; ld (hl), a; inc hl
+  ld a, $80; ld (hl), a
+  ret
+
+_fs_add:
+  ; === NORMAL SUBTRACTION (now treated as addition with flipped op2 sign) ===
+  ; Same logic as float_add with C = flipped op2 sign
+  ld a, d; sub b; jp c, _fs_swap; ld e, a
+
+  ; Load mantissas onto stack [op2_mh, op2_mid, op2_low, op1_mh, op1_mid, op1_low]
+  ld a, l; ld l, a
+  ld de, (l)
+  ld a, e; push af
+  ld a, d; push af
+  inc l; inc l
+  ld a, (l); and $7F; or $80; push af
+
+  ld a, c; ld c, a
+  inc c; inc c
+  ld a, (c); and $7F; or $80; push af
+  ld a, c; ld c, a
+  ld de, (c)
+  ld a, e; push af
+  ld a, d; push af
+
+  ; Stack: [op2_low, op2_mid, op2_mh, op1_mh, op1_mid, op1_low]
+
+  ; Shift op2 mantissa right by E bits
+  pop a; pop hl       ; A=op2_mh, HL=op2_mid:low
+  ld a, e; or a; jr z, _fs_shift_end
+  _fs_shift_loop:
+  rrca; ld a, l; rrca; ld l, a; ld a, h; rrca; ld h, a
+  ld a, e; dec a; ld e, a; jr nz, _fs_shift_loop
+
+_fs_shift_end:
+  push hl; push af    ; save shifted op2
+
+  ; Load op1 mantissa
+  pop a; pop hl       ; A=op1_mh, HL=op1_mid:low
+
+  ; Add mantissas (signs already flipped for subtraction)
+  ld a, h; xor c; jp z, _fs_add_mantissas
+  ; Different signs -> subtract (this is the normal case for subtraction of same-sign operands)
+  pop af; pop hl      ; restore op2
+  ; Subtract op2 from op1
+  ld a, l; sub h; ld l, a
+  ld a, h; sbc l; ld h, a
+  ld a, a; sbc a
+  push hl; push af
+
+  ; Normalize
+  pop af; pop hl
+  ld a, a; and $80; jp nz, _fs_norm_ov
+  jr _fs_norm_left
+
+_fs_norm_left:
+  pop af; pop hl
+  ld a, a; and $80; jp nz, _fs_norm_done
+  sla a; ld a, h; rla; ld h, a; ld a, l; rla; ld l, a
+  ld a, d; dec a; ld d, a
+  jr _fs_norm_left
+
+_fs_norm_done:
+  push hl; push af
+  jr _fs_pack
+
+_fs_norm_ov:
+  rrca; ld a, l; rrca; ld l, a; ld a, h; rrca; ld h, a
+  ld a, d; inc a; ld d, a
+  push hl; push af
+
+_fs_pack:
+  pop af; pop hl      ; A=mh, HL=mid:low
+  ld a, l; push af
+  ld a, h; push af
+  ld a, a; and $7F
+  ld e, a
+  ld a, d; and $80; rrca; add a, e; push af
+  ld a, d; and $7F
+  ld e, a
+  ld a, h; sla a; add a, e; push af
+  ld hl, (hl)
+  pop a; ld (hl), a; inc hl
+  pop a; ld (hl), a; inc hl
+  pop a; ld (hl), a; inc hl
+  pop a; ld (hl), a
+  ret
+
+_fs_swap:
+  ld a, b; sub d; ld e, a
+  ld a, c; ld h, a
+  ; Reload op2 as base, op1 as shifted
+  ld a, c; ld c, a
+  ld de, (c)
+  ld a, e; push af; ld a, d; push af
+  inc c; inc c
+  ld a, (c); and $7F; or $80; push af
+  ld a, l; ld l, a
+  ld de, (l)
+  ld a, e; push af; ld a, d; push af
+  inc l; inc l
+  ld a, (l); and $7F; or $80; push af
+  ; Stack: [op1_mh, op1_mid, op1_low, op2_mh, op2_mid, op2_low]
+  pop a; pop hl       ; A=op1_mh, HL=op1_mid:low (the smaller exponent operand)
+  ld a, e; or a; jr z, _fs_shift_end
+  jr _fs_shift_loop
+  push hl; push af
+  pop a; pop hl       ; A=op2_mh, HL=op2_mid:low
+  ld a, l; add h; ld l, a
+  ld a, h; adc l; ld h, a
+  ld a, a; adc a
+  push hl; push af
+  pop af; pop hl
+  ld a, a; and $80; jp nz, _fs_norm_ov
+  jr _fs_norm_left
+  pop af; pop hl
+  sla a; ld a, h; rla; ld h, a; ld a, l; rla; ld l, a
+  ld a, b; dec a; ld b, a
+  jr _fs_norm_left
+  push hl; push af
+  pop af; pop hl
+  ld a, l; push af; ld a, h; push af
+  ld a, a; and $7F; ld e, a
+  ld a, b; and $80; rrca; add a, e; push af
+  ld a, b; and $7F; ld e, a
+  ld a, h; sla a; add a, e; push af
+  ld hl, (hl)
+  pop a; ld (hl), a; inc hl
+  pop a; ld (hl), a; inc hl
+  pop a; ld (hl), a; inc hl
+  pop a; ld (hl), a
+  ret

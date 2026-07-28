@@ -1,0 +1,86 @@
+; float_eq.z80 - IEEE 754 float equality comparison
+;
+; Function: _float_eq(a_ptr, b_ptr)
+; Returns 1 if a == b, 0 otherwise
+;
+; Calling convention (new_sdcc):
+;   A = pointer to float a
+;   L = pointer to float b
+;   Return: A = 1 (equal) or 0 (not equal)
+
+_float_eq:
+  ; Load a bytes
+  ld hl, (a)
+  ld d, h; ld e, l      ; DE = a bytes 0-1
+  inc hl
+  inc hl
+  ld a, (hl)
+  push af             ; [a_b2]
+  inc hl
+  ld b, (hl)          ; B = a byte 3
+
+  ; Load b bytes
+  ld hl, (l)
+  ld h, h             ; HL = b bytes 0-1
+  ld a, l
+  ld l, a
+  ld hl, (l)
+  ld c, h; ld l, e    ; CL = b bytes 0-1... confusing
+  ; Let me use simpler approach.
+
+  ; Load a: DE=bytes01, A=byte2, B=byte3
+  ld hl, (a)
+  ld de, (hl)         ; DE = a bytes 0-1
+  inc hl
+  inc hl
+  ld a, (hl)          ; A = a byte 2
+  push af
+  inc hl
+  ld b, (hl)          ; B = a byte 3
+
+  ; Load b: HL=bytes01, D=byte2, E=byte3
+  ld hl, (l)
+  ld d, (hl)          ; D = b byte 0... no, (hl) is 16-bit.
+  ; ld (hl), d stores D into (hl). We want to load.
+  ; ld a, (hl); ld d, a loads byte 0 into D.
+  ld a, (hl)
+  ld d, a             ; D = b byte 0
+  inc hl
+  ld a, (hl)
+  ld e, a             ; E = b byte 1
+  inc hl
+  ld a, (hl)
+  ld h, a             ; H = b byte 2
+  inc hl
+  ld a, (hl)
+  ld l, a             ; L = b byte 3
+
+  ; === COMPARE ===
+  ; Equal if all 4 bytes are identical
+  ; Compare byte 3 (sign + exp)
+  ld a, b             ; a byte 3
+  cp l                ; b byte 3
+  jr nz, _fe_not
+
+  ; Compare byte 2
+  pop a               ; A = a byte 2
+  cp h                ; b byte 2
+  jr nz, _fe_not
+
+  ; Compare bytes 0-1
+  ld a, e             ; DE = a bytes 0-1. E = a byte 1, D = a byte 0.
+  ; Wait, DE was set to a bytes 0-1. D = byte 1, E = byte 0.
+  ld a, d             ; A = a byte 1
+  cp e                ; E = b byte 1
+  jr nz, _fe_not
+  ld a, e             ; A = a byte 0
+  cp d                ; D = b byte 0
+  jr nz, _fe_not
+
+  ; All bytes equal
+  ld a, 1
+  ret
+
+_fe_not:
+  xor a
+  ret

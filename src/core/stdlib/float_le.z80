@@ -1,0 +1,63 @@
+; float_le.z80 - IEEE 754 float less-or-equal comparison
+;
+; Function: _float_le(a_ptr, b_ptr)
+; Returns 1 if a <= b, 0 otherwise
+;
+; Calling convention (new_sdcc):
+;   A = pointer to float a
+;   L = pointer to float b
+;   Return: A = 1 (a <= b) or 0 (a > b)
+
+_float_le:
+  ; a <= b = NOT (a > b)
+  ; Compute a > b, then invert.
+
+  ld hl, (a)
+  inc hl
+  inc hl
+  ld de, (hl)         ; DE = a bytes 2-3
+
+  ld hl, (l)
+  inc hl
+  inc hl
+  ld bc, (hl)         ; BC = b bytes 2-3
+
+  ; NaN check: a (DE)
+  ld a, d; and $7F; cp $7F; jr nz, _fle_check_b_nan
+  ld a, e; and $80; cp $80; jr nz, _fle_check_b_nan
+  xor a; ret          ; a is NaN -> a <= b = 0
+
+_fle_check_b_nan:
+  ld a, b; and $7F; cp $7F; jr nz, _fle_compare
+  ld a, c; and $80; cp $80; jr nz, _fle_compare
+  xor a; ret          ; b is NaN -> a <= b = 0
+
+_fle_compare:
+  ld a, d; rrca; rrca; ld h, a   ; H = a sign
+  ld a, b; rrca; rrca; ld c, a   ; C = b sign
+
+  ld a, h; xor c; jp nz, _fle_sign_diff
+
+  ld a, d; cp b; jr c, _fle_a_less; jr nz, _fle_a_greater
+  ld hl, (a)
+  ld a, h; cp c; jr c, _fle_a_less; jr nz, _fle_a_greater
+  ld a, l; cp l; jr c, _fle_a_less; jp nz, _fle_a_greater
+
+_fle_sign_diff:
+  ; a <= b when a is negative and b is positive (H=1, C=0)
+  ; or when signs are same (handled above)
+  ; H=1, C=0 -> 1. H=0, C=1 -> 0.
+  ld a, h; and c; jp z, _fle_no; ld a, 1; ret
+
+_fle_a_less:
+  ; a < b. For same sign:
+  ; If positive (H=0): a < b -> a <= b -> 1
+  ; If negative (H=1): a < b means a is more negative -> a < b -> a <= b -> 0
+  ld a, h; xor $01; ret
+
+_fle_a_greater:
+  ; a > b. a <= b = 0.
+  xor a; ret
+
+_fle_no:
+  xor a; ret

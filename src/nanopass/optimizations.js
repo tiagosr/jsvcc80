@@ -823,14 +823,27 @@ class BlockRegisterAllocator {
   }
 
   /**
-   * Allocates a call instruction
-   * @param {CallInstruction} instr - Call instruction
-   */
-  allocateCall(instr) {
-    this.vregToPreg.clear();
-    this.pregToVreg.clear();
-    this.usedRegs = [];
-  }
+    * Allocates a call instruction
+    * @param {CallInstruction} instr - Call instruction
+    */
+   allocateCall(instr) {
+     const isFloatCall = instr.meta?.floatResult === true;
+     if (isFloatCall) {
+       const resultVreg = instr.operands[0];
+       this.vregToPreg.clear();
+       this.pregToVreg.clear();
+       this.usedRegs = [];
+       if (resultVreg && this.isVreg(resultVreg)) {
+         this.vregToPreg.set(resultVreg, 'hl');
+         this.pregToVreg.set('hl', resultVreg);
+         this.usedRegs.push('hl');
+       }
+     } else {
+       this.vregToPreg.clear();
+       this.pregToVreg.clear();
+       this.usedRegs = [];
+     }
+   }
 
   /**
    * Allocates registers for a call indirect instruction (function pointer call)

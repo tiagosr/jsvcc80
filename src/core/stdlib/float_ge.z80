@@ -1,0 +1,60 @@
+; float_ge.z80 - IEEE 754 float greater-or-equal comparison
+;
+; Function: _float_ge(a_ptr, b_ptr)
+; Returns 1 if a >= b, 0 otherwise
+;
+; Calling convention (new_sdcc):
+;   A = pointer to float a
+;   L = pointer to float b
+;   Return: A = 1 (a >= b) or 0 (a < b)
+
+_float_ge:
+  ; a >= b = NOT (a < b)
+
+  ld hl, (a)
+  inc hl
+  inc hl
+  ld de, (hl)         ; DE = a bytes 2-3
+
+  ld hl, (l)
+  inc hl
+  inc hl
+  ld bc, (hl)         ; BC = b bytes 2-3
+
+  ; NaN check: a (DE)
+  ld a, d; and $7F; cp $7F; jr nz, _fge_check_b_nan
+  ld a, e; and $80; cp $80; jr nz, _fge_check_b_nan
+  xor a; ret
+
+_fge_check_b_nan:
+  ld a, b; and $7F; cp $7F; jr nz, _fge_compare
+  ld a, c; and $80; cp $80; jr nz, _fge_compare
+  xor a; ret
+
+_fge_compare:
+  ld a, d; rrca; rrca; ld h, a   ; H = a sign
+  ld a, b; rrca; rrca; ld c, a   ; C = b sign
+
+  ld a, h; xor c; jp nz, _fge_sign_diff
+
+  ld a, d; cp b; jr c, _fge_a_less; jr nz, _fge_a_greater
+  ld hl, (a)
+  ld a, h; cp c; jr c, _fge_a_less; jr nz, _fge_a_greater
+  ld a, l; cp l; jr c, _fge_a_less; jp nz, _fge_a_greater
+
+_fge_sign_diff:
+  ; a >= b when a is positive and b is negative (H=0, C=1)
+  ld a, h; xor $01; and c; jp z, _fge_no; ld a, 1; ret
+
+_fge_a_less:
+  ; a < b. For same sign:
+  ; If positive: a < b -> a >= b -> 0
+  ; If negative: a < b means a is more negative -> a < b -> a >= b -> 1
+  ld a, h; ret
+
+_fge_a_greater:
+  ; a > b. a >= b = 1.
+  ld a, 1; ret
+
+_fge_no:
+  xor a; ret

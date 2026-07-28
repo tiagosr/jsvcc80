@@ -247,6 +247,45 @@ export class LexerCore {
   }
 
   /**
+   * Reads a float literal
+   * @returns {Token} Float token
+   */
+  readFloat() {
+    let value = '';
+
+    // Read integer part (may be empty for .NNN format)
+    while (/[0-9]/.test(this.peek())) {
+      value += this.advance();
+    }
+
+    // Read decimal point and fractional part
+    if (this.peek() === '.') {
+      value += this.advance();
+      while (/[0-9]/.test(this.peek())) {
+        value += this.advance();
+      }
+    }
+
+    // Read exponent part
+    if (this.peek() && /[eE]/.test(this.peek())) {
+      value += this.advance();
+      if (this.peek() && /[+-]/.test(this.peek())) {
+        value += this.advance();
+      }
+      while (/[0-9]/.test(this.peek())) {
+        value += this.advance();
+      }
+    }
+
+    // Read optional f/F suffix
+    if (this.peek() && /[fF]/.test(this.peek())) {
+      value += this.advance();
+    }
+
+    return this.makeToken(TokenType.FLOAT, value);
+  }
+
+  /**
    * Reads an identifier or keyword, expanding macros if applicable
    * @returns {Token|Token[]} Single token or array of tokens from macro expansion
    */
@@ -304,6 +343,15 @@ export class LexerCore {
     // String literal
     if (ch === '"' || ch === '\'') {
       return this.readString();
+    }
+
+    // Float literal
+    if (/^[0-9]/.test(ch) && this.peekNext(1) === '.') {
+      return this.readFloat();
+    }
+
+    if (ch === '.' && this.peekNext(1) && /[0-9]/.test(this.peekNext(1))) {
+      return this.readFloat();
     }
 
     // Integer literal

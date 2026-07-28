@@ -148,6 +148,22 @@ export class Lexer extends LexerCore {
       return this.readString();
     }
 
+    // Float literal - check if digit sequence is followed by decimal point and digit
+    if (/^[0-9]/.test(ch)) {
+      let pos = this.pos + 1;
+      let hasDot = false;
+      while (pos < this.source.length && /[0-9]/.test(this.source[pos])) {
+        pos++;
+      }
+      if (pos < this.source.length && this.source[pos] === '.' && pos + 1 < this.source.length && /[0-9]/.test(this.source[pos + 1])) {
+        return this.readFloat();
+      }
+    }
+
+    if (ch === '.' && this.peekNext(1) && /[0-9]/.test(this.peekNext(1))) {
+      return this.readFloat();
+    }
+
     // Integer literal
     if (/^[0-9]/.test(ch)) {
       return this.readInteger();

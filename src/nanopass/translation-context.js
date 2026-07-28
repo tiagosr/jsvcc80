@@ -1,7 +1,7 @@
 import * as AST from '../ast/nodes.js';
 import * as IL from './il.js';
 import { TypeRegistry } from './type-registry.js';
-import { StringLiteralCollector } from './string-literals.js';
+import { StringLiteralCollector, FloatLiteralCollector } from './string-literals.js';
 import { TranslationState } from './state.js';
 import { StatementTranslator } from './statement-translator.js';
 import { ControlFlowTranslator } from './control-flow.js';
@@ -46,6 +46,7 @@ export class TranslationContext {
   constructor() {
     this.typeRegistry = new TypeRegistry();
     this.stringCollector = new StringLiteralCollector();
+    this.floatCollector = new FloatLiteralCollector();
     this.state = new TranslationState();
     this.functionRegistry = new Map();
 
@@ -126,7 +127,14 @@ export class TranslationContext {
       }
     }
 
-    globals.push(...this.stringCollector.stringData);
+    // Collect float literals from functions
+    for (const node of ast.statements) {
+      if (node instanceof AST.FunctionNode) {
+        this.floatCollector.collectFloatLiterals(node);
+      }
+    }
+
+    globals.push(...this.stringCollector.stringData, ...this.floatCollector.floatData);
     program.globals = globals;
     return program;
   }

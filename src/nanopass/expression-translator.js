@@ -1,5 +1,6 @@
 import * as AST from '../ast/nodes.js';
 import * as IL from './il.js';
+import { CALLING_CONVENTION_DEFAULT } from './il.js';
 
 /**
  * Translates expression nodes to IR basic blocks.
@@ -120,6 +121,13 @@ export class ExpressionTranslator {
       block.add(new IL.LoadAddrInstruction(temp, label));
       return { blocks: [block], result: temp };
     }
+    if (literal.type === 'float') {
+      const label = this.context.floatCollector.emitFloatData(literal.value);
+      const temp = this.context.state.temp();
+      const block = new IL.BasicBlock(this.context.state.label('flt'));
+      block.add(new IL.LoadAddrInstruction(temp, label));
+      return { blocks: [block], result: temp, isFloat: true };
+    }
     const temp = this.context.state.temp();
     const block = new IL.BasicBlock(this.context.state.label('lit'));
     block.add(new IL.LoadInstruction(temp, literal.value));
@@ -146,8 +154,10 @@ export class ExpressionTranslator {
     }
     const temp = this.context.state.temp();
     const block = new IL.BasicBlock(this.context.state.label('ident'));
-    block.add(new IL.LoadInstruction(temp, ident.name));
-    return { blocks: [block], result: temp };
+    const isFloat = sym && sym.type === 'float';
+    const loadSize = isFloat ? 4 : 2;
+    block.add(new IL.LoadInstruction(temp, ident.name, loadSize));
+    return { blocks: [block], result: temp, isFloat };
   }
 
   /**
@@ -185,14 +195,51 @@ export class ExpressionTranslator {
       return this.translateCompoundAssignment(binOp);
     }
 
+    const leftResult = this.translateExpression(binOp.left);
+    const rightResult = this.translateExpression(binOp.right);
+
+    const isFloatOp = leftResult.isFloat || rightResult.isFloat;
+    if (isFloatOp) {
+      const floatOpMapping = {
+        '+': '_float_add', '-': '_float_sub', '*': '_float_mul',
+        '/': '_float_div', '%': '_float_mod'
+      };
+      const floatCmpMapping = {
+        'eq': '_float_eq', 'ne': '_float_ne',
+        'lt': '_float_lt', 'gt': '_float_gt',
+        'le': '_float_le', 'ge': '_float_ge'
+      };
+      const funcName = floatOpMapping[binOp.op];
+      if (funcName) {
+        const resultLabel = this.context.floatCollector.emitFloatData(0);
+        const resultTemp = this.context.state.temp();
+        const block = new IL.BasicBlock(this.context.state.label('fltop'));
+        block.add(new IL.LoadAddrInstruction(resultTemp, resultLabel));
+        block.add(new IL.CallInstruction(funcName, resultTemp, leftResult.result, rightResult.result, CALLING_CONVENTION_DEFAULT, { floatResult: true }));
+        return {
+          blocks: [...leftResult.blocks, ...rightResult.blocks, block],
+          result: resultTemp,
+          isFloat: true
+        };
+      }
+      const cmpFuncName = floatCmpMapping[binOp.op];
+      if (cmpFuncName) {
+        const dest = this.context.state.temp();
+        const block = new IL.BasicBlock(this.context.state.label('fltcmp'));
+        block.add(new IL.CallInstruction(cmpFuncName, dest, leftResult.result, rightResult.result, CALLING_CONVENTION_DEFAULT));
+        return {
+          blocks: [...leftResult.blocks, ...rightResult.blocks, block],
+          result: dest,
+          isFloat: false
+        };
+      }
+    }
+
     const opMapping = {
       '+': 'add', '-': 'sub', '*': 'mul', '/': 'div', '%': 'mod',
       '<<': 'shl', '>>': 'shr'
     };
     const mappedOp = opMapping[binOp.op] || binOp.op;
-
-    const leftResult = this.translateExpression(binOp.left);
-    const rightResult = this.translateExpression(binOp.right);
     const dest = this.context.state.temp();
     const block = new IL.BasicBlock(this.context.state.label('binop'));
     block.add(new IL.BinaryOpInstruction(dest, mappedOp, leftResult.result, rightResult.result));
@@ -335,13 +382,18 @@ export class ExpressionTranslator {
        };
      }
 
-     // Handle function pointer assignment: store the address
-     if (isFuncPtrTarget) {
-       block.add(new IL.LoadAddrInstruction('fp_addr', target));
-       block.add(new IL.BinaryOpInstruction('fp_addr', 'addr', 'fp_addr', rightResult.result));
-     } else {
-       block.add(new IL.StoreInstruction(target, rightResult.result));
-     }
+      // Handle function pointer assignment: store the address
+      if (isFuncPtrTarget) {
+        block.add(new IL.LoadAddrInstruction('fp_addr', target));
+        block.add(new IL.BinaryOpInstruction('fp_addr', 'addr', 'fp_addr', rightResult.result));
+      } else {
+        const targetSym = this.context.state.symbolTable.lookup(target);
+        if (targetSym && targetSym.type === 'float') {
+          block.add(new IL.StoreInstruction(target, rightResult.result, 4));
+        } else {
+          block.add(new IL.StoreInstruction(target, rightResult.result));
+        }
+      }
       return {
         blocks: [...rightResult.blocks, block],
         result: rightResult.result
@@ -354,49 +406,79 @@ export class ExpressionTranslator {
     * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and result register
     */
    translateCompoundAssignment(compAssign) {
-    const compoundOpToIL = {
-      '+': 'add', '-': 'sub', '*': 'mul', '/': 'div', '%': 'mod',
-      '&': 'and', '|': 'or', '^': 'xor',
-      '<<': 'shl', '>>': 'shr'
-    };
-    const baseOp = compoundOpToIL[compAssign.op.replace('=', '')];
+     const compoundOpToIL = {
+       '+': 'add', '-': 'sub', '*': 'mul', '/': 'div', '%': 'mod',
+       '&': 'and', '|': 'or', '^': 'xor',
+       '<<': 'shl', '>>': 'shr'
+     };
+     const baseOp = compoundOpToIL[compAssign.op.replace('=', '')];
 
-    const rightResult = this.translateExpression(compAssign.right);
-    const blocks = [...rightResult.blocks];
+     const rightResult = this.translateExpression(compAssign.right);
+     const blocks = [...rightResult.blocks];
 
-    let varName = null;
-    let isFuncPtrTarget = false;
-    if (compAssign.left instanceof AST.IdentifierNode) {
-      varName = compAssign.left.name;
-      const targetSym = this.context.state.symbolTable.lookup(varName);
-      if (targetSym && (targetSym.isFunctionPointer || targetSym.type === 'function_pointer')) {
-        isFuncPtrTarget = true;
+     let varName = null;
+     let isFuncPtrTarget = false;
+     let isFloatVar = false;
+     if (compAssign.left instanceof AST.IdentifierNode) {
+       varName = compAssign.left.name;
+       const targetSym = this.context.state.symbolTable.lookup(varName);
+       if (targetSym && (targetSym.isFunctionPointer || targetSym.type === 'function_pointer')) {
+         isFuncPtrTarget = true;
+       }
+       if (targetSym && targetSym.type === 'float') {
+         isFloatVar = true;
+       }
+     }
+
+      if (varName && isFloatVar) {
+        const compoundOpToFloatFunc = {
+          '+': '_float_add', '-': '_float_sub', '*': '_float_mul',
+          '/': '_float_div', '%': '_float_mod'
+        };
+        const floatFuncName = compoundOpToFloatFunc[compAssign.op.replace('=', '')];
+        if (floatFuncName) {
+          const resultLabel = this.context.floatCollector.emitFloatData(0);
+          const resultTemp = this.context.state.temp();
+          const origTemp = this.context.state.temp();
+          const loadBlock = new IL.BasicBlock(this.context.state.label('compassign_load'));
+          const opBlock = new IL.BasicBlock(this.context.state.label('compassign_op'));
+          const storeBlock = new IL.BasicBlock(this.context.state.label('compassign_store'));
+
+          loadBlock.add(new IL.LoadAddrInstruction(resultTemp, resultLabel));
+          loadBlock.add(new IL.LoadInstruction(origTemp, varName));
+          opBlock.add(new IL.CallInstruction(floatFuncName, resultTemp, origTemp, rightResult.result, CALLING_CONVENTION_DEFAULT, { floatResult: true }));
+          storeBlock.add(new IL.StoreInstruction(varName, resultTemp, 4));
+
+          return {
+            blocks: [...blocks, loadBlock, opBlock, storeBlock],
+            result: resultTemp
+          };
+        }
       }
-    }
 
-    if (varName) {
-      const loadBlock = new IL.BasicBlock(this.context.state.label('compassign_load'));
-      const opBlock = new IL.BasicBlock(this.context.state.label('compassign_op'));
-      const storeBlock = new IL.BasicBlock(this.context.state.label('compassign_store'));
+     if (varName) {
+       const loadBlock = new IL.BasicBlock(this.context.state.label('compassign_load'));
+       const opBlock = new IL.BasicBlock(this.context.state.label('compassign_op'));
+       const storeBlock = new IL.BasicBlock(this.context.state.label('compassign_store'));
 
-      const origTemp = this.context.state.temp();
-      loadBlock.add(new IL.LoadInstruction(origTemp, varName));
+       const origTemp = this.context.state.temp();
+       loadBlock.add(new IL.LoadInstruction(origTemp, varName));
 
-      const resultTemp = this.context.state.temp();
-      opBlock.add(new IL.BinaryOpInstruction(resultTemp, baseOp, origTemp, rightResult.result));
+       const resultTemp = this.context.state.temp();
+       opBlock.add(new IL.BinaryOpInstruction(resultTemp, baseOp, origTemp, rightResult.result));
 
-      if (isFuncPtrTarget) {
-        storeBlock.add(new IL.LoadAddrInstruction('fp_addr', varName));
-        storeBlock.add(new IL.BinaryOpInstruction('fp_addr', 'addr', 'fp_addr', resultTemp));
-      } else {
-        storeBlock.add(new IL.StoreInstruction(varName, resultTemp));
-      }
+       if (isFuncPtrTarget) {
+         storeBlock.add(new IL.LoadAddrInstruction('fp_addr', varName));
+         storeBlock.add(new IL.BinaryOpInstruction('fp_addr', 'addr', 'fp_addr', resultTemp));
+       } else {
+         storeBlock.add(new IL.StoreInstruction(varName, resultTemp));
+       }
 
-      return {
-        blocks: [...blocks, loadBlock, opBlock, storeBlock],
-        result: resultTemp
-      };
-    }
+       return {
+         blocks: [...blocks, loadBlock, opBlock, storeBlock],
+         result: resultTemp
+       };
+     }
 
     const leftResult = this.translateExpression(compAssign.left);
     blocks.push(...leftResult.blocks);

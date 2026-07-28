@@ -412,6 +412,8 @@ export class TypeSpecNode extends ASTNode {
     'int': 2,
     'long': 4,
     'unsigned': 2,
+    'float': 4,
+    'double': 4,
   };
 
   /**

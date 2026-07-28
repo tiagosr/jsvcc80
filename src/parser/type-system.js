@@ -24,6 +24,8 @@ const TypeInfos = {
   'short':   { baseType: 'short',   isSigned: true,  size: 2  },
   'int':     { baseType: 'int',     isSigned: true,  size: 2  },
   'long':    { baseType: 'long',    isSigned: true,  size: 4  },
+  'float':   { baseType: 'float',   isSigned: false, size: 4  },
+  'double':  { baseType: 'double',  isSigned: false, size: 4  },
   'signed':  { baseType: 'int',     isSigned: true,  size: 2  },
   'unsigned':{ baseType: 'unsigned', isSigned: false, size: 2  },
 };
@@ -133,7 +135,7 @@ function createFunctionPointerType(returnType, params, location) {
 
 /**
  * Build a type specifier parser rule
- * Matches: [const|volatile]* [signed|unsigned] [void|char|_Bool|short|int|long] or struct/union tag or unsigned:n
+  * Matches: [const|volatile]* [signed|unsigned] [void|char|_Bool|short|int|long|float|double] or struct/union tag or unsigned:n
  * Requires at least one token to be consumed.
  * @returns {Object} Parser rule
  */
@@ -142,7 +144,8 @@ function buildTypeSpecifier() {
   const signedness = alt(kw('signed'), kw('unsigned'));
   const basicType = alt(
     kw('void'), kw('char'), kw('_Bool'),
-    kw('short'), kw('int'), kw('long')
+    kw('short'), kw('int'), kw('long'),
+    kw('float'), kw('double')
   );
   const colon = lit(':');
   const integerLiteral = pred(t => t.type === 'INTEGER');

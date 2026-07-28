@@ -1,0 +1,83 @@
+; float_gt.z80 - IEEE 754 float greater-than comparison
+;
+; Function: _float_gt(a_ptr, b_ptr)
+; Returns 1 if a > b, 0 otherwise
+;
+; Calling convention (new_sdcc):
+;   A = pointer to float a
+;   L = pointer to float b
+;   Return: A = 1 (a > b) or 0 (a <= b)
+
+_float_gt:
+  ; Swap operands: compare b < a, then invert result
+  ; Push a pointer, load b into A, load a into L
+  push af             ; save a_ptr
+  ld a, l             ; A = b_ptr
+  ld l, a             ; L = b_ptr
+  pop af              ; A = a_ptr
+  ; Now: A = b_ptr, L = a_ptr. Call _float_lt logic with swapped operands.
+  ; _float_lt(b, a) returns 1 if b < a, which means a > b.
+  ; So result of _float_lt(b, a) = result of _float_gt(a, b).
+
+  ; Load b (now in A) as 32-bit
+  ld hl, (a)
+  inc hl
+  inc hl
+  ld de, (hl)         ; DE = b bytes 2-3
+
+  ; Load a (now in L) as 32-bit
+  ld hl, (l)
+  inc hl
+  inc hl
+  ld bc, (hl)         ; BC = a bytes 2-3
+
+  ; NaN check: b (DE)
+  ld a, d
+  and $7F; cp $7F; jr nz, _fgt_check_a_nan
+  ld a, e; and $80; cp $80; jr nz, _fgt_check_a_nan
+  xor a; ret          ; b is NaN -> a > b = 0
+
+_fgt_check_a_nan:
+  ; a NaN check (BC)
+  ld a, b
+  and $7F; cp $7F; jr nz, _fgt_compare
+  ld a, c; and $80; cp $80; jr nz, _fgt_compare
+  xor a; ret          ; a is NaN -> a > b = 0
+
+_fgt_compare:
+  ; Extract signs
+  ld a, d; rrca; rrca; ld h, a   ; H = b sign
+  ld a, b; rrca; rrca; ld c, a   ; C = a sign
+
+  ; Signs differ
+  ld a, h; xor c; jp nz, _fgt_sign_diff
+
+  ; Same sign. Compare b (DE) vs a (BC:HL)
+  ; b high = DE, a high = BC
+  ld a, d; cp b; jr c, _fgt_b_less; jr nz, _fgt_b_greater
+  ld hl, (l)          ; reload a bytes 0-1
+  ld a, h; cp c; jr c, _fgt_b_less; jr nz, _fgt_b_greater
+  ld a, l; cp l; jr c, _fgt_b_less; jp nz, _fgt_b_greater
+
+_fgt_sign_diff:
+  ; a > b when a is positive and b is negative.
+  ; a sign = C, b sign = H.
+  ; a > b when C=0 (a pos) and H=1 (b neg).
+  ld a, c
+  and $01             ; C should be 0... and gives 0 if C=0. Wrong.
+  ; Result = (NOT C) AND H = (1-C) * H
+  ld a, c
+  xor $01             ; A = 1-C
+  and h               ; A = (1-C) & H
+  ret
+
+_fgt_b_less:
+  ; b < a. For same sign:
+  ; If positive (H=0): b < a -> a > b -> 1
+  ; If negative (H=1): b < a means b is more negative -> b < a -> a > b -> 0
+  ; Result = NOT sign
+  ld a, h; xor $01; ret
+
+_fgt_b_greater:
+  ; b > a. a > b = 0.
+  xor a; ret

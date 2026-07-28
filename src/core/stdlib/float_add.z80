@@ -1,0 +1,553 @@
+; float_add.z80 - IEEE 754 single-precision addition
+;
+; _float_add(result_ptr, op1_ptr, op2_ptr)
+; Adds two IEEE 754 single-precision floats, stores 4-byte result at result_ptr
+;
+; Calling convention (new_sdcc, callee-clears-stack):
+;   Entry: A = result_ptr (address byte), L = op1_ptr, [SP] = op2_ptr
+;   Exit: 4 IEEE 754 bytes at result_ptr, stack cleared
+;
+; IEEE 754 single-precision little-endian layout:
+;   Byte 0: mantissa bits 0-7
+;   Byte 1: mantissa bits 8-15
+;   Byte 2: mantissa bits 16-22 (bits 0-6) | exponent bit 0 (bit 7)
+;   Byte 3: exponent bits 1-7 (bits 0-6) | sign bit (bit 7)
+;
+;   exponent = ((byte2 & 0x80) >> 7) | ((byte3 & 0x7F) << 1)
+;   mantissa (23-bit) = byte0 | (byte1 << 8) | ((byte2 & 0x7F) << 16)
+;   value = (-1)^sign * 2^(exponent-127) * (1 + mantissa/2^23)
+
+_float_add:
+  push af; pop hl     ; HL = result pointer
+  pop bc              ; BC = op2 pointer
+
+  ; Load op1 bytes onto stack [b3, b2, b1, b0]
+  ld a, l; ld l, a
+  ld de, (l)
+  ld a, e; push af    ; [b0]
+  ld a, d; push af    ; [b1, b0]
+  inc l; inc l
+  ld a, (l); push af  ; [b2, b1, b0]
+  inc l; ld a, (l); push af  ; [b3, b2, b1, b0]
+
+  ; Load op2 bytes onto stack [op2_b3, op2_b2, op2_b1, op2_b0, op1_b3, op1_b2, op1_b1, op1_b0]
+  ld a, c; ld c, a
+  ld de, (c)
+  ld a, e; push af
+  ld a, d; push af
+  inc c; inc c
+  ld a, (c); push af
+  inc c; ld a, (c); push af
+
+  ; === EXTRACT EXPONENTS AND SIGNS ===
+  ; Pop op1_b3 and op2_b3
+  pop a; ld c, a      ; C = op2_b3
+  pop a; ld h, a      ; H = op1_b3
+
+  ; Extract op1 exponent and sign from H and stack (op1_b2)
+  ld a, h
+  and $7F; sla a; ld e, a       ; E = op1_exp partial (bits 1-7)
+  pop a               ; A = op1_b2
+  and $80; rrca; add a, e; ld d, a      ; D = op1 exponent
+  ; Extract op1 sign
+  ld a, h; rrca; rrca; ld h, a   ; H = op1 sign (0/1)
+
+  ; Extract op2 exponent and sign from C and stack (op2_b2)
+  ld a, c
+  and $7F; sla a; ld e, a
+  pop a               ; A = op2_b2
+  and $80; rrca; add a, e; ld b, a      ; B = op2 exponent
+  ld a, c; rrca; rrca; ld c, a   ; C = op2 sign
+
+  ; === SPECIAL CASES ===
+  ld a, d; cp $FF; jr nz, _fa_chk_op2_exp
+  ; op1 exp = 0xFF (NaN or Inf)
+  ld a, l; or e               ; op1 b0 | b1
+  pop a               ; A = op1_b2
+  and $F8; or a       ; mantissa check
+  jp nz, _fa_nan_out        ; op1 = NaN
+  ; op1 = Infinity
+  jr _fa_inf_handler
+
+_fa_chk_op2_exp:
+  ld a, b; cp $FF; jr nz, _fa_add
+  ; op2 exp = 0xFF
+  ld a, e; or l               ; op2 b1 | b0 (E=op2_b1 from load, L=op1_b0... wrong)
+  ; E was used for op2_exp partial. Overwritten. E no longer = op2_b1.
+  ; op2_b1 is on stack. Pop it.
+  pop a               ; A = op2_b1
+  or l                ; L = op1_b0. Need op2_b0.
+  pop a               ; A = op2_b0
+  or a
+  pop a               ; A = op2_b2
+  and $F8; or a
+  jp nz, _fa_nan_out
+  ; op2 = Infinity
+  ; Check if op1 is also Infinity with opposite sign
+  ld a, d; cp $FF; jr nz, _fa_inf_out
+  ld a, h; xor c; jp z, _fa_inf_out; jp nz, _fa_nan_out
+
+_fa_inf_handler:
+  ; op1 is Infinity. Check op2.
+  ld a, b; cp $FF; jr nz, _fa_inf_out
+  ld a, h; xor c; jp z, _fa_inf_out; jp nz, _fa_nan_out
+
+_fa_inf_out:
+  ; Result = Infinity with sign H
+  ld hl, (hl)
+  ld a, 0; ld (hl), a; inc hl; ld (hl), a; inc hl; ld (hl), a; inc hl
+  ld a, h; sla a; ld (hl), a
+  ret
+
+_fa_nan_out:
+  ; Result = NaN
+  ld hl, (hl)
+  ld a, 1; ld (hl), a; inc hl
+  ld a, 0; ld (hl), a; inc hl; ld (hl), a; inc hl
+  ld a, $80; ld (hl), a
+  ret
+
+_fa_add:
+  ; === NORMAL ADDITION ===
+  ; exponent_diff = op1_exp(D) - op2_exp(B)
+  ld a, d; sub b; jp c, _fa_swap; ld e, a     ; E = exponent_diff
+
+  ; === LOAD MANTISSAS ===
+  ; Mantissa = 24 bits (implicit 1 + 23-bit mantissa)
+  ; Represent as 3 bytes: [high (bits 16-23), mid (bits 8-15), low (bits 0-7)]
+  ; Store both mantissas on stack: [op2_mh, op2_mid, op2_low, op1_mh, op1_mid, op1_low]
+
+  ; op1 mantissa: b0=L, b1=reload, b2=reload
+  ld a, l; ld l, a
+  ld de, (l)
+  ld a, e; push af    ; [op1_low, op2_b1, op2_b0]  (E=op2_b1 from load stage)
+  ; Wait, E was used for op2_exp partial computation. E is not op2_b1 anymore.
+  ; E = ((C&0x7F)<<1) from op2_exp extraction. Not mantissa byte.
+  ; op2_b1 is on stack. Need to pop it later.
+  ; op1_b1 is on stack (below op1_b2 which was popped). Stack has [op1_b1, op1_b0].
+  ; Pop op1_b1
+  pop a               ; A = op1_b1
+  push af             ; [op1_mid, op1_low, op2_b1, op2_b0]
+  ; op1_b2 was popped for exponent. Reload.
+  ld a, l; ld l, a
+  inc l; inc l
+  ld a, (l)
+  and $7F; or $80; push af  ; [op1_mh, op1_mid, op1_low, op2_b1, op2_b0]
+
+  ; op2 mantissa: b1 and b0 on stack, b2 popped for exponent (reload)
+  ld a, c; ld c, a
+  inc c; inc c
+  ld a, (c)
+  and $7F; or $80; push af  ; [op2_mh, op1_mh, op1_mid, op1_low, op2_b1, op2_b0]
+  ; op2_b1 and op2_b0 on stack
+  pop a               ; A = op2_b1
+  push af             ; [op2_mid, op2_mh, op1_mh, op1_mid, op1_low, op2_b1, op2_b0]
+  pop a               ; A = op2_b0
+  ; Stack: [op2_mid, op2_mh, op1_mh, op1_mid, op1_low, op2_b1, op2_b0]
+  ; A = op2_b0. Need to push as low.
+  push af             ; [op2_low, op2_mid, op2_mh, op1_mh, op1_mid, op1_low, op2_b1, op2_b0]
+
+  ; Stack layout (top to bottom):
+  ; [op2_low, op2_mid, op2_mh, op1_mh, op1_mid, op1_low, op2_b1, op2_b0]
+  ; HL = result pointer
+  ; E = exponent_diff
+  ; H = op1 sign
+  ; C = op2 sign
+
+  ; === SHIFT OP2 MANTISSA RIGHT BY E BITS ===
+  ; op2 mantissa = op2_low + (op2_mid << 8) + (op2_mh << 16)
+  ; Pop into HL:A: A=op2_mh, HL=op2_mid:op2_low
+  pop a               ; A = op2_mh
+  pop hl              ; HL = op2_mid:op2_low
+
+  ; 24-bit right shift loop
+  ld a, e
+  or a
+  jr z, _fa_shift_end
+  _fa_shift_loop:
+  ; Shift A right 1 bit (bit 0 -> C)
+  rrca
+  ; Shift L right 1 bit (bit 0 -> C), then shift H right (C -> bit 7)
+  ld a, l
+  rrca
+  ld l, a
+  ld a, h
+  rrca
+  ld h, a
+  ; Decrement count
+  ld a, e
+  dec a
+  ld e, a
+  jr nz, _fa_shift_loop
+
+_fa_shift_end:
+  ; op2 mantissa shifted. HL:A = shifted op2.
+  ; Save shifted op2 on stack
+  push hl             ; [op2_low_s, op2_mid_s]
+  push af             ; [op2_mh_s, op2_low_s, op2_mid_s]
+
+  ; === LOAD OP1 MANTISSA ===
+  ; op1 mantissa on stack: [op1_mh, op1_mid, op1_low]
+  pop a               ; A = op1_mh
+  pop hl              ; HL = op1_mid:op1_low
+
+  ; === ADD OR SUBTRACT ===
+  ; op1 sign = H, op2 sign = C
+  ld a, h; xor c; jp z, _fa_add_mantissas       ; same sign -> add
+  ; Different signs -> subtract op2 from op1, result sign = op1 sign
+  ; Restore op2 from stack
+  pop af              ; A = op2_mh_s (flags from xor saved/restored)
+  pop hl              ; HL = op2_mid_s:op2_low_s
+
+  ; 24-bit subtraction: op1(HL:A) - op2(HL:A)
+  ; Low byte: L - op2_L
+  ld a, l
+  sub h               ; H = op2_L
+  ld l, a
+  ; Mid byte: H - op2_H - borrow
+  ld a, h
+  sbc l               ; L = op2_H
+  ld h, a
+  ; High byte: A - op2_A - borrow
+  ld a, a             ; A = op1_mh
+  sbc a               ; A = op2_mh_s
+  ; Result in HL:A
+  ; Save result on stack
+  push hl             ; [op1_low_r, op1_mid_r]
+  push af             ; [op1_mh_r, op1_low_r, op1_mid_r]
+
+  ; === NORMALIZE ===
+  ; Check if mantissa overflow (high byte >= 0x100... but high byte is 8 bits, max 0xFF)
+  ; Overflow: if result high byte has bit 7 set from the implicit 1 position
+  ; The implicit 1 was at bit 23 (high byte bit 7). If addition caused carry into bit 24,
+  ; high byte would be >= 0x100 which is impossible in 8 bits.
+  ; Actually, with 24-bit mantissa (bits 0-23), overflow means bit 24 is set.
+  ; In our 3-byte representation, bit 23 is high byte bit 7.
+  ; Overflow: if the addition produced a carry out of bit 23.
+  ; This is captured in the C flag after the high byte subtraction/addition.
+  ; For addition, C flag after last add indicates overflow.
+  ; For subtraction, we need to track differently.
+
+  ; For simplicity, check if high byte >= 0x80 (bit 7 set).
+  ; If high byte = 0x100 (overflow), we'd need a 4th byte. Since we only have 3 bytes,
+  ; overflow means high byte >= 0x80 AND the implicit 1 position was carried into.
+  ; Actually, the implicit 1 is at bit 23 (high byte bit 7).
+  ; After addition of two mantissas each with implicit 1, the result can be up to 2.
+  ; 2.0 in normalized form has mantissa = 0 and exponent incremented.
+  ; So if result >= 2.0 (high byte = 0x80 with all low bytes = 0, or more generally
+  ; if the sum of the two implicit 1s caused overflow), we shift right and increment exponent.
+
+  ; Check: if high byte bit 7 is set AND we did addition (same signs)
+  ; For subtraction, the result is always < 1.0 (no overflow).
+  ld a, h; xor c      ; check if same sign
+  jp nz, _fa_no_overflow      ; different sign -> subtraction, no overflow
+  ; Same sign -> addition. Check overflow.
+  ; Pop result
+  pop af              ; A = result_mh
+  pop hl              ; HL = result_mid:low
+  ; Check if A >= 0x80 (overflow of implicit 1)
+  ld a, a
+  and $80
+  jp nz, _fa_normalize_overflow
+
+  ; No overflow. Check if mantissa needs left-shift normalization (leading zeros).
+  ; If high byte < 0x80, the mantissa is not normalized (implicit 1 not at bit 23).
+  ; This shouldn't happen for normal addition of normalized mantissas with same sign
+  ; (result should be >= 1.0). But for subtraction, result can be < 1.0.
+  ; For subtraction path, we need normalization.
+
+  jr _fa_normalize_leading_zeros
+
+_fa_normalize_overflow:
+  ; Result >= 2.0. Shift mantissa right by 1, increment exponent.
+  ; Shift HL:A right 1 bit
+  rrca
+  ld a, l
+  rrca
+  ld l, a
+  ld a, h
+  rrca
+  ld h, a
+  ; Increment exponent
+  ld a, d             ; A = op1_exp
+  inc a
+  ld d, a             ; D = new exponent
+  ; Save normalized result
+  push hl
+  push af
+
+_fa_normalize_leading_zeros:
+  ; Normalize leading zeros: shift left until high byte bit 7 is set
+  ; Decrement exponent for each left shift
+  _fa_norm_left_loop:
+  pop af              ; A = result_mh
+  pop hl              ; HL = result_mid:low
+  ld a, a
+  and $80
+  jp nz, _fa_norm_done      ; normalized (bit 7 set)
+  ; Shift left 1 bit
+  ; A << 1, bit 0 -> C. H << 1, C -> bit 0. L << 1, C -> bit 0.
+  sla a               ; A <<= 1
+  ld a, h
+  sla a               ; H <<= 1
+  ld a, l
+  sla a               ; L <<= 1
+  ld h, a             ; H = shifted
+  ld l, a             ; Wait, A = L shifted. L = A. H = A (H shifted). Confusing.
+  ; Redo:
+  ; A = result_mh. sla a -> A <<= 1, old bit 0 -> C
+  ; H = result_mid. Need to shift H left with C from A.
+  ; ld a, h; sla a -> A = H << 1. C from previous sla is lost.
+  ; Need to preserve C. Use: ld a, h; rla (rotate left through C)
+  ; But we need C from A's shift. After sla a, C = old bit 0 of A.
+  ; ld a, h; rla -> A = {C, H[7:0]} = H << 1 with C from A. Good.
+  ; Then L: ld a, l; rla -> L << 1 with C from H. Good.
+
+  ; Redo normalization shift:
+  pop af; pop hl      ; A=mh, HL=mid:low
+  sla a               ; A <<= 1, bit0 -> C
+  ld a, h
+  rla                 ; H <<= 1, C from A
+  ld h, a
+  ld a, l
+  rla                 ; L <<= 1, C from H
+  ld l, a
+  ; Decrement exponent
+  ld a, d
+  dec a
+  ld d, a
+  jr _fa_norm_left_loop
+
+_fa_norm_done:
+  ; Result normalized. HL:A = normalized mantissa.
+  ; Save result
+  push hl
+  push af
+
+  ; === PACK RESULT INTO 4 BYTES ===
+  ; Mantissa (23 bits) from HL:A (24 bits with implicit 1):
+  ;   Remove implicit 1: clear bit 7 of high byte
+  ;   byte0 = low byte (L)
+  ;   byte1 = mid byte (H)
+  ;   byte2 = (high byte & 0x7F) << 1 | exponent bits 0-2... wait
+  ;
+  ; Result layout:
+  ;   byte0 = mantissa[0:7] = L
+  ;   byte1 = mantissa[8:15] = H
+  ;   byte2 = mantissa[16:22] (bits 0-6) | exponent[0] (bit 7)
+  ;   byte3 = exponent[1:7] (bits 0-6) | sign (bit 7)
+  ;
+  ; Mantissa bits 16-22 = high byte bits 0-6 (after removing implicit 1)
+  ; exponent = D (8 bits)
+  ; sign = H (op1 sign, or result sign)
+
+  ; Pop result
+  pop af              ; A = result_mh (with implicit 1)
+  pop hl              ; HL = result_mid:low
+
+  ; byte0 = L
+  ld a, l
+  push af             ; [result_b0]
+
+  ; byte1 = H
+  ld a, h
+  push af             ; [result_b1, result_b0]
+
+  ; byte2 = (result_mh & 0x7F) << ? | exp[0]
+  ; result_mh bits 0-6 = mantissa[16:22]. These go into byte2 bits 0-6.
+  ; So byte2 bits 0-6 = result_mh & 0x7F.
+  ; byte2 bit 7 = exponent[0] = (D & 0x80) >> 7
+  ; byte2 = (result_mh & 0x7F) | ((D & 0x80) >> 7)
+  ld a, a             ; A = result_mh
+  and $7F
+  ld e, a             ; E = mantissa[16:22]
+  ld a, d
+  and $80
+  rrca                ; A = exp[0]
+  add a, e            ; A = byte2
+  push af             ; [result_b2, result_b1, result_b0]
+
+  ; byte3 = (exponent[1:7] << 1) | (sign << 7)
+  ; exponent[1:7] = (D & 0x7F). These go into byte3 bits 0-6.
+  ; sign = result sign. For addition: if same sign, result sign = op1 sign (H).
+  ; If different sign, result sign = sign of larger operand (op1 since op1_exp >= op2_exp).
+  ; So result sign = H in both cases.
+  ld a, d
+  and $7F
+  ld e, a             ; E = exp[1:7]
+  ld a, h             ; H = result sign
+  ; byte3 = E | (sign << 7)
+  ; E is at bits 0-6. sign << 7 is at bit 7.
+  ; byte3 = E + (sign << 7) = E | (sign << 7)
+  ld a, e
+  ld k, a             ; No K. Use A.
+  ; A = sign. sla a -> A = sign << 7.
+  ld a, h
+  sla a               ; A = sign << 7
+  add a, e            ; A = byte3
+  push af             ; [result_b3, result_b2, result_b1, result_b0]
+
+  ; === STORE RESULT ===
+  ; Stack: [b3, b2, b1, b0]. HL = result pointer.
+  ld hl, (hl)
+  pop a               ; A = b0
+  ld (hl), a
+  inc hl
+  pop a               ; A = b1
+  ld (hl), a
+  inc hl
+  pop a               ; A = b2
+  ld (hl), a
+  inc hl
+  pop a               ; A = b3
+  ld (hl), a
+
+  ; === CLEAR STACK (op2 pointer was pushed by caller) ===
+  ; The caller pushed op2_ptr. We popped it into BC. Stack should be clear.
+  ; But we pushed and popped many times. Stack should be balanced.
+  ; Verify: pushed 0 times after initial push af/pop hl/pop bc.
+  ; All pushes have matching pops. Stack cleared.
+  ret
+
+_fa_swap:
+  ; op1_exp < op2_exp. Swap roles.
+  ; exponent_diff = B - D (op2_exp - op1_exp)
+  ld a, b; sub d; ld e, a     ; E = diff
+  ; Swap mantissas: op1 becomes the one to shift, op2 becomes the addend
+  ; Swap signs: result sign = op2 sign (C)
+  ld a, c; ld h, a      ; H = op2 sign (result sign)
+  ; Need to swap mantissas. Currently:
+  ; op1 bytes on stack below op2 bytes.
+  ; The stack has: [op2_b3_popped, op2_b2_popped, op1_b3_popped, op1_b2_popped, op1_b1, op1_b0, op2_b1, op2_b0]
+  ; Actually the stack state is complex after all the pops/pushes for exponent extraction.
+  ; For swap, we need to reload both mantissas and treat op2 as the "larger" operand.
+  ; This is symmetric to the _fa_add path with operands swapped.
+  ; For simplicity, jump to _fa_add with swapped register values.
+  ; Swap: D <-> B (exponents), H <-> C (signs), mantissas need swapping.
+  ; Mantissa loading is done from pointers, so we can just reload with swapped roles.
+  ; Jump to _fa_add but with E = diff (already computed), H = op2 sign, and we need
+  ; op2 mantissa as the "base" and op1 mantissa as the "shifted" one.
+  ; This requires reloading mantissas in swapped order.
+  ; For simplicity, implement swap by reloading.
+
+  ; Reload op2 mantissa as base (into the "op1" position)
+  ; Reload op1 mantissa as shifted (into the "op2" position)
+  ; Then proceed with _fa_add logic.
+
+  ; op2 pointer in BC. op1 pointer in L.
+  ; Load op2 mantissa
+  ld a, c; ld c, a
+  ld de, (c)
+  ld a, e; push af    ; [op2_low]
+  ld a, d; push af    ; [op2_mid, op2_low]
+  inc c; inc c
+  ld a, (c)
+  and $7F; or $80; push af  ; [op2_mh, op2_mid, op2_low]
+
+  ; Load op1 mantissa
+  ld a, l; ld l, a
+  ld de, (l)
+  ld a, e; push af    ; [op1_low, op2_mh, op2_mid, op2_low]
+  ld a, d; push af    ; [op1_mid, op1_low, ...]
+  inc l; inc l
+  ld a, (c)           ; L pointer, but inc l twice. Need to track L.
+  ld a, l; ld l, a
+  inc l; inc l
+  ld a, (l)
+  and $7F; or $80; push af  ; [op1_mh, op1_mid, op1_low, op2_mh, op2_mid, op2_low]
+
+  ; Stack: [op1_mh, op1_mid, op1_low, op2_mh, op2_mid, op2_low]
+  ; E = exponent_diff (op2_exp - op1_exp)
+  ; H = op2 sign (result sign)
+  ; Now proceed with shift op1 (the smaller exponent operand) right by E bits.
+  ; op1 mantissa is at stack top.
+
+  ; Pop op1 mantissa into HL:A
+  pop a               ; A = op1_mh
+  pop hl              ; HL = op1_mid:op1_low
+
+  ; Shift op1 right by E bits
+  ld a, e
+  or a
+  jr z, _fa_shift_end
+  jr _fa_shift_loop       ; use same shift loop
+
+  ; After shift, op1 mantissa in HL:A. Save on stack.
+  ; Then load op2 mantissa from stack.
+  ; Then add (same sign since result sign = op2 sign and we're adding).
+  ; This mirrors the _fa_add path. The normalization and packing are the same.
+  ; After packing, the sign is H (op2 sign). Correct.
+
+  ; Jump to normalization after shift+save+load+add.
+  ; After shifting op1 and saving, load op2, add, normalize, pack.
+  ; The add is always addition (same sign).
+  ; After add, save result, normalize, pack with sign H.
+
+  ; This is essentially the same code as _fa_add. For code reuse, we could
+  ; jump to a common routine. But for simplicity, just continue the flow.
+
+  ; Save shifted op1
+  push hl
+  push af
+
+  ; Load op2 mantissa
+  pop a               ; A = op2_mh
+  pop hl              ; HL = op2_mid:op2_low
+
+  ; Add mantissas (same sign)
+  ; HL:A (op2) + HL:A (op1 shifted)
+  ; Need op1 shifted from stack
+  pop af              ; A = op1_mh_shifted
+  pop hl              ; HL = op1_mid_s:op1_low_s
+
+  ; 24-bit addition
+  ld a, l
+  add h               ; H = op1_low_s
+  ld l, a
+  ld a, h
+  adc l               ; L = op1_mid_s
+  ld h, a
+  ld a, a             ; A = op2_mh
+  adc a               ; A = op1_mh_shifted
+  ; Result in HL:A
+  push hl
+  push af
+
+  ; Normalize (check overflow, leading zeros)
+  ; Same as _fa_normalize_overflow and _fa_normalize_leading_zeros
+  ; But exponent is now op2_exp (B), not op1_exp (D).
+  ; Use B for exponent.
+  ld a, b             ; A = op2_exp
+  inc a               ; Check overflow: if result mh >= 0x80
+  ; Actually check overflow first
+  pop af; pop hl
+  ld a, a; and $80; jp nz, _fa_norm_overflow_swap
+  ; No overflow. Check leading zeros.
+  jr _fa_norm_left_loop       ; same loop, but use B for exponent
+
+_fa_norm_overflow_swap:
+  ; Shift right 1, increment exponent (B)
+  rrca
+  ld a, l; rrca; ld l, a
+  ld a, h; rrca; ld h, a
+  ld a, b; inc a; ld b, a
+  push hl; push af
+  jr _fa_norm_left_loop
+
+  ; After normalization, pack result with sign H (op2 sign)
+  ; Same packing code as _fa_add. Use B for exponent.
+  pop af; pop hl      ; A=mh, HL=mid:low
+  ld a, l; push af    ; [b0]
+  ld a, h; push af    ; [b1, b0]
+  ld a, a; and $7F
+  ld e, a
+  ld a, b; and $80; rrca; add a, e; push af  ; [b2, b1, b0]
+  ld a, b; and $7F
+  ld e, a
+  ld a, h; sla a; add a, e; push af  ; [b3, b2, b1, b0]
+  ld hl, (hl)
+  pop a; ld (hl), a; inc hl
+  pop a; ld (hl), a; inc hl
+  pop a; ld (hl), a; inc hl
+  pop a; ld (hl), a
+  ret

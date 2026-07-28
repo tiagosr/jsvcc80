@@ -1,0 +1,156 @@
+; float_lt.z80 - IEEE 754 float less-than comparison
+;
+; Function: _float_lt(a_ptr, b_ptr)
+; Returns 1 if a < b, 0 otherwise
+;
+; Calling convention (new_sdcc):
+;   A = pointer to float a
+;   L = pointer to float b
+;   Return: A = 1 (a < b) or 0 (a >= b)
+
+_float_lt:
+  ; Load a as 32-bit: HL:DE (HL=high 16, DE=low 16)
+  ld hl, (a)          ; HL = a bytes 0-1
+  inc hl
+  inc hl
+  ld de, (hl)         ; DE = a bytes 2-3
+  ; HL:DE = a (but HL is bytes 0-1, DE is bytes 2-3. For big-endian comparison,
+  ; we want high bytes first. a bytes 2-3 are the high part. So DE = high, HL = low.)
+
+  ; Load b as 32-bit: HL:DE
+  ld hl, (l)
+  inc hl
+  inc hl
+  ld bc, (hl)         ; BC = b bytes 2-3
+  ; HL = b bytes 0-1
+
+  ; === COMPARE ===
+  ; Check for NaN: exponent = 0xFF (bytes 2-3 high byte = 0x80 or 0xFF)
+  ; a NaN check: DE high byte (D) has sign bit. exponent = 0xFF if D = 0x80-0xFF and E = 0xFF...
+  ; Actually byte 3 = DE high byte = D. byte 2 = E.
+  ; exponent = 0xFF if (D & 0x7F) = 0x7F AND (E & 0x80) = 0x80
+  ld a, d
+  and $7F
+  cp $7F
+  jr nz, _flt_check_b_nan
+  ld a, e
+  and $80
+  cp $80
+  jr nz, _flt_check_b_nan
+  ; a is NaN. NaN comparisons return 0.
+  xor a; ret
+
+_flt_check_b_nan:
+  ; b NaN check: BC high byte = B, low byte = C
+  ld a, b
+  and $7F
+  cp $7F
+  jr nz, _flt_compare
+  ld a, c
+  and $80
+  cp $80
+  jr nz, _flt_compare
+  ; b is NaN. Return 0.
+  xor a; ret
+
+_flt_compare:
+  ; Both finite. Compare.
+  ; Extract signs: sign = bit 7 of byte 3
+  ; a sign: bit 7 of D
+  ld a, d
+  rrca
+  ld a, c             ; C is b byte 2. Save a sign.
+  ; Use stack for a sign.
+  ld a, d
+  rrca
+  rrca
+  ld h, a             ; H = a sign (0/1)
+
+  ; b sign: bit 7 of B
+  ld a, b
+  rrca
+  rrca
+  ld c, a             ; C = b sign
+
+  ; If signs differ: negative < positive
+  ld a, h
+  xor c
+  jp nz, _flt_sign_diff
+  ; Same sign.
+
+  ; For positive floats (sign = 0): larger integer value = larger float
+  ; For negative floats (sign = 1): larger integer value = smaller float (more negative)
+
+  ; Compare HL:DE (a) vs HL:BC (b)... wait, HL was overwritten.
+  ; a: DE = bytes 2-3 (high), original HL = bytes 0-1 (low)
+  ; b: BC = bytes 2-3 (high), HL = bytes 0-1 (low)
+  ; Need to compare high bytes first.
+  ; a high = DE, b high = BC.
+
+  ld a, d             ; a high byte 3
+  cp b                ; b high byte 3
+  jr c, _flt_a_less       ; a high < b high
+  jr nz, _flt_a_greater     ; a high > b high
+  ; High bytes equal. Compare low bytes.
+  ; a low = original bytes 0-1. We lost them (HL was overwritten by b load).
+  ; Need to reload a bytes 0-1.
+
+  ld hl, (a)
+  ld a, h             ; a byte 1
+  cp c                ; b byte 1 (C was b sign, overwritten...)
+  ; C = b sign. b byte 1 is... we loaded b bytes 0-1 into HL. H = b byte 1, L = b byte 0.
+  ; But C was set to b sign. Need b byte 1. It's in H.
+  ld a, h             ; A = a byte 1 (reloaded)
+  cp h                ; H = b byte 1
+  jr c, _flt_a_less
+  jr nz, _flt_a_greater
+  ; Byte 1 equal. Compare byte 0.
+  ld a, l             ; A = a byte 0
+  cp l                ; L = b byte 0
+  jr c, _flt_a_less
+  jp nz, _flt_a_greater
+
+_flt_sign_diff:
+  ; Signs differ. a < b if a is negative and b is positive.
+  ; a sign = H, b sign = C.
+  ; a < b when H=1 (a negative) and C=0 (b positive).
+  ld a, h
+  and $01
+  ld b, a
+  ld a, c
+  and $00             ; C should be 0
+  ; a < b if H=1 and C=0
+  ld a, h
+  xor c               ; XOR: 1 XOR 0 = 1 (a neg, b pos -> a < b)
+  ; Actually: a < b when a is negative (H=1) and b is positive (C=0).
+  ; H=1, C=0 -> result 1. H=0, C=1 -> result 1 (a pos, b neg -> a > b, so a < b = 0).
+  ; Wait: if a is positive (H=0) and b is negative (C=1), then a > b, so a < b = 0.
+  ; If a is negative (H=1) and b is positive (C=0), then a < b, so a < b = 1.
+  ; Result = H AND (NOT C) = H AND (1-C)
+  ld a, h
+  and c               ; H AND C. If H=1,C=0 -> 0. If H=1,C=1 -> 1. Wrong.
+  ; Result = H XOR C when signs differ? No.
+  ; H=1,C=0 -> a<n b -> 1
+  ; H=0,C=1 -> a> b -> 0
+  ; Result = H (when signs differ, a < b iff a is negative)
+  ld a, h
+  ret
+
+_flt_a_less:
+  ; a low < b low. For same sign:
+  ; If positive: a < b -> 1
+  ; If negative: a < b -> 0 (smaller integer = more negative = larger float value)
+  ld a, h             ; H = sign
+  and $01
+  xor c               ; C = sign. XOR = 0 (same sign). 
+  ; If sign = 0 (positive): result = 1
+  ; If sign = 1 (negative): result = 0
+  ; Result = NOT sign = 1 - sign
+  ld a, h
+  xor $01
+  ret
+
+_flt_a_greater:
+  ; a > b. a < b = 0.
+  xor a
+  ret

@@ -151,8 +151,9 @@ export class StatementTranslator {
         initBlock.add(new IL.LoadAddrInstruction('fp_addr', decl.name.name));
         initBlock.add(new IL.BinaryOpInstruction('fp_addr', 'addr', 'fp_addr', result.result));
       } else {
+        const storeSize = resolved.baseType === 'float' ? 4 : (size || 1);
         blocks[blocks.length - 1].add(
-          new IL.StoreInstruction(decl.name.name, result.result)
+          new IL.StoreInstruction(decl.name.name, result.result, storeSize)
         );
       }
     } else if (typeInfo.isArray) {

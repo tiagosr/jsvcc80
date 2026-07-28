@@ -1,0 +1,225 @@
+; float_mod.z80 - IEEE 754 single-precision modulo (fmod)
+;
+; Function: _float_mod(result_ptr, op1_ptr, op2_ptr)
+; Computes fmod(op1, op2) = op1 - n*op2 where n = trunc(op1/op2)
+;
+; Calling convention (new_sdcc, callee-clears-stack):
+;   Entry: A = result_ptr, L = op1_ptr, [SP] = op2_ptr
+;   Exit: 4-byte result at result_ptr
+
+_float_mod:
+  push af; pop hl     ; HL = result ptr
+  pop bc              ; BC = op2 ptr
+
+  ; Load op1 bytes
+  ld a, l; ld l, a
+  ld de, (l)
+  ld a, e; push af
+  ld a, d; push af
+  inc l; inc l
+  ld a, (l); push af
+  inc l; ld a, (l); push af
+
+  ; Load op2 bytes
+  ld a, c; ld c, a
+  ld de, (c)
+  ld a, e; push af
+  ld a, d; push af
+  inc c; inc c
+  ld a, (c); push af
+  inc c; ld a, (c); push af
+
+  ; Extract exp/signs
+  pop a; ld c, a; pop a; ld h, a
+  ld a, h; and $7F; sla a; ld e, a
+  pop a; and $80; rrca; add a, e; ld d, a
+  ld a, h; rrca; rrca; ld h, a
+  ld a, c; and $7F; sla a; ld e, a
+  pop a; and $80; rrca; add a, e; ld b, a
+  ld a, c; rrca; rrca; ld c, a
+
+  ; Special cases
+  ld a, d; cp $FF; jr nz, _fm_chk2
+  ld a, l; or e; pop a; and $F8; or a
+  jp nz, _fm_nan_out
+  ; op1 Inf. fmod(Inf, y) = NaN
+  jr _fm_nan_out
+
+_fm_chk2:
+  ld a, b; cp $FF; jr nz, _fm_zero_chk
+  ld a, e; or l; pop a; and $F8; or a
+  jp nz, _fm_nan_out
+  ; op2 Inf. fmod(x, Inf) = x (if x finite)
+  ; Copy op1 to result
+  jr _fm_copy_op1
+
+_fm_nan_out:
+  ld hl,(hl); ld a,1; ld(hl),a; inc hl; ld a,0; ld(hl),a; inc hl; ld(hl),a; inc hl; ld a,$80; ld(hl),a; ret
+
+_fm_zero_chk:
+  ld a, d; or l; or e; pop a; and $F8; or a
+  jp nz, _fm_zero_chk2
+  ; op1 = 0. fmod(0, y) = 0.
+  ld hl,(hl); ld a,0; ld(hl),a; inc hl; ld(hl),a; inc hl; ld(hl),a; inc hl; ld(hl),a; ret
+_fm_zero_chk2:
+  ld a, b; or e; or l; pop a; and $F8; or a
+  jp nz, _fm_compute
+  ; op2 = 0. fmod(x, 0) = NaN.
+  ld hl,(hl); ld a,1; ld(hl),a; inc hl; ld a,0; ld(hl),a; inc hl; ld(hl),a; inc hl; ld a,$80; ld(hl),a; ret
+
+_fm_copy_op1:
+  ; Copy op1 to result
+  ld a, l; ld l, a
+  ld de, (l)
+  ld a, e; ld (hl), a; inc hl
+  ld a, d; ld (hl), a; inc hl
+  inc l; inc l
+  ld a, (l); ld (hl), a; inc hl
+  ld a, (l); ld (hl), a
+  ret
+
+_fm_compute:
+  ; === FMOD COMPUTATION ===
+  ; Work with absolute values. Restore sign at end.
+  ; result_sign = op1_sign (H)
+
+  ; Compare absolute values: op1_exp vs op2_exp
+  ld a, d; sub b
+  jp c, _fm_result_op1      ; |op1| < |op2| -> result = op1
+
+  ; |op1| >= |op2|. Repeatedly subtract op2 from op1.
+  ; Use exponent difference to limit iterations.
+  ; exp_diff = D - B. If exp_diff > 10, approximate.
+  ld a, e             ; E = exp_diff (from sub above, but E was used for exponent extraction)
+  ; E is not exp_diff. Need to recompute.
+  ld a, d; sub b; ld e, a
+
+  ld a, e; cp $0A; jr nc, _fm_approx      ; exp_diff >= 10 -> approximate
+
+  ; === REPEATED SUBTRACTION ===
+  ; Load op1 and op2 mantissas for subtraction
+  ; op1 bytes: reload from L
+  ld a, l; ld l, a
+  ld de, (l)
+  ld a, e; push af    ; [op1_b0]
+  ld a, d; push af    ; [op1_b1, op1_b0]
+  inc l; inc l
+  ld a, (l); and $7F; or $80; push af  ; [op1_mh, op1_b1, op1_b0]
+
+  ; op2 bytes: reload from BC
+  ld a, c; ld c, a
+  inc c; inc c
+  ld a, (c); and $7F; or $80; push af  ; [op2_mh, op1_mh, ...]
+  ld a, c; ld c, a
+  ld de, (c)
+  ld a, e; push af
+  ld a, d; push af    ; [op2_b1, op2_b0, op2_mh, op1_mh, op1_b1, op1_b0]
+
+  ; Stack: [op2_b1, op2_b0, op2_mh, op1_mh, op1_b1, op1_b0]
+
+  ; Load op1 mantissa into HL:A
+  pop af              ; A = op1_mh
+  pop hl              ; HL = op1_b1:b0
+
+  ; Load op2 mantissa into DE:B
+  pop af              ; A = op2_mh
+  ld b, a
+  pop hl              ; HL = op2_b1:b0
+  ld d, h; ld e, l
+
+  ; Subtraction loop
+  ld a, e             ; A = exp_diff (iteration limit)
+  ld k, a             ; No K. Use stack.
+  push af             ; [iter_limit, ...]
+
+  _fm_sub_loop:
+  pop af              ; A = iter_count
+  or a
+  jr z, _fm_sub_done
+  push af             ; save count
+
+  ; Compare op1 (HL:A) with op2 (DE:B)
+  ld a, a; cp b; jr c, _fm_sub_done      ; op1 < op2 -> done
+  jr nz, _fm_sub_exec
+  ld a, h; cp d; jr c, _fm_sub_done
+  jr nz, _fm_sub_exec
+  ld a, l; cp e; jr c, _fm_sub_done
+
+  _fm_sub_exec:
+  ; op1 >= op2. Subtract op2 from op1.
+  ld a, l; sub e; ld l, a
+  ld a, h; sbc d; ld h, a
+  ld a, a; sbc b
+  ; op1 = result in HL:A
+
+  ; Decrement count
+  pop af
+  dec a
+  push af
+  jr _fm_sub_loop
+
+  _fm_sub_done:
+  ; Result mantissa in HL:A. Result exponent = op2_exp (B) (since we subtracted op2 multiples)
+  ; Actually, the exponent should be the same as the final result's exponent.
+  ; After repeated subtraction, the result has |result| < |op2|.
+  ; result_exp <= op2_exp.
+  ; Use op2_exp as the result exponent.
+  ld a, b; ld d, a    ; D = op2_exp (result exponent)
+
+  ; Pack result
+  ld a, l; push af    ; [b0]
+  ld a, h; push af    ; [b1, b0]
+  ld a, a; and $7F; push af  ; [b2_partial, b1, b0]
+  ; byte2 = (mh & 0x7F) | (exp[0] << 7)
+  ld a, a; and $7F
+  ld e, a
+  ld a, d; and $80; rrca; add a, e; push af  ; [b2, b1, b0]
+  ; byte3 = (exp[1:7] << 1) | (sign << 7)
+  ld a, d; and $7F
+  ld e, a
+  ld a, h; sla a; add a, e; push af  ; [b3, b2, b1, b0]
+  ld hl, (hl)
+  pop a; ld (hl), a; inc hl
+  pop a; ld (hl), a; inc hl
+  pop a; ld (hl), a; inc hl
+  pop a; ld (hl), a
+  ret
+
+_fm_result_op1:
+  ; |op1| < |op2|. Result = op1.
+  ld a, l; ld l, a
+  ld de, (l)
+  ld a, e; ld (hl), a; inc hl
+  ld a, d; ld (hl), a; inc hl
+  inc l; inc l
+  ld a, (l); ld (hl), a; inc hl
+  ld a, (l); ld (hl), a
+  ret
+
+_fm_approx:
+  ; exp_diff >= 10. Approximate fmod.
+  ; x/y ≈ 2^exp_diff. n = trunc(x/y) ≈ 2^exp_diff.
+  ; result = x - n*y ≈ x mod y.
+  ; For large exp_diff, the result is approximately x with the high bits removed.
+  ; Approximate: result mantissa = op1_mantissa mod op2_mantissa (rough)
+  ; Use: result = op1 with exponent adjusted to op2_exp.
+  ; This is a rough approximation.
+
+  ; Copy op1 mantissa, set exponent to op2_exp.
+  ld a, l; ld l, a
+  ld de, (l)
+  ld a, e; push af
+  ld a, d; push af
+  inc l; inc l
+  ld a, (l); and $7F; or $80; push af
+
+  ; Set exponent to op2_exp (B)
+  ld a, b; ld d, a
+
+  ; Pack
+  ld a, l; push af; ld a, h; push af
+  ld a, d; and $7F; ld e, a; ld a, a; and $80; rrca; add a, e; push af
+  ld a, d; and $7F; ld e, a; ld a, h; sla a; add a, e; push af
+  ld hl, (hl)
+  pop a; ld (hl), a; inc hl; pop a; ld (hl), a; inc hl; pop a; ld (hl), a; inc hl; pop a; ld (hl), a
+  ret

@@ -117,29 +117,47 @@ export class CPegParser {
    * @returns {string[]} Array of typedef names
    */
   collectTypedefNames(tokens) {
-    const names = [];
-    let i = 0;
-    while (i < tokens.length) {
-      if (tokens[i].type === 'KEYWORD' && tokens[i].value === 'typedef') {
-        i++;
-        // Skip type keywords and already-known typedef names
-        while (i < tokens.length && (tokens[i].type === 'KEYWORD' || names.includes(tokens[i].value))) {
-          i++;
-        }
-        // Skip pointer stars and array brackets
-        while (i < tokens.length && (tokens[i].type === '*' || tokens[i].type === '[' || tokens[i].type === ']')) {
-          i++;
-        }
-        if (i < tokens.length && tokens[i].type === 'IDENTIFIER') {
-          names.push(tokens[i].value);
-          i++;
-        }
-      } else {
-        i++;
-      }
-    }
-    return names;
-  }
+     const names = [];
+     let i = 0;
+     while (i < tokens.length) {
+       if (tokens[i].type === 'KEYWORD' && tokens[i].value === 'typedef') {
+         i++;
+         // Check for typedef struct/union {...} name syntax
+         if (i < tokens.length && tokens[i].type === 'KEYWORD' && (tokens[i].value === 'struct' || tokens[i].value === 'union')) {
+           // Skip struct/union keyword, find the opening brace, skip to closing brace
+           i++;
+           while (i < tokens.length && tokens[i].type !== '{') {
+             i++;
+           }
+           if (i < tokens.length && tokens[i].type === '{') {
+             let depth = 1;
+             i++;
+             while (i < tokens.length && depth > 0) {
+               if (tokens[i].type === '{') depth++;
+               else if (tokens[i].type === '}') depth--;
+               i++;
+             }
+           }
+         } else {
+           // Skip type keywords and already-known typedef names
+           while (i < tokens.length && (tokens[i].type === 'KEYWORD' || names.includes(tokens[i].value))) {
+             i++;
+           }
+         }
+         // Skip pointer stars and array brackets
+         while (i < tokens.length && (tokens[i].type === '*' || tokens[i].type === '[' || tokens[i].type === ']')) {
+           i++;
+         }
+         if (i < tokens.length && tokens[i].type === 'IDENTIFIER') {
+           names.push(tokens[i].value);
+           i++;
+         }
+       } else {
+         i++;
+       }
+     }
+     return names;
+   }
 
   /**
    * First pass: collect struct/union tag names from the token stream

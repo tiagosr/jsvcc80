@@ -53,26 +53,49 @@ export class TypeRegistry {
   }
 
   /**
-   * Register a struct/union definition in the type registry
-   * @param {AST.StructNode} structNode - Struct/union definition node
-   * @returns {{size: number, fieldOffsets: Map<string, number>}} Computed size and field offsets
-   */
-  registerStruct(structNode) {
-    if (!structNode.name) return { size: 0, fieldOffsets: new Map() };
-    const structName = structNode.name.name;
-    const size = computeStructSize(structNode.fields, structNode.kind, this.structRegistry);
-    const fieldOffsets = computeFieldOffsets(structNode.fields, structNode.kind, this.structRegistry);
+    * Register a struct/union definition in the type registry
+    * @param {AST.StructNode} structNode - Struct/union definition node
+    * @returns {{size: number, fieldOffsets: Map<string, number>}} Computed size and field offsets
+    */
+   registerStruct(structNode) {
+     if (!structNode.name) return { size: 0, fieldOffsets: new Map() };
+     const structName = structNode.name.name;
+     const size = computeStructSize(structNode.fields, structNode.kind, this.structRegistry);
+     const fieldOffsets = computeFieldOffsets(structNode.fields, structNode.kind, this.structRegistry);
 
-    this.structRegistry.set(structName, {
-      name: structName,
-      kind: structNode.kind,
-      fields: structNode.fields,
-      size,
-      fieldOffsets
-    });
+     this.structRegistry.set(structName, {
+       name: structName,
+       kind: structNode.kind,
+       fields: structNode.fields,
+       size,
+       fieldOffsets
+     });
 
-    return { size, fieldOffsets };
-  }
+     return { size, fieldOffsets };
+   }
+
+  /**
+    * Register a struct/union definition from a typedef declaration
+    * @param {AST.DeclNode} decl - Typedef declaration with structNode
+    * @returns {{size: number, fieldOffsets: Map<string, number>}} Computed size and field offsets
+    */
+   registerStructFromTypedef(decl) {
+     if (!decl.structNode) return { size: 0, fieldOffsets: new Map() };
+     const structNode = decl.structNode;
+     const structName = decl.name.name;
+     const size = computeStructSize(structNode.fields, structNode.kind, this.structRegistry);
+     const fieldOffsets = computeFieldOffsets(structNode.fields, structNode.kind, this.structRegistry);
+
+     this.structRegistry.set(structName, {
+       name: structName,
+       kind: structNode.kind,
+       fields: structNode.fields,
+       size,
+       fieldOffsets
+     });
+
+     return { size, fieldOffsets };
+   }
 
   /**
    * Resolve a type spec to its actual type (follows typedef aliases)

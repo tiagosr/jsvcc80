@@ -225,24 +225,32 @@ export class PointerMemberNode extends ASTNode {
  * AST node for variable declarations
  */
 export class DeclNode extends ASTNode {
-  /**
-   * Creates a declaration node
-   * @param {string} kind - 'var', 'const', or 'typedef'
-   * @param {TypeSpecNode} type - Variable type specification
-   * @param {IdentifierNode} name - Variable name
-   * @param {ExpressionNode} [init] - Optional initializer
-   * @param {SourceLocation} location - Source location
-   * @param {string} [storageClass] - Storage class specifier ('register', 'static', 'extern', 'auto')
-   */
-  constructor(kind, type, name, init = null, location, storageClass = null) {
-    super('Decl', location);
-    this.kind = kind;
-    this.type = type;
-    this.name = name;
-    this.init = init;
-    this.storageClass = storageClass;
-  }
-}
+   /**
+    * Creates a declaration node
+    * @param {string} kind - 'var', 'const', or 'typedef'
+    * @param {TypeSpecNode} type - Variable type specification
+    * @param {IdentifierNode} name - Variable name
+    * @param {ASTNode} [init] - Optional initializer (expression or StructNode for typedef struct)
+    * @param {SourceLocation} location - Source location
+    * @param {string} [storageClass] - Storage class specifier ('register', 'static', 'extern', 'auto')
+    */
+   constructor(kind, type, name, init = null, location, storageClass = null) {
+     super('Decl', location);
+     this.kind = kind;
+     this.type = type;
+     this.name = name;
+     this.init = init;
+     this.storageClass = storageClass;
+   }
+
+   /**
+    * Returns the struct node if this is a typedef struct/union declaration
+    * @returns {StructNode|null}
+    */
+   get structNode() {
+     return this.init instanceof StructNode ? this.init : null;
+   }
+ }
 
 /**
  * AST node for control flow statements

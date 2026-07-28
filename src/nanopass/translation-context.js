@@ -98,14 +98,14 @@ export class TranslationContext {
     }
 
     // Second pass: collect struct/union definitions
-    for (const node of ast.statements) {
-      if (node instanceof AST.StructNode) {
-        this.typeRegistry.registerStruct(node);
-      }
-      if (node instanceof AST.DeclNode && node.kind === 'typedef' && node.structNode) {
-        this.typeRegistry.registerStruct(node.structNode);
-      }
-    }
+     for (const node of ast.statements) {
+       if (node instanceof AST.StructNode) {
+         this.typeRegistry.registerStruct(node);
+       }
+       if (node instanceof AST.DeclNode && node.kind === 'typedef' && node.structNode) {
+         this.typeRegistry.registerStructFromTypedef(node);
+       }
+     }
 
     // Third pass: translate functions and globals
     for (const node of ast.statements) {

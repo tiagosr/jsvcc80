@@ -810,13 +810,83 @@ describe('C PEG Parser', () => {
   });
 
   it('should parse struct with unsigned field', () => {
-    const source = `struct S { unsigned u; long l; };`;
-    const lexer = new Lexer(source);
-    const tokens = lexer.tokenize();
-    const parser = new CPegParser();
-    const ast = parser.parse(tokens);
-    const structNode = ast.statements[0];
-    assert.strictEqual(structNode.fields[0].type.baseType, 'unsigned');
-    assert.strictEqual(structNode.fields[1].type.baseType, 'long');
+     const source = `struct S { unsigned u; long l; };`;
+     const lexer = new Lexer(source);
+     const tokens = lexer.tokenize();
+     const parser = new CPegParser();
+     const ast = parser.parse(tokens);
+     const structNode = ast.statements[0];
+     assert.strictEqual(structNode.fields[0].type.baseType, 'unsigned');
+     assert.strictEqual(structNode.fields[1].type.baseType, 'long');
+   });
+
+  describe('Typedef struct/union parsing', () => {
+    it('should collect typedef names from typedef struct declarations', () => {
+      const source = `typedef struct { int a; int b; } MyStruct;`;
+      const lexer = new Lexer(source);
+      const tokens = lexer.tokenize();
+      const parser = new CPegParser();
+      const typedefNames = parser.collectTypedefNames(tokens);
+      assert.strictEqual(typedefNames.length, 1);
+      assert.strictEqual(typedefNames[0], 'MyStruct');
+    });
+
+    it('should collect typedef names from typedef union declarations', () => {
+      const source = `typedef union { int a; char b; } MyUnion;`;
+      const lexer = new Lexer(source);
+      const tokens = lexer.tokenize();
+      const parser = new CPegParser();
+      const typedefNames = parser.collectTypedefNames(tokens);
+      assert.strictEqual(typedefNames.length, 1);
+      assert.strictEqual(typedefNames[0], 'MyUnion');
+    });
+
+    it('should parse typedef struct with typedef field types', () => {
+      const source = `typedef unsigned int newType;
+typedef struct { newType a; newType b; } MyStruct;
+int main() { MyStruct s; s.a = 5; return s.a; }`;
+      const lexer = new Lexer(source);
+      const tokens = lexer.tokenize();
+      const parser = new CPegParser();
+      const ast = parser.parse(tokens);
+      const mainFunc = ast.statements[2];
+      const bodyStmt0 = mainFunc.body.statements[0];
+      assert.ok(bodyStmt0 instanceof AST.DeclNode);
+      assert.strictEqual(bodyStmt0.kind, 'var');
+      assert.strictEqual(bodyStmt0.name.name, 's');
+      assert.strictEqual(bodyStmt0.type.baseType, 'MyStruct');
+    });
+
+    it('should parse typedef struct with multiple fields', () => {
+      const source = `typedef struct { char c; int i; long l; unsigned u; } ComplexStruct;`;
+      const lexer = new Lexer(source);
+      const tokens = lexer.tokenize();
+      const parser = new CPegParser();
+      const ast = parser.parse(tokens);
+      const typedefDecl = ast.statements[0];
+      assert.strictEqual(typedefDecl.kind, 'typedef');
+      assert.strictEqual(typedefDecl.name.name, 'ComplexStruct');
+      assert.strictEqual(typedefDecl.structNode.fields.length, 4);
+      assert.strictEqual(typedefDecl.structNode.fields[0].type.baseType, 'char');
+      assert.strictEqual(typedefDecl.structNode.fields[1].type.baseType, 'int');
+      assert.strictEqual(typedefDecl.structNode.fields[2].type.baseType, 'long');
+      assert.strictEqual(typedefDecl.structNode.fields[3].type.baseType, 'unsigned');
+    });
+
+    it('should collect multiple typedef names from mixed declarations', () => {
+      const source = `typedef int myint;
+typedef struct { int a; } Point;
+typedef unsigned uint;
+typedef union { int x; float y; } Variant;`;
+      const lexer = new Lexer(source);
+      const tokens = lexer.tokenize();
+      const parser = new CPegParser();
+      const typedefNames = parser.collectTypedefNames(tokens);
+      assert.strictEqual(typedefNames.length, 4);
+      assert.strictEqual(typedefNames[0], 'myint');
+      assert.strictEqual(typedefNames[1], 'Point');
+      assert.strictEqual(typedefNames[2], 'uint');
+      assert.strictEqual(typedefNames[3], 'Variant');
+    });
   });
 });

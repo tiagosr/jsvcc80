@@ -16,11 +16,10 @@ See [CHANGELOG.md](CHANGELOG.md)
 - Nothing at the moment
 
 ### 🔜 Next Steps
-1. Fix `typedef unsigned int newType` parsing
-3. Implement soft-float trigonometric operations (`sinf`, `cosf`, `tanf`, `cotf`, `asinf`, `acosf`, `atanf`, `atan2f`)
-4. Implement soft-float exponential operations (`expf`, `powf`, `logf`, `log10f`, `sqrtf`)
-5. Implement object file viewer (like binutils' `objdump`)
-6.  Add line:column information for tokens to give proper error/debugging location information
+1. Implement soft-float trigonometric operations (`sinf`, `cosf`, `tanf`, `cotf`, `asinf`, `acosf`, `atanf`, `atan2f`)
+2. Implement soft-float exponential operations (`expf`, `powf`, `logf`, `log10f`, `sqrtf`)
+3. Implement object file viewer (like binutils' `objdump`)
+4.  Add line:column information for tokens to give proper error/debugging location information
 
 
 ### 📔 Backlog (issues identified during implementation for later priorization)

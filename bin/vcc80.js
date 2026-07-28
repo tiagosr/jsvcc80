@@ -91,9 +91,21 @@ function parseArgs() {
     help: 'Disassemble object file or binary'
   });
 
+  parser.add_argument('--view', {
+    action: 'store_true',
+    dest: 'view',
+    help: 'View object file with objdump-like output (sections, symbols, relocations, disassembly)'
+  });
+
   parser.add_argument('--base', {
     dest: 'baseAddress',
-    help: 'Base address for disassembly (default: $0000)'
+    help: 'Base address for disassembly/view (default: $0000 for binary, $8000 for object)'
+  });
+
+  parser.add_argument('-v', '--verbose', {
+    action: 'store_true',
+    dest: 'verbose',
+    help: 'Verbose output (relocation annotations, hex bytes alongside disassembly)'
   });
 
   parser.add_argument('-v', '--version', {
@@ -132,7 +144,9 @@ function parseArgs() {
     enableCrt0: parsed.enableCrt0,
     stackTop: stackTop,
     disassemble: parsed.disassemble,
-    baseAddress: baseAddress
+    view: parsed.view,
+    baseAddress: baseAddress,
+    verbose: parsed.verbose
   };
 }
 
@@ -200,7 +214,44 @@ async function main() {
   const { Compiler, CompilerOptions } = await import('../src/compiler.js');
 
   try {
-    if (options.disassemble) {
+      if (options.view) {
+        const file = options.files[0];
+        const ext = extname(file);
+
+        if (ext === '.o') {
+          const { loadObjectFile } = await import('../src/linker/objectfile_loader.js');
+          const { viewObjectFile } = await import('../src/disassembler/objectfile_viewer.js');
+          const objectFile = loadObjectFile(file);
+          const result = viewObjectFile(objectFile, {
+            baseAddress: options.baseAddress ?? 0x8000,
+            verbose: options.verbose ?? false
+          });
+          if (options.output) {
+            writeFileSync(options.output, result.toString());
+            console.error(`Output written to ${options.output}`);
+          } else {
+            console.log(result.toString());
+          }
+        } else if (ext === '.bin') {
+          const { disassembleBinaryFromFile } = await import('../src/disassembler/binary_disassembler.js');
+          const result = disassembleBinaryFromFile(file, {
+            baseAddress: options.baseAddress ?? 0x0000,
+            verbose: options.verbose ?? false
+          });
+          if (options.output) {
+            writeFileSync(options.output, result.toString());
+            console.error(`Output written to ${options.output}`);
+          } else {
+            console.log(result.toString());
+          }
+        } else {
+          console.error('Error: --view requires a .o or .bin file');
+          process.exit(1);
+        }
+        return;
+      }
+
+      if (options.disassemble) {
       const file = options.files[0];
       const ext = extname(file);
 

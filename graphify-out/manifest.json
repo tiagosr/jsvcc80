@@ -10,18 +10,18 @@
     "semantic_hash": ""
   },
   "src/ast/nodes.js": {
-    "mtime": 1785186480.7463849,
-    "ast_hash": "610b238b351f908c3917dc46b5fccffe",
+    "mtime": 1785241930.0989664,
+    "ast_hash": "8652aa167ae6a924b7478192ec72a379",
     "semantic_hash": ""
   },
   "src/backend/z80codegen.js": {
-    "mtime": 1785190312.579117,
-    "ast_hash": "c64931824972a9ce2935cd0a7a8e0562",
+    "mtime": 1785239729.0982068,
+    "ast_hash": "0281d7769bdecde687da721ac7e63bcb",
     "semantic_hash": ""
   },
   "src/compiler.js": {
-    "mtime": 1785112342.6167462,
-    "ast_hash": "507a839b9422a6eaf94d84dfd176381f",
+    "mtime": 1785234066.4572523,
+    "ast_hash": "b9584ade88ba5d832b3caa5e6af74343",
     "semantic_hash": ""
   },
   "src/core/errors.js": {
@@ -75,19 +75,19 @@
     "semantic_hash": ""
   },
   "src/nanopass/il.js": {
-    "mtime": 1785186890.3449228,
-    "ast_hash": "6fe532f2318d2ed2559bec5c759251d7",
+    "mtime": 1785231518.0900247,
+    "ast_hash": "562df7217dad52d197f39e186bf25312",
     "semantic_hash": ""
   },
   "src/nanopass/optimizations.js": {
-    "mtime": 1785151819.8564494,
-    "ast_hash": "1095a687a6b7f52cabc5b656e4e9e566",
+    "mtime": 1785234078.0301163,
+    "ast_hash": "9c7fbd482f7dfa0bf05d269298fd7586",
     "semantic_hash": ""
   },
   "src/nanopass/register_passes.js": {
-    "mtime": 1784888779.3526392,
-    "ast_hash": "cfec1c881e8a670aaf2edf1786467a6f",
-    "semantic_hash": "cfec1c881e8a670aaf2edf1786467a6f"
+    "mtime": 1785234090.3145363,
+    "ast_hash": "c3215a768b26cb443a900cee6d18225a",
+    "semantic_hash": ""
   },
   "src/parser/combinators.js": {
     "mtime": 1784923234.0293732,
@@ -95,8 +95,8 @@
     "semantic_hash": ""
   },
   "src/parser/cparser.js": {
-    "mtime": 1785112185.3129985,
-    "ast_hash": "7669f145f7755fe67a3c16ec5343e2fa",
+    "mtime": 1785241136.9422255,
+    "ast_hash": "2eb1882161e18f37a4e9d2d6184925a8",
     "semantic_hash": ""
   },
   "src/plugins/interfaces.js": {
@@ -105,8 +105,8 @@
     "semantic_hash": "ca938d193286ef0e8f7aa0994334f5bb"
   },
   "src/preprocessor/lexer.js": {
-    "mtime": 1785191599.3220384,
-    "ast_hash": "b57f284defff9f494f281e2d9cb5cce5",
+    "mtime": 1785231675.2079499,
+    "ast_hash": "dfb379e7089056ccb821f1170912dfcc",
     "semantic_hash": ""
   },
   "src/preprocessor/tokenTypes.js": {
@@ -130,8 +130,8 @@
     "semantic_hash": ""
   },
   "src/tests/cparser.test.js": {
-    "mtime": 1784982767.6533303,
-    "ast_hash": "8953149e0c98091b221f2ce7309aa3c6",
+    "mtime": 1785241806.9540358,
+    "ast_hash": "278ee99871c570b0b130f45c3e697366",
     "semantic_hash": ""
   },
   "src/tests/il.test.js": {
@@ -195,8 +195,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1785191819.2311504,
-    "ast_hash": "0a81a922bdc2322b63cd2e6389fa01a8",
+    "mtime": 1785241956.9479709,
+    "ast_hash": "cde7ea34ca18d393e658f20a07fe9db2",
     "semantic_hash": ""
   },
   "FINDINGS.md": {
@@ -245,8 +245,8 @@
     "semantic_hash": ""
   },
   "src/parser/expr-primary.js": {
-    "mtime": 1785186480.7483327,
-    "ast_hash": "ce0c9e0e6da3fd5d736f9093b09ef0bc",
+    "mtime": 1785193714.8117688,
+    "ast_hash": "a4ca28d5fbba1c74c08cd936b8cddfc7",
     "semantic_hash": ""
   },
   "src/parser/expr-rel.js": {
@@ -285,8 +285,8 @@
     "semantic_hash": ""
   },
   "src/parser/type-system.js": {
-    "mtime": 1785186480.7486165,
-    "ast_hash": "08aee4ca1b493d0655de34e22db10404",
+    "mtime": 1785193667.678173,
+    "ast_hash": "8add87aee13c6237c3f34c35759098c8",
     "semantic_hash": ""
   },
   "src/tests/function_pointer_ir.test.js": {
@@ -325,8 +325,8 @@
     "semantic_hash": ""
   },
   "src/nanopass/call-memory.js": {
-    "mtime": 1785189327.684583,
-    "ast_hash": "9b136c34b87ad95bf9c2d9757a16fd47",
+    "mtime": 1785192459.936066,
+    "ast_hash": "3ccb403184b89e55361372a538718e46",
     "semantic_hash": ""
   },
   "src/nanopass/control-flow.js": {
@@ -335,8 +335,8 @@
     "semantic_hash": ""
   },
   "src/nanopass/expression-translator.js": {
-    "mtime": 1785191599.321559,
-    "ast_hash": "131eb8d901423c6713f55eaf5ab7f885",
+    "mtime": 1785236772.7536957,
+    "ast_hash": "680e7ececa414e7af58a2ed470cd1afb",
     "semantic_hash": ""
   },
   "src/nanopass/intrinsics.js": {
@@ -350,18 +350,18 @@
     "semantic_hash": ""
   },
   "src/nanopass/statement-translator.js": {
-    "mtime": 1785186901.9649506,
-    "ast_hash": "f32c608babafaa56807c455cedc0b7d6",
+    "mtime": 1785241734.0451093,
+    "ast_hash": "b6d3faafebec0dd98a36f1c6f6b7ed8e",
     "semantic_hash": ""
   },
   "src/nanopass/string-literals.js": {
-    "mtime": 1784940796.3082285,
-    "ast_hash": "a0c26b981387439acd80eef236beb21b",
+    "mtime": 1785193923.0937436,
+    "ast_hash": "2d5cfac1e7eda74c3ca54e6c33534c77",
     "semantic_hash": ""
   },
   "src/nanopass/translation-context.js": {
-    "mtime": 1785190156.9300847,
-    "ast_hash": "c6e715b10c46d8f8bdc752bc7ef54785",
+    "mtime": 1785241714.8736942,
+    "ast_hash": "6212221826ace5bcfc39330182786dba",
     "semantic_hash": ""
   },
   "src/nanopass/type-queries.js": {
@@ -370,8 +370,8 @@
     "semantic_hash": ""
   },
   "src/nanopass/type-registry.js": {
-    "mtime": 1785157194.2873704,
-    "ast_hash": "dd640a1a0a21074e35e4ccf15437a2b9",
+    "mtime": 1785241704.0018837,
+    "ast_hash": "9b2813f5ddf5b54eb6f8b5cf3fbe89bf",
     "semantic_hash": ""
   },
   "src/preprocessor/const-eval.js": {
@@ -385,8 +385,8 @@
     "semantic_hash": ""
   },
   "src/preprocessor/lexer-core.js": {
-    "mtime": 1785191350.7221432,
-    "ast_hash": "55e65daed1fdf7db8c93a56126aaea14",
+    "mtime": 1785193607.495059,
+    "ast_hash": "4848e42103ac7bbf4a213bd8b0fc479b",
     "semantic_hash": ""
   },
   "src/preprocessor/macro-expansion.js": {
@@ -470,8 +470,8 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1785191811.5264175,
-    "ast_hash": "af1c358fb674ac5bfa77fcb38d16a800",
+    "mtime": 1785241971.3802383,
+    "ast_hash": "54e15c57b26a78a5c9b51dd6d65f53a1",
     "semantic_hash": ""
   },
   "src/tests/linker.crt0.test.js": {
@@ -610,8 +610,8 @@
     "semantic_hash": ""
   },
   "src/tests/calling_convention_codegen.test.js": {
-    "mtime": 1785166745.4268026,
-    "ast_hash": "a91f284aed6d64b1c9eec1f16e4d59f7",
+    "mtime": 1785192517.0753899,
+    "ast_hash": "6690c709e7d26ea7a6cd8b9ec0418b73",
     "semantic_hash": ""
   },
   "src/tests/calling_convention_ir.test.js": {
@@ -695,8 +695,8 @@
     "semantic_hash": ""
   },
   "src/tests/stdio.test.js": {
-    "mtime": 1785158088.703313,
-    "ast_hash": "10af0fd0d3efb506471ee8f8281050a3",
+    "mtime": 1785240056.6158204,
+    "ast_hash": "1d086fe16e3dc342c6a7fbd825ca9368",
     "semantic_hash": ""
   },
   "src/tests/linker.mapfile.debug.test.js": {
@@ -710,8 +710,8 @@
     "semantic_hash": ""
   },
   "src/core/stdlib/file.h": {
-    "mtime": 1785163562.495995,
-    "ast_hash": "6d5682f1e8eff0b60860f6af49551d6a",
+    "mtime": 1785238430.1971595,
+    "ast_hash": "4b27c39033f7a41f0aff385845780fe9",
     "semantic_hash": ""
   },
   "src/core/stdlib/stdint.h": {
@@ -767,6 +767,26 @@
   "src/tests/compound-assign.test.js": {
     "mtime": 1785191489.4561713,
     "ast_hash": "179b323e998967cd973810c135831614",
+    "semantic_hash": ""
+  },
+  "src/core/stdlib/float.h": {
+    "mtime": 1785236628.359647,
+    "ast_hash": "5557eacdc9a6f5128d00fd56639adf62",
+    "semantic_hash": ""
+  },
+  "src/tests/float.test.js": {
+    "mtime": 1785231701.9860775,
+    "ast_hash": "140ecb2e814f6ec72408b6b2fb5139f6",
+    "semantic_hash": ""
+  },
+  "src/tests/inline.test.js": {
+    "mtime": 1785234283.7428823,
+    "ast_hash": "8c95b5e2835a3010f2f54140173875a1",
+    "semantic_hash": ""
+  },
+  "src/tests/float_math.test.js": {
+    "mtime": 1785237277.9895997,
+    "ast_hash": "bd3c4a38533dea93d74eb63eee2ea81a",
     "semantic_hash": ""
   }
 }

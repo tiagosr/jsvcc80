@@ -24,6 +24,5 @@ See [CHANGELOG.md](CHANGELOG.md)
 
 
 ### 📔 Backlog (issues identified during implementation for later priorization)
-- Change `FILE` to use callbacks for abstraction, which the (per file descriptor: read/write character, seek/get position (if stream supports))
 - Fix long files issue?
 - Fix deep call nesting compilation failure

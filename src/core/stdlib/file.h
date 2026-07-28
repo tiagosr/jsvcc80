@@ -4,11 +4,13 @@
 typedef struct FILE {
     char streamType;
     char flags;
-    int port;
-    int device;
-    char buffer;
-    int bufSize;
-    int bufPos;
+    int read;
+    int write;
+    int close;
+    int eof;
+    int error;
+    int available;
+    int flush;
 } FILE;
 
 #define STREAM_FILESYSTEM 0

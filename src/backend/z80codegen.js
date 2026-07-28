@@ -1400,475 +1400,418 @@ export class Z80Codegen {
         break;
 
       case 'FPUTC':
-        // Write a character to a FILE stream
+        // Write a character to a FILE stream using write callback
         // Operands: [char_value_reg, file_ptr_reg]
-        // FILE struct layout: [streamType(0), flags(1), port(2), device(4), buffer(6), bufSize(8), bufPos(10)]
-        this.codeLines.push(`  ld hl, ${args[1]}`); // HL = file_ptr_reg (pointer to FILE struct)
+        // Callback calling convention: push args, load callback in HL, push hl + ret, cleanup stack
+        this.codeLines.push(`  ld hl, ${args[1]}`); // HL = FILE pointer
         this.codeLines.push('  inc hl');
+        this.codeLines.push('  inc hl'); // HL = offset 4 (write callback low byte)
+        this.codeLines.push(`  ld a, (hl)`);
+        this.codeLines.push('  ld l, a');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld de, (hl)`); // DE = buffer field (offset 6)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld e, (hl)`); // DE = bufPos field (offset 10, low byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld d, (hl)`); // DE = bufPos field (offset 10, high byte)
+        this.codeLines.push(`  ld a, (hl)`); // HL = offset 5 (write callback high byte)
+        this.codeLines.push('  ld h, a'); // HL = write callback address
         this.codeLines.push(`  ld a, ${args[0]}`); // A = char value
-        this.codeLines.push('  add hl, de'); // HL = buffer pointer + bufPos
-        this.codeLines.push(`  ld (hl), a`); // Store character at buffer + bufPos
-        this.codeLines.push(`  ld hl, ${args[1]}`); // HL = file_ptr_reg
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld a, (hl)`); // A = bufPos (offset 10, low byte)
-        this.codeLines.push('  inc a'); // Increment bufPos
-        this.codeLines.push(`  ld (hl), a`); // Store incremented bufPos
-        this.codeLines.push(`  ld a, ${args[0]}`); // Return char value in A
+        this.codeLines.push('  push af'); // Push char arg (2 bytes)
+        this.codeLines.push(`  ld a, ${args[1]}`); // A = file_ptr low byte
+        this.codeLines.push('  push af'); // Push file_ptr arg (2 bytes)
+        this.codeLines.push('  push hl'); // Push write callback address
+        this.codeLines.push('  ret'); // Indirect call to write callback
+        this.codeLines.push('  ld hl, sp'); // Stack cleanup (2 args * 2 bytes = 4)
+        this.codeLines.push('  ld de, 4');
+        this.codeLines.push('  add hl, de');
+        this.codeLines.push('  ld sp, hl');
         break;
 
       case 'FGETC':
-        // Read a character from a FILE stream
+        // Read a character from a FILE stream using read callback
         // Operands: [file_ptr_reg]
-        // Returns character in A, or -1 (EOF) if bufPos >= bufSize
-        // FILE struct layout: [streamType(0), flags(1), port(2), device(4), buffer(6), bufSize(8), bufPos(10)]
-        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = file_ptr_reg (pointer to FILE struct)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld de, (hl)`); // DE = buffer field (offset 6)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld e, (hl)`); // DE = bufSize field (offset 8, low byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld d, (hl)`); // DE = bufSize field (offset 8, high byte)
-        this.codeLines.push(`  ld a, ${args[0]}`); // A = file_ptr_reg (low byte)
+        // Callback calling convention: push args, load callback in HL, push hl + ret, cleanup stack
+        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = FILE pointer
+        this.codeLines.push('  inc hl'); // HL = offset 2 (read callback low byte)
+        this.codeLines.push(`  ld a, (hl)`);
         this.codeLines.push('  ld l, a');
-        this.codeLines.push('  ld h, 0');
-        this.codeLines.push('  add hl, de'); // HL = file_ptr_reg + bufSize
-        this.codeLines.push(`  ld a, (hl)`); // A = bufPos (offset 10, low byte)
-        this.codeLines.push('  cp e'); // Compare bufPos with bufSize low byte
-        this.codeLines.push('  ld a, d');
-        this.codeLines.push('  cp d'); // Compare bufPos with bufSize high byte
-        this.codeLines.push('  jp c, getc_read'); // Jump if bufPos < bufSize
-        this.codeLines.push('  jp nc, getc_eof'); // Jump if bufPos >= bufSize (EOF)
-        this.codeLines.push('getc_eof:');
-        this.codeLines.push('  xor a'); // A = 0
-        this.codeLines.push('  cpl'); // A = 255 (-1)
-        this.codeLines.push('  inc a'); // A = -1 (EOF)
-        this.codeLines.push('  jp getc_end');
-        this.codeLines.push('getc_read:');
-        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = file_ptr_reg
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld de, (hl)`); // DE = buffer field (offset 6)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld e, (hl)`); // DE = bufPos field (offset 10, low byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld d, (hl)`); // DE = bufPos field (offset 10, high byte)
-        this.codeLines.push('  add hl, de'); // HL = buffer pointer + bufPos
-        this.codeLines.push(`  ld a, (hl)`); // A = character from buffer
-        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = file_ptr_reg
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld a, (hl)`); // A = bufPos (offset 10, low byte)
-        this.codeLines.push('  inc a'); // Increment bufPos
-        this.codeLines.push(`  ld (hl), a`); // Store incremented bufPos
-        this.codeLines.push('getc_end:');
+        this.codeLines.push(`  ld a, (hl)`); // HL = offset 3 (read callback high byte)
+        this.codeLines.push('  ld h, a'); // HL = read callback address
+        this.codeLines.push(`  ld a, ${args[0]}`); // A = file_ptr low byte
+        this.codeLines.push('  push af'); // Push file_ptr arg (2 bytes)
+        this.codeLines.push('  push hl'); // Push read callback address
+        this.codeLines.push('  ret'); // Indirect call to read callback
+        this.codeLines.push('  ld hl, sp'); // Stack cleanup (1 arg * 2 bytes = 2)
+        this.codeLines.push('  ld de, 2');
+        this.codeLines.push('  add hl, de');
+        this.codeLines.push('  ld sp, hl');
         break;
 
       case 'FEOF':
-        // Check EOF flag
+        // Check EOF using eof callback
         // Operands: [file_ptr_reg]
-        // Returns 1 if EOF flag set, 0 otherwise
-        // FILE struct layout: [streamType(0), flags(1), port(2), device(4), buffer(6), bufSize(8), bufPos(10)]
-        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = file_ptr_reg (pointer to FILE struct)
+        // Callback calling convention: push args, load callback in HL, push hl + ret, cleanup stack
+        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = FILE pointer
         this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld a, (hl)`); // A = flags field (offset 1)
-        this.codeLines.push('  and #1'); // Check bit 0 (EOF flag)
-        this.codeLines.push('  jp z, feof_zero');
-        this.codeLines.push('  ld a, 1'); // EOF flag set
-        this.codeLines.push('  jp feof_end');
-        this.codeLines.push('feof_zero:');
-        this.codeLines.push('  xor a'); // EOF flag not set
-        this.codeLines.push('feof_end:');
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  inc hl'); // HL = offset 8 (eof callback low byte)
+        this.codeLines.push(`  ld a, (hl)`);
+        this.codeLines.push('  ld l, a');
+        this.codeLines.push('  inc hl');
+        this.codeLines.push(`  ld a, (hl)`); // HL = offset 9 (eof callback high byte)
+        this.codeLines.push('  ld h, a'); // HL = eof callback address
+        this.codeLines.push(`  ld a, ${args[0]}`); // A = file_ptr low byte
+        this.codeLines.push('  push af'); // Push file_ptr arg (2 bytes)
+        this.codeLines.push('  push hl'); // Push eof callback address
+        this.codeLines.push('  ret'); // Indirect call to eof callback
+        this.codeLines.push('  ld hl, sp'); // Stack cleanup (1 arg * 2 bytes = 2)
+        this.codeLines.push('  ld de, 2');
+        this.codeLines.push('  add hl, de');
+        this.codeLines.push('  ld sp, hl');
         break;
 
       case 'FERROR':
-        // Check error flag
+        // Check error using error callback
         // Operands: [file_ptr_reg]
-        // Returns 1 if error flag set, 0 otherwise
-        // FILE struct layout: [streamType(0), flags(1), port(2), device(4), buffer(6), bufSize(8), bufPos(10)]
-        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = file_ptr_reg (pointer to FILE struct)
+        // Callback calling convention: push args, load callback in HL, push hl + ret, cleanup stack
+        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = FILE pointer
         this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld a, (hl)`); // A = flags field (offset 1)
-        this.codeLines.push('  and #2'); // Check bit 1 (error flag)
-        this.codeLines.push('  jp z, ferror_zero');
-        this.codeLines.push('  ld a, 1'); // Error flag set
-        this.codeLines.push('  jp ferror_end');
-        this.codeLines.push('ferror_zero:');
-        this.codeLines.push('  xor a'); // Error flag not set
-        this.codeLines.push('ferror_end:');
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  inc hl'); // HL = offset 10 (error callback low byte)
+        this.codeLines.push(`  ld a, (hl)`);
+        this.codeLines.push('  ld l, a');
+        this.codeLines.push('  inc hl');
+        this.codeLines.push(`  ld a, (hl)`); // HL = offset 11 (error callback high byte)
+        this.codeLines.push('  ld h, a'); // HL = error callback address
+        this.codeLines.push(`  ld a, ${args[0]}`); // A = file_ptr low byte
+        this.codeLines.push('  push af'); // Push file_ptr arg (2 bytes)
+        this.codeLines.push('  push hl'); // Push error callback address
+        this.codeLines.push('  ret'); // Indirect call to error callback
+        this.codeLines.push('  ld hl, sp'); // Stack cleanup (1 arg * 2 bytes = 2)
+        this.codeLines.push('  ld de, 2');
+        this.codeLines.push('  add hl, de');
+        this.codeLines.push('  ld sp, hl');
         break;
 
       case 'FOPEN':
-        // Open a file
+        // Open a filesystem stream
         // Operands: [name_ptr_reg, mode_ptr_reg]
-        // Creates a FILE struct on the stack, initializes all fields to zero, sets streamType=0
-        // Returns pointer to allocated FILE struct (current SP)
-        // FILE struct layout: [streamType(0), flags(1), port(2), device(4), buffer(6), bufSize(8), bufPos(10)]
-        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = name_ptr_reg (file name)
-        this.codeLines.push(`  ld de, ${args[1]}`); // DE = mode_ptr_reg (file mode)
-        this.codeLines.push(`  ld a, ${args[0]}`); // A = name_ptr_reg
-        this.codeLines.push('  push af');
-        this.codeLines.push(`  ld a, ${args[1]}`); // A = mode_ptr_reg
-        this.codeLines.push('  push af');
-        this.codeLines.push('  call fopen'); // Call fopen(name, mode)
-        this.codeLines.push(`  ld hl, sp`); // HL = SP after call
-        this.codeLines.push(`  ld de, 4`); // DE = 4 bytes (2 args * 2 bytes)
+        // Creates FILE struct on stack, sets streamType=0, sets callback pointers to fs functions
+        // Callback function names: fs_read, fs_write, fs_close, fs_eof, fs_error, fs_available, fs_flush
+        // FILE struct: 18 bytes [streamType(0), flags(1), port(2), read(4), write(6), close(8), eof(10), error(12), available(14), flush(16)]
+        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = file name
+        this.codeLines.push(`  ld de, ${args[1]}`); // DE = file mode
+        this.codeLines.push(`  ld a, ${args[0]}`); // A = name_ptr
+        this.codeLines.push('  push af'); // Push name arg
+        this.codeLines.push(`  ld a, ${args[1]}`); // A = mode_ptr
+        this.codeLines.push('  push af'); // Push mode arg
+        this.codeLines.push('  call fopen'); // Call fopen(name, mode) external function
+        this.codeLines.push('  ld hl, sp'); // HL = SP after call
+        this.codeLines.push('  ld de, 4'); // DE = 4 bytes (2 args * 2 bytes)
         this.codeLines.push('  add hl, de'); // HL = SP + 4 (restore stack)
-        this.codeLines.push('  ld sp, hl');
-        this.codeLines.push(`  ld hl, sp`); // HL = current SP (top of allocated space)
+        this.codeLines.push('  ld sp, hl'); // Restore SP
+        this.codeLines.push('  ld hl, sp'); // HL = current SP (top of allocated 18-byte FILE struct)
         this.codeLines.push('  ld (hl), 0'); // streamType = 0 (filesystem) (offset 0)
         this.codeLines.push('  inc hl');
         this.codeLines.push('  ld (hl), 0'); // flags = 0 (offset 1)
         this.codeLines.push('  inc hl');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // port = 0 (offset 2, low byte)
+        this.codeLines.push('  ld hl, fs_read'); // HL = fs_read address (offset 2)
+        this.codeLines.push('  ld (hl), l'); // store low byte
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // port = 0 (offset 2, high byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // device = 0 (offset 4, low byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // device = 0 (offset 4, high byte)
+        this.codeLines.push('  ld (hl), h'); // store high byte
         this.codeLines.push('  inc hl');
         this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld hl, fs_write'); // HL = fs_write address (offset 4)
+        this.codeLines.push('  ld (hl), l');
         this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld (hl), h');
         this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld hl, fs_close'); // HL = fs_close address (offset 6)
+        this.codeLines.push('  ld (hl), l');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // buffer = NULL (offset 6, low byte)
+        this.codeLines.push('  ld (hl), h');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // buffer = NULL (offset 6, high byte)
+        this.codeLines.push('  ld hl, fs_eof'); // HL = fs_eof address (offset 8)
+        this.codeLines.push('  ld (hl), l');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufSize = 0 (offset 8, low byte)
+        this.codeLines.push('  ld (hl), h');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufSize = 0 (offset 8, high byte)
+        this.codeLines.push('  ld hl, fs_error'); // HL = fs_error address (offset 10)
+        this.codeLines.push('  ld (hl), l');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufPos = 0 (offset 10, low byte)
+        this.codeLines.push('  ld (hl), h');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufPos = 0 (offset 10, high byte)
+        this.codeLines.push('  ld hl, fs_available'); // HL = fs_available address (offset 12)
+        this.codeLines.push('  ld (hl), l');
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld (hl), h');
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld hl, fs_flush'); // HL = fs_flush address (offset 14)
+        this.codeLines.push('  ld (hl), l');
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld (hl), h');
         this.codeLines.push('  ld a, l'); // Return pointer in A (low byte of SP)
         break;
 
       case 'FCLOSE':
-        // Close a file
+        // Close a stream using close callback
         // Operands: [file_ptr_reg]
-        // Clears the FILE struct, returns 0 (success)
-        // FILE struct layout: [streamType(0), flags(1), port(2), device(4), buffer(6), bufSize(8), bufPos(10)]
-        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = file_ptr_reg (pointer to FILE struct)
-        this.codeLines.push('  ld (hl), 0'); // streamType = 0 (offset 0)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // flags = 0 (offset 1)
+        // Callback calling convention: push args, load callback in HL, push hl + ret, cleanup stack
+        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = FILE pointer
         this.codeLines.push('  inc hl');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // port = 0 (offset 2, low byte)
+        this.codeLines.push('  inc hl'); // HL = offset 8 (close callback low byte)
+        this.codeLines.push(`  ld a, (hl)`);
+        this.codeLines.push('  ld l, a');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // port = 0 (offset 2, high byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // device = 0 (offset 4, low byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // device = 0 (offset 4, high byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // buffer = NULL (offset 6, low byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // buffer = NULL (offset 6, high byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufSize = 0 (offset 8, low byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufSize = 0 (offset 8, high byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufPos = 0 (offset 10, low byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufPos = 0 (offset 10, high byte)
+        this.codeLines.push(`  ld a, (hl)`); // HL = offset 9 (close callback high byte)
+        this.codeLines.push('  ld h, a'); // HL = close callback address
+        this.codeLines.push(`  ld a, ${args[0]}`); // A = file_ptr low byte
+        this.codeLines.push('  push af'); // Push file_ptr arg (2 bytes)
+        this.codeLines.push('  push hl'); // Push close callback address
+        this.codeLines.push('  ret'); // Indirect call to close callback
+        this.codeLines.push('  ld hl, sp'); // Stack cleanup (1 arg * 2 bytes = 2)
+        this.codeLines.push('  ld de, 2');
+        this.codeLines.push('  add hl, de');
+        this.codeLines.push('  ld sp, hl');
         this.codeLines.push('  xor a'); // Return 0 (success)
         break;
 
       case 'SERIAL_OPEN':
         // Open a serial port
         // Operands: [port_addr_reg]
-        // Allocates FILE struct on stack, sets streamType=1, stores port address, returns pointer
-        // FILE struct layout: [streamType(0), flags(1), port(2), device(4), buffer(6), bufSize(8), bufPos(10)]
+        // Creates FILE struct on stack, sets streamType=1, stores port address, sets callback pointers
+        // FILE struct: 18 bytes [streamType(0), flags(1), port(2), read(4), write(6), close(8), eof(10), error(12), available(14), flush(16)]
         this.codeLines.push(`  ld hl, ${args[0]}`); // HL = port address
-        this.codeLines.push('  push hl');
-        this.codeLines.push('  call serial_open');
-        this.codeLines.push(`  ld hl, sp`); // HL = SP after call
-        this.codeLines.push(`  ld de, 2`); // DE = 2 bytes (1 arg)
+        this.codeLines.push('  push hl'); // Push port arg
+        this.codeLines.push('  call serial_open'); // Call serial_open external function
+        this.codeLines.push('  ld hl, sp'); // HL = SP after call
+        this.codeLines.push('  ld de, 2'); // DE = 2 bytes (1 arg)
         this.codeLines.push('  add hl, de'); // HL = SP + 2
-        this.codeLines.push('  ld sp, hl');
-        this.codeLines.push(`  ld hl, sp`); // HL = current SP (top of allocation)
+        this.codeLines.push('  ld sp, hl'); // Restore SP
+        this.codeLines.push('  ld hl, sp'); // HL = current SP (top of allocated 18-byte FILE struct)
         this.codeLines.push('  ld (hl), 1'); // streamType = 1 (serial) (offset 0)
         this.codeLines.push('  inc hl');
         this.codeLines.push('  ld (hl), 0'); // flags = 0 (offset 1)
         this.codeLines.push('  inc hl');
         this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld a, (hl)`); // A = port low byte
-        this.codeLines.push('  pop hl');
-        this.codeLines.push(`  ld (hl), a`); // port low byte (offset 2)
+        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = port address (from original argument)
+        this.codeLines.push('  ld (hl), l'); // store port low byte at offset 2
         this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld a, (hl)`); // A = port high byte
-        this.codeLines.push('  pop hl');
-        this.codeLines.push(`  ld (hl), a`); // port high byte (offset 3)
+        this.codeLines.push('  ld (hl), h'); // store port high byte at offset 3
         this.codeLines.push('  inc hl');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // device = 0 (offset 4, low byte)
+        this.codeLines.push('  ld hl, serial_read_cb'); // HL = serial_read_cb address (offset 4)
+        this.codeLines.push('  ld (hl), l');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // device = 0 (offset 4, high byte)
+        this.codeLines.push('  ld (hl), h');
         this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld hl, serial_write_cb'); // HL = serial_write_cb address (offset 6)
+        this.codeLines.push('  ld (hl), l');
         this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld (hl), h');
         this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld hl, serial_close_cb'); // HL = serial_close_cb address (offset 8)
+        this.codeLines.push('  ld (hl), l');
         this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld (hl), h');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // buffer = NULL (offset 6, low byte)
+        this.codeLines.push('  ld hl, serial_eof_cb'); // HL = serial_eof_cb address (offset 10)
+        this.codeLines.push('  ld (hl), l');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // buffer = NULL (offset 6, high byte)
+        this.codeLines.push('  ld (hl), h');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufSize = 0 (offset 8, low byte)
+        this.codeLines.push('  ld hl, serial_error_cb'); // HL = serial_error_cb address (offset 12)
+        this.codeLines.push('  ld (hl), l');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufSize = 0 (offset 8, high byte)
+        this.codeLines.push('  ld (hl), h');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufPos = 0 (offset 10, low byte)
+        this.codeLines.push('  ld hl, serial_available_cb'); // HL = serial_available_cb address (offset 14)
+        this.codeLines.push('  ld (hl), l');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufPos = 0 (offset 10, high byte)
-        this.codeLines.push('  ld a, l'); // Return pointer in A
+        this.codeLines.push('  ld (hl), h');
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld hl, serial_flush_cb'); // HL = serial_flush_cb address (offset 16)
+        this.codeLines.push('  ld (hl), l');
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld (hl), h');
+        this.codeLines.push('  ld a, l'); // Return pointer in A (low byte of SP)
         break;
 
       case 'SERIAL_CLOSE':
-        // Close a serial port
+        // Close a serial stream using close callback
         // Operands: [file_ptr_reg]
-        // Clears the FILE struct, returns 0 (success)
-        // FILE struct layout: [streamType(0), flags(1), port(2), device(4), buffer(6), bufSize(8), bufPos(10)]
-        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = file_ptr_reg
-        this.codeLines.push('  ld (hl), 0'); // streamType = 0 (offset 0)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // flags = 0 (offset 1)
+        // Callback calling convention: push args, load callback in HL, push hl + ret, cleanup stack
+        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = FILE pointer
         this.codeLines.push('  inc hl');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // port = 0 (offset 2, low byte)
+        this.codeLines.push('  inc hl'); // HL = offset 8 (close callback low byte)
+        this.codeLines.push(`  ld a, (hl)`);
+        this.codeLines.push('  ld l, a');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // port = 0 (offset 2, high byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // device = 0 (offset 4, low byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // device = 0 (offset 4, high byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // buffer = NULL (offset 6, low byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // buffer = NULL (offset 6, high byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufSize = 0 (offset 8, low byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufSize = 0 (offset 8, high byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufPos = 0 (offset 10, low byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufPos = 0 (offset 10, high byte)
+        this.codeLines.push(`  ld a, (hl)`); // HL = offset 9 (close callback high byte)
+        this.codeLines.push('  ld h, a'); // HL = close callback address
+        this.codeLines.push(`  ld a, ${args[0]}`); // A = file_ptr low byte
+        this.codeLines.push('  push af'); // Push file_ptr arg (2 bytes)
+        this.codeLines.push('  push hl'); // Push close callback address
+        this.codeLines.push('  ret'); // Indirect call to close callback
+        this.codeLines.push('  ld hl, sp'); // Stack cleanup (1 arg * 2 bytes = 2)
+        this.codeLines.push('  ld de, 2');
+        this.codeLines.push('  add hl, de');
+        this.codeLines.push('  ld sp, hl');
         this.codeLines.push('  xor a'); // Return 0 (success)
         break;
 
       case 'SERIAL_READ':
-        // Read a byte from serial port
+        // Read from serial stream using read callback
         // Operands: [file_ptr_reg]
-        // Reads from port stored in FILE struct, returns byte in A or -1 if no data
-        // FILE struct layout: [streamType(0), flags(1), port(2), device(4), buffer(6), bufSize(8), bufPos(10)]
-        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = file_ptr_reg
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld a, (hl)`); // A = port low byte (offset 2)
+        // Callback calling convention: push args, load callback in HL, push hl + ret, cleanup stack
+        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = FILE pointer
+        this.codeLines.push('  inc hl'); // HL = offset 4 (read callback low byte)
+        this.codeLines.push(`  ld a, (hl)`);
         this.codeLines.push('  ld l, a');
         this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld a, (hl)`); // A = port high byte (offset 3)
-        this.codeLines.push('  ld h, a'); // HL = port address
-        this.codeLines.push('  ld c, h'); // C = port high byte
-        this.codeLines.push('  ld c, l'); // C = port low byte
-        this.codeLines.push('  in a, (c)'); // Read byte from port (Z80 IN uses C register)
-        this.codeLines.push('  ld c, a'); // Save read byte in C
-        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = file_ptr_reg
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld a, (hl)`); // A = flags (offset 1)
-        this.codeLines.push('  or a'); // Check if flags is zero
-        this.codeLines.push('  jp z, serial_read_ok');
-        this.codeLines.push('  ld a, 255'); // No data available (EOF)
-        this.codeLines.push('  jp serial_read_end');
-        this.codeLines.push('serial_read_ok:');
-        this.codeLines.push('  ld a, c'); // Return read byte
-        this.codeLines.push('serial_read_end:');
+        this.codeLines.push(`  ld a, (hl)`); // HL = offset 5 (read callback high byte)
+        this.codeLines.push('  ld h, a'); // HL = read callback address
+        this.codeLines.push(`  ld a, ${args[0]}`); // A = file_ptr low byte
+        this.codeLines.push('  push af'); // Push file_ptr arg (2 bytes)
+        this.codeLines.push('  push hl'); // Push read callback address
+        this.codeLines.push('  ret'); // Indirect call to read callback
+        this.codeLines.push('  ld hl, sp'); // Stack cleanup (1 arg * 2 bytes = 2)
+        this.codeLines.push('  ld de, 2');
+        this.codeLines.push('  add hl, de');
+        this.codeLines.push('  ld sp, hl');
         break;
 
       case 'SERIAL_WRITE':
-        // Write a byte to serial port
+        // Write to serial stream using write callback
         // Operands: [char_value_reg, file_ptr_reg]
-        // Writes char to port stored in FILE struct, returns char value
-        // FILE struct layout: [streamType(0), flags(1), port(2), device(4), buffer(6), bufSize(8), bufPos(10)]
-        this.codeLines.push(`  ld hl, ${args[1]}`); // HL = file_ptr_reg
+        // Callback calling convention: push args, load callback in HL, push hl + ret, cleanup stack
+        this.codeLines.push(`  ld hl, ${args[1]}`); // HL = FILE pointer
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld a, (hl)`); // A = port low byte (offset 2)
+        this.codeLines.push('  inc hl'); // HL = offset 6 (write callback low byte)
+        this.codeLines.push(`  ld a, (hl)`);
         this.codeLines.push('  ld l, a');
         this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld a, (hl)`); // A = port high byte (offset 3)
-        this.codeLines.push('  ld h, a'); // HL = port address
-        this.codeLines.push('  ld c, h'); // C = port high byte
-        this.codeLines.push('  ld c, l'); // C = port low byte
+        this.codeLines.push(`  ld a, (hl)`); // HL = offset 7 (write callback high byte)
+        this.codeLines.push('  ld h, a'); // HL = write callback address
         this.codeLines.push(`  ld a, ${args[0]}`); // A = char value
-        this.codeLines.push('  out (c), a'); // Write byte to port
-        this.codeLines.push(`  ld a, ${args[0]}`); // Return char value
+        this.codeLines.push('  push af'); // Push char arg (2 bytes)
+        this.codeLines.push(`  ld a, ${args[1]}`); // A = file_ptr low byte
+        this.codeLines.push('  push af'); // Push file_ptr arg (2 bytes)
+        this.codeLines.push('  push hl'); // Push write callback address
+        this.codeLines.push('  ret'); // Indirect call to write callback
+        this.codeLines.push('  ld hl, sp'); // Stack cleanup (2 args * 2 bytes = 4)
+        this.codeLines.push('  ld de, 4');
+        this.codeLines.push('  add hl, de');
+        this.codeLines.push('  ld sp, hl');
+        this.codeLines.push(`  ld a, ${args[0]}`); // Return char value in A
         break;
 
       case 'SERIAL_AVAILABLE':
-        // Check if data is available on serial port
+        // Check available data using available callback
         // Operands: [file_ptr_reg]
-        // Returns 1 if data available, 0 otherwise
-        // FILE struct layout: [streamType(0), flags(1), port(2), device(4), buffer(6), bufSize(8), bufPos(10)]
-        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = file_ptr_reg
+        // Callback calling convention: push args, load callback in HL, push hl + ret, cleanup stack
+        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = FILE pointer
         this.codeLines.push('  inc hl');
         this.codeLines.push('  inc hl');
         this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld a, (hl)`); // A = port low byte (offset 2)
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  inc hl'); // HL = offset 14 (available callback low byte)
+        this.codeLines.push(`  ld a, (hl)`);
         this.codeLines.push('  ld l, a');
         this.codeLines.push('  inc hl');
-        this.codeLines.push(`  ld a, (hl)`); // A = port high byte (offset 3)
-        this.codeLines.push('  ld h, a'); // HL = port address
-        this.codeLines.push('  ld c, h'); // C = port high byte
-        this.codeLines.push('  ld c, l'); // C = port low byte
-        this.codeLines.push('  in a, (c)'); // Peek at port
-        this.codeLines.push('  or a'); // Check if data
-        this.codeLines.push('  jp z, serial_avail_zero');
-        this.codeLines.push('  ld a, 1'); // Data available
-        this.codeLines.push('  jp serial_avail_end');
-        this.codeLines.push('serial_avail_zero:');
-        this.codeLines.push('  xor a'); // No data
-        this.codeLines.push('serial_avail_end:');
+        this.codeLines.push(`  ld a, (hl)`); // HL = offset 15 (available callback high byte)
+        this.codeLines.push('  ld h, a'); // HL = available callback address
+        this.codeLines.push(`  ld a, ${args[0]}`); // A = file_ptr low byte
+        this.codeLines.push('  push af'); // Push file_ptr arg (2 bytes)
+        this.codeLines.push('  push hl'); // Push available callback address
+        this.codeLines.push('  ret'); // Indirect call to available callback
+        this.codeLines.push('  ld hl, sp'); // Stack cleanup (1 arg * 2 bytes = 2)
+        this.codeLines.push('  ld de, 2');
+        this.codeLines.push('  add hl, de');
+        this.codeLines.push('  ld sp, hl');
         break;
 
       case 'TERMINAL_OPEN':
         // Open a terminal stream
         // Operands: none
-        // Allocates FILE struct on stack, sets streamType=2, returns pointer
-        // FILE struct layout: [streamType(0), flags(1), port(2), device(4), buffer(6), bufSize(8), bufPos(10)]
-        this.codeLines.push('  push hl');
-        this.codeLines.push('  call terminal_open');
-        this.codeLines.push(`  ld hl, sp`); // HL = SP after call
-        this.codeLines.push(`  ld de, 0`); // DE = 0 bytes (no args)
-        this.codeLines.push('  add hl, de'); // HL = SP
-        this.codeLines.push('  ld sp, hl');
-        this.codeLines.push(`  ld hl, sp`); // HL = current SP (top of allocation)
+        // Creates FILE struct on stack, sets streamType=2, stores device=1 in port field, sets callback pointers
+        // FILE struct: 18 bytes [streamType(0), flags(1), port(2), read(4), write(6), close(8), eof(10), error(12), available(14), flush(16)]
+        this.codeLines.push('  push hl'); // Save HL
+        this.codeLines.push('  call terminal_open'); // Call terminal_open external function
+        this.codeLines.push('  pop hl'); // Restore HL
+        this.codeLines.push('  ld hl, sp'); // HL = current SP (top of allocated 18-byte FILE struct)
         this.codeLines.push('  ld (hl), 2'); // streamType = 2 (terminal) (offset 0)
         this.codeLines.push('  inc hl');
         this.codeLines.push('  ld (hl), 0'); // flags = 0 (offset 1)
         this.codeLines.push('  inc hl');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // port = 0 (offset 2, low byte)
+        this.codeLines.push('  ld hl, 1'); // device = 1 (primary terminal) (offset 2)
+        this.codeLines.push('  ld (hl), l'); // store low byte
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // port = 0 (offset 2, high byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 1'); // device = 1 (primary terminal) (offset 4, low byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // device = 1 (offset 4, high byte)
+        this.codeLines.push('  ld (hl), h'); // store high byte (0)
         this.codeLines.push('  inc hl');
         this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld hl, terminal_read_cb'); // HL = terminal_read_cb address (offset 4)
+        this.codeLines.push('  ld (hl), l');
         this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld (hl), h');
         this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld hl, terminal_write_cb'); // HL = terminal_write_cb address (offset 6)
+        this.codeLines.push('  ld (hl), l');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // buffer = NULL (offset 6, low byte)
+        this.codeLines.push('  ld (hl), h');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // buffer = NULL (offset 6, high byte)
+        this.codeLines.push('  ld hl, terminal_close_cb'); // HL = terminal_close_cb address (offset 8)
+        this.codeLines.push('  ld (hl), l');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufSize = 0 (offset 8, low byte)
+        this.codeLines.push('  ld (hl), h');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufSize = 0 (offset 8, high byte)
+        this.codeLines.push('  ld hl, terminal_eof_cb'); // HL = terminal_eof_cb address (offset 10)
+        this.codeLines.push('  ld (hl), l');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufPos = 0 (offset 10, low byte)
+        this.codeLines.push('  ld (hl), h');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufPos = 0 (offset 10, high byte)
-        this.codeLines.push('  ld a, l'); // Return pointer in A
+        this.codeLines.push('  ld hl, terminal_error_cb'); // HL = terminal_error_cb address (offset 12)
+        this.codeLines.push('  ld (hl), l');
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld (hl), h');
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld hl, terminal_available_cb'); // HL = terminal_available_cb address (offset 14)
+        this.codeLines.push('  ld (hl), l');
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld (hl), h');
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld hl, terminal_flush_cb'); // HL = terminal_flush_cb address (offset 16)
+        this.codeLines.push('  ld (hl), l');
+        this.codeLines.push('  inc hl');
+        this.codeLines.push('  ld (hl), h');
+        this.codeLines.push('  ld a, l'); // Return pointer in A (low byte of SP)
         break;
 
       case 'TERMINAL_CLOSE':
-        // Close a terminal stream
+        // Close a terminal stream using close callback
         // Operands: [file_ptr_reg]
-        // Clears the FILE struct, returns 0 (success)
-        // FILE struct layout: [streamType(0), flags(1), port(2), device(4), buffer(6), bufSize(8), bufPos(10)]
-        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = file_ptr_reg
-        this.codeLines.push('  ld (hl), 0'); // streamType = 0 (offset 0)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // flags = 0 (offset 1)
+        // Callback calling convention: push args, load callback in HL, push hl + ret, cleanup stack
+        this.codeLines.push(`  ld hl, ${args[0]}`); // HL = FILE pointer
         this.codeLines.push('  inc hl');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // port = 0 (offset 2, low byte)
+        this.codeLines.push('  inc hl'); // HL = offset 8 (close callback low byte)
+        this.codeLines.push(`  ld a, (hl)`);
+        this.codeLines.push('  ld l, a');
         this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // port = 0 (offset 2, high byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // device = 0 (offset 4, low byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // device = 0 (offset 4, high byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // buffer = NULL (offset 6, low byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // buffer = NULL (offset 6, high byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufSize = 0 (offset 8, low byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufSize = 0 (offset 8, high byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufPos = 0 (offset 10, low byte)
-        this.codeLines.push('  inc hl');
-        this.codeLines.push('  ld (hl), 0'); // bufPos = 0 (offset 10, high byte)
+        this.codeLines.push(`  ld a, (hl)`); // HL = offset 9 (close callback high byte)
+        this.codeLines.push('  ld h, a'); // HL = close callback address
+        this.codeLines.push(`  ld a, ${args[0]}`); // A = file_ptr low byte
+        this.codeLines.push('  push af'); // Push file_ptr arg (2 bytes)
+        this.codeLines.push('  push hl'); // Push close callback address
+        this.codeLines.push('  ret'); // Indirect call to close callback
+        this.codeLines.push('  ld hl, sp'); // Stack cleanup (1 arg * 2 bytes = 2)
+        this.codeLines.push('  ld de, 2');
+        this.codeLines.push('  add hl, de');
+        this.codeLines.push('  ld sp, hl');
         this.codeLines.push('  xor a'); // Return 0 (success)
         break;
 

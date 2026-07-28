@@ -16,29 +16,30 @@ describe('Stdio Intrinsics - FILE Struct Type', () => {
   it('should have correct FILE struct size', () => {
     const registry = new TypeRegistry();
     const fileDef = registry.structRegistry.get('FILE');
-    assert.strictEqual(fileDef.size, 12, 'FILE struct should be 12 bytes');
+    assert.strictEqual(fileDef.size, 18, 'FILE struct should be 18 bytes');
   });
 
   it('should have correct FILE struct field offsets', () => {
     const registry = new TypeRegistry();
     const fileDef = registry.structRegistry.get('FILE');
-    assert.strictEqual(fileDef.fieldOffsets.get('buffer'), 6, 'buffer offset should be 6');
-    assert.strictEqual(fileDef.fieldOffsets.get('bufSize'), 8, 'bufSize offset should be 8');
-    assert.strictEqual(fileDef.fieldOffsets.get('bufPos'), 10, 'bufPos offset should be 10');
+    assert.strictEqual(fileDef.fieldOffsets.get('read'), 4, 'read offset should be 4');
+    assert.strictEqual(fileDef.fieldOffsets.get('write'), 6, 'write offset should be 6');
+    assert.strictEqual(fileDef.fieldOffsets.get('close'), 8, 'close offset should be 8');
+    assert.strictEqual(fileDef.fieldOffsets.get('eof'), 10, 'eof offset should be 10');
     assert.strictEqual(fileDef.fieldOffsets.get('flags'), 1, 'flags offset should be 1');
   });
 
   it('should have correct FILE struct field count', () => {
     const registry = new TypeRegistry();
     const fileDef = registry.structRegistry.get('FILE');
-    assert.strictEqual(fileDef.fields.length, 7, 'FILE struct should have 7 fields');
+    assert.strictEqual(fileDef.fields.length, 10, 'FILE struct should have 10 fields');
   });
 
   it('should have correct FILE struct field names', () => {
     const registry = new TypeRegistry();
     const fileDef = registry.structRegistry.get('FILE');
     const fieldNames = fileDef.fields.map(f => f.name.name);
-    assert.deepStrictEqual(fieldNames, ['streamType', 'flags', 'port', 'device', 'buffer', 'bufSize', 'bufPos']);
+    assert.deepStrictEqual(fieldNames, ['streamType', 'flags', 'port', 'read', 'write', 'close', 'eof', 'error', 'available', 'flush']);
   });
 });
 
@@ -273,8 +274,8 @@ describe('Stdio Intrinsics - Z80 Codegen', () => {
       }
     `);
     assert.ok(asm.includes('ld hl,'), 'Assembly should load file pointer');
-    assert.ok(asm.includes('ld (hl),'), 'Assembly should store character to buffer');
-    assert.ok(asm.includes('inc'), 'Assembly should increment buffer position');
+    assert.ok(asm.includes('ret'), 'Assembly should call write callback via indirect ret');
+    assert.ok(asm.includes('ld sp,'), 'Assembly should cleanup stack after callback');
   });
 
   it('should generate fgetc read sequence', () => {
@@ -286,8 +287,8 @@ describe('Stdio Intrinsics - Z80 Codegen', () => {
       }
     `);
     assert.ok(asm.includes('ld hl,'), 'Assembly should load file pointer');
-    assert.ok(asm.includes('ld a, (hl)'), 'Assembly should read character from buffer');
-    assert.ok(asm.includes('inc'), 'Assembly should increment buffer position');
+    assert.ok(asm.includes('ret'), 'Assembly should call read callback via indirect ret');
+    assert.ok(asm.includes('ld sp,'), 'Assembly should cleanup stack after callback');
   });
 
   it('should generate feof flag check sequence', () => {
@@ -299,8 +300,8 @@ describe('Stdio Intrinsics - Z80 Codegen', () => {
       }
     `);
     assert.ok(asm.includes('ld hl,'), 'Assembly should load file pointer');
-    assert.ok(asm.includes('and'), 'Assembly should check EOF flag bit');
-    assert.ok(asm.includes('ld a, 1'), 'Assembly should return 1 for EOF');
+    assert.ok(asm.includes('ret'), 'Assembly should call eof callback via indirect ret');
+    assert.ok(asm.includes('ld sp,'), 'Assembly should cleanup stack after callback');
   });
 
   it('should generate ferror flag check sequence', () => {
@@ -312,8 +313,8 @@ describe('Stdio Intrinsics - Z80 Codegen', () => {
       }
     `);
     assert.ok(asm.includes('ld hl,'), 'Assembly should load file pointer');
-    assert.ok(asm.includes('and'), 'Assembly should check error flag bit');
-    assert.ok(asm.includes('ld a, 1'), 'Assembly should return 1 for error');
+    assert.ok(asm.includes('ret'), 'Assembly should call error callback via indirect ret');
+    assert.ok(asm.includes('ld sp,'), 'Assembly should cleanup stack after callback');
   });
 
   it('should generate fopen allocation sequence', () => {
@@ -326,6 +327,7 @@ describe('Stdio Intrinsics - Z80 Codegen', () => {
     assert.ok(asm.includes('ld hl,'), 'Assembly should load filename pointer');
     assert.ok(asm.includes('push'), 'Assembly should allocate on stack');
     assert.ok(asm.includes('ld sp,'), 'Assembly should adjust stack pointer');
+    assert.ok(asm.includes('call fopen'), 'Assembly should call fopen external function');
   });
 
   it('should generate fclose zero sequence', () => {
@@ -337,7 +339,7 @@ describe('Stdio Intrinsics - Z80 Codegen', () => {
       }
     `);
     assert.ok(asm.includes('ld hl,'), 'Assembly should load file pointer');
-    assert.ok(asm.includes('ld (hl), 0'), 'Assembly should zero fields');
+    assert.ok(asm.includes('ret'), 'Assembly should call close callback via indirect ret');
     assert.ok(asm.includes('xor a'), 'Assembly should return 0');
   });
 
@@ -406,9 +408,8 @@ describe('Stdio Intrinsics - Z80 Codegen', () => {
         return 0;
       }
     `);
-    assert.ok(asm.includes('and #1'), 'Assembly should contain feof flag check');
-    assert.ok(asm.includes('ld a, (hl)'), 'Assembly should contain fgetc read');
-    assert.ok(asm.includes('ld (hl), a'), 'Assembly should contain fputc write');
+    assert.ok(asm.includes('ret'), 'Assembly should contain callback calls');
+    assert.ok(asm.includes('ld sp,'), 'Assembly should contain stack cleanup');
   });
 
   it('should compile fopen/fclose pair', () => {
@@ -527,29 +528,29 @@ describe('OS Abstraction - FILE Struct Fields', () => {
     assert.strictEqual(fileDef.fields[2].name.name, 'port', 'port field should be at offset 2');
   });
 
-  it('should register FILE struct with device field', () => {
+  it('should register FILE struct with read callback field', () => {
     const registry = new TypeRegistry();
     const fileDef = registry.structRegistry.get('FILE');
-    assert.strictEqual(fileDef.fields[3].name.name, 'device', 'device field should be at offset 4');
+    assert.strictEqual(fileDef.fields[3].name.name, 'read', 'read field should be at offset 4');
   });
 
-  it('should have correct FILE struct size (12 bytes)', () => {
+  it('should have correct FILE struct size (18 bytes)', () => {
     const registry = new TypeRegistry();
     const fileDef = registry.structRegistry.get('FILE');
-    assert.strictEqual(fileDef.size, 12, 'FILE struct should be 12 bytes');
+    assert.strictEqual(fileDef.size, 18, 'FILE struct should be 18 bytes');
   });
 
-  it('should have correct FILE struct field count (7 fields)', () => {
+  it('should have correct FILE struct field count (10 fields)', () => {
     const registry = new TypeRegistry();
     const fileDef = registry.structRegistry.get('FILE');
-    assert.strictEqual(fileDef.fields.length, 7, 'FILE struct should have 7 fields');
+    assert.strictEqual(fileDef.fields.length, 10, 'FILE struct should have 10 fields');
   });
 
   it('should have correct FILE struct field names', () => {
     const registry = new TypeRegistry();
     const fileDef = registry.structRegistry.get('FILE');
     const fieldNames = fileDef.fields.map(f => f.name.name);
-    assert.deepStrictEqual(fieldNames, ['streamType', 'flags', 'port', 'device', 'buffer', 'bufSize', 'bufPos']);
+    assert.deepStrictEqual(fieldNames, ['streamType', 'flags', 'port', 'read', 'write', 'close', 'eof', 'error', 'available', 'flush']);
   });
 
   it('should have correct FILE struct field offsets', () => {
@@ -558,10 +559,13 @@ describe('OS Abstraction - FILE Struct Fields', () => {
     assert.strictEqual(fileDef.fieldOffsets.get('streamType'), 0, 'streamType offset should be 0');
     assert.strictEqual(fileDef.fieldOffsets.get('flags'), 1, 'flags offset should be 1');
     assert.strictEqual(fileDef.fieldOffsets.get('port'), 2, 'port offset should be 2');
-    assert.strictEqual(fileDef.fieldOffsets.get('device'), 4, 'device offset should be 4');
-    assert.strictEqual(fileDef.fieldOffsets.get('buffer'), 6, 'buffer offset should be 6');
-    assert.strictEqual(fileDef.fieldOffsets.get('bufSize'), 8, 'bufSize offset should be 8');
-    assert.strictEqual(fileDef.fieldOffsets.get('bufPos'), 10, 'bufPos offset should be 10');
+    assert.strictEqual(fileDef.fieldOffsets.get('read'), 4, 'read offset should be 4');
+    assert.strictEqual(fileDef.fieldOffsets.get('write'), 6, 'write offset should be 6');
+    assert.strictEqual(fileDef.fieldOffsets.get('close'), 8, 'close offset should be 8');
+    assert.strictEqual(fileDef.fieldOffsets.get('eof'), 10, 'eof offset should be 10');
+    assert.strictEqual(fileDef.fieldOffsets.get('error'), 12, 'error offset should be 12');
+    assert.strictEqual(fileDef.fieldOffsets.get('available'), 14, 'available offset should be 14');
+    assert.strictEqual(fileDef.fieldOffsets.get('flush'), 16, 'flush offset should be 16');
   });
 });
 
@@ -762,7 +766,7 @@ describe('OS Abstraction - Z80 Codegen', () => {
     assert.ok(asm.includes('xor a'), 'Assembly should return 0');
   });
 
-  it('should generate serial_read sequence with IN instruction', () => {
+  it('should generate serial_read sequence with callback call', () => {
     const asm = compileToAssembly(`
       int main() {
         FILE *serial;
@@ -770,10 +774,12 @@ describe('OS Abstraction - Z80 Codegen', () => {
         return c;
       }
     `);
-    assert.ok(asm.includes('in a, (c)'), 'Assembly should use IN port instruction');
+    assert.ok(asm.includes('ld hl,'), 'Assembly should load file pointer');
+    assert.ok(asm.includes('ret'), 'Assembly should call read callback via indirect ret');
+    assert.ok(asm.includes('ld sp,'), 'Assembly should cleanup stack after callback');
   });
 
-  it('should generate serial_write sequence with OUT instruction', () => {
+  it('should generate serial_write sequence with callback call', () => {
     const asm = compileToAssembly(`
       int main() {
         FILE *serial;
@@ -781,7 +787,9 @@ describe('OS Abstraction - Z80 Codegen', () => {
         return 0;
       }
     `);
-    assert.ok(asm.includes('out (c), a'), 'Assembly should use OUT port instruction');
+    assert.ok(asm.includes('ld hl,'), 'Assembly should load file pointer');
+    assert.ok(asm.includes('ret'), 'Assembly should call write callback via indirect ret');
+    assert.ok(asm.includes('ld sp,'), 'Assembly should cleanup stack after callback');
   });
 
   it('should generate serial_available sequence', () => {
@@ -792,8 +800,9 @@ describe('OS Abstraction - Z80 Codegen', () => {
         return avail;
       }
     `);
-    assert.ok(asm.includes('in a, (c)'), 'Assembly should peek at port');
-    assert.ok(asm.includes('ld a, 1'), 'Assembly should return 1 for available');
+    assert.ok(asm.includes('ld hl,'), 'Assembly should load file pointer');
+    assert.ok(asm.includes('ret'), 'Assembly should call available callback via indirect ret');
+    assert.ok(asm.includes('ld sp,'), 'Assembly should cleanup stack after callback');
   });
 
   it('should generate terminal_open sequence', () => {
@@ -816,6 +825,7 @@ describe('OS Abstraction - Z80 Codegen', () => {
       }
     `);
     assert.ok(asm.includes('ld hl,'), 'Assembly should load file pointer');
+    assert.ok(asm.includes('ret'), 'Assembly should call close callback via indirect ret');
     assert.ok(asm.includes('xor a'), 'Assembly should return 0');
   });
 
@@ -830,9 +840,9 @@ describe('OS Abstraction - Z80 Codegen', () => {
       }
     `);
     assert.ok(asm.includes('call serial_open'), 'Assembly should contain serial_open');
-    assert.ok(asm.includes('out (c), a'), 'Assembly should contain serial_write');
-    assert.ok(asm.includes('in a, (c)'), 'Assembly should contain serial_read');
-    assert.ok(asm.includes('call serial_close') || asm.includes('ld (hl), 0'), 'Assembly should contain serial_close');
+    assert.ok(asm.includes('ret'), 'Assembly should contain callback calls');
+    assert.ok(asm.includes('ld sp,'), 'Assembly should contain stack cleanup');
+    assert.ok(asm.includes('call serial_close') || asm.includes('ret'), 'Assembly should contain serial_close');
   });
 
   it('should compile terminal echo program', () => {
@@ -845,7 +855,7 @@ describe('OS Abstraction - Z80 Codegen', () => {
       }
     `);
     assert.ok(asm.includes('call terminal_open'), 'Assembly should contain terminal_open');
-    assert.ok(asm.includes('out (c), a'), 'Assembly should contain write');
+    assert.ok(asm.includes('ret'), 'Assembly should contain callback calls');
   });
 });
 

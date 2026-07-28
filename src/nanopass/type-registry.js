@@ -25,17 +25,20 @@ export class TypeRegistry {
       new AST.StructFieldNode(new AST.TypeSpecNode('char', true, false, false, null, null, 1), new AST.IdentifierNode('streamType', null)),
       new AST.StructFieldNode(new AST.TypeSpecNode('char', true, false, false, null, null, 1), new AST.IdentifierNode('flags', null)),
       new AST.StructFieldNode(new AST.TypeSpecNode('int', true, false, false, null, null), new AST.IdentifierNode('port', null)),
-      new AST.StructFieldNode(new AST.TypeSpecNode('int', true, false, false, null, null), new AST.IdentifierNode('device', null)),
-      new AST.StructFieldNode(new AST.TypeSpecNode('char', true, false, false, null, null, 1), new AST.IdentifierNode('buffer', null)),
-      new AST.StructFieldNode(new AST.TypeSpecNode('int', true, false, false, null, null), new AST.IdentifierNode('bufSize', null)),
-      new AST.StructFieldNode(new AST.TypeSpecNode('int', true, false, false, null, null), new AST.IdentifierNode('bufPos', null)),
+      new AST.StructFieldNode(new AST.TypeSpecNode('int', true, false, false, null, null), new AST.IdentifierNode('read', null)),
+      new AST.StructFieldNode(new AST.TypeSpecNode('int', true, false, false, null, null), new AST.IdentifierNode('write', null)),
+      new AST.StructFieldNode(new AST.TypeSpecNode('int', true, false, false, null, null), new AST.IdentifierNode('close', null)),
+      new AST.StructFieldNode(new AST.TypeSpecNode('int', true, false, false, null, null), new AST.IdentifierNode('eof', null)),
+      new AST.StructFieldNode(new AST.TypeSpecNode('int', true, false, false, null, null), new AST.IdentifierNode('error', null)),
+      new AST.StructFieldNode(new AST.TypeSpecNode('int', true, false, false, null, null), new AST.IdentifierNode('available', null)),
+      new AST.StructFieldNode(new AST.TypeSpecNode('int', true, false, false, null, null), new AST.IdentifierNode('flush', null)),
     ];
     this.structRegistry.set('FILE', {
       name: 'FILE',
       kind: 'struct',
       fields: fileFields,
-      size: 12,
-      fieldOffsets: new Map([['streamType', 0], ['flags', 1], ['port', 2], ['device', 4], ['buffer', 6], ['bufSize', 8], ['bufPos', 10]])
+      size: 18,
+      fieldOffsets: new Map([['streamType', 0], ['flags', 1], ['port', 2], ['read', 4], ['write', 6], ['close', 8], ['eof', 10], ['error', 12], ['available', 14], ['flush', 16]])
     });
   }
 

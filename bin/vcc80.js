@@ -108,7 +108,7 @@ function parseArgs() {
     help: 'Verbose output (relocation annotations, hex bytes alongside disassembly)'
   });
 
-  parser.add_argument('-v', '--version', {
+  parser.add_argument('--version', {
     action: 'version',
     version: 'vcc80 Z80 C Compiler v0.1.0',
     help: 'Show version information'

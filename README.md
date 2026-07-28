@@ -18,7 +18,6 @@ See [CHANGELOG.md](CHANGELOG.md)
 ### 🔜 Next Steps
 1. Implement soft-float trigonometric operations (`sinf`, `cosf`, `tanf`, `cotf`, `asinf`, `acosf`, `atanf`, `atan2f`)
 2. Implement soft-float exponential operations (`expf`, `powf`, `logf`, `log10f`, `sqrtf`)
-3.  Add line:column information for tokens to give proper error/debugging location information
 
 
 ### 📔 Backlog (issues identified during implementation for later priorization)

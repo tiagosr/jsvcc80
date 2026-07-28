@@ -520,25 +520,43 @@ export class LexerCore {
   _tokenizeReplacement(text) {
     const tokens = [];
     let i = 0;
+    let line = 1;
+    let column = 0;
 
     while (i < text.length) {
       // Skip whitespace but track it
       if (/\s/.test(text[i])) {
-        let ws = '';
-        while (i < text.length && /\s/.test(text[i])) ws += text[i++];
+        while (i < text.length && /\s/.test(text[i])) {
+          if (text[i] === '\n') {
+            line++;
+            column = 0;
+          } else {
+            column++;
+          }
+          i++;
+        }
         continue; // Skip whitespace tokens
       }
 
+      const startLine = line;
+      const startColumn = column;
+
       // ## operator
       if (text[i] === '#' && i + 1 < text.length && text[i + 1] === '#') {
-        tokens.push({ type: '##', value: '##', location: null, _noSpaceBefore: false });
+        const endLine = line;
+        const endColumn = column + 2;
+        tokens.push({ type: '##', value: '##', location: { file: this.preprocessor.filename, start: { line: startLine, column: startColumn }, end: { line: endLine, column: endColumn } }, _noSpaceBefore: false });
+        line += 2;
         i += 2;
         continue;
       }
 
       // # operator (stringification) - only standalone, not followed by another #
       if (text[i] === '#') {
-        tokens.push({ type: '#', value: '#', location: null, _noSpaceBefore: false });
+        const endLine = line;
+        const endColumn = column + 1;
+        tokens.push({ type: '#', value: '#', location: { file: this.preprocessor.filename, start: { line: startLine, column: startColumn }, end: { line: endLine, column: endColumn } }, _noSpaceBefore: false });
+        column++;
         i++;
         continue;
       }
@@ -546,33 +564,51 @@ export class LexerCore {
       // String literal
       if (text[i] === '"' || text[i] === '\'') {
         const quote = text[i++];
+        column++;
         let value = '';
         while (i < text.length && text[i] !== quote) {
           if (text[i] === '\\' && i + 1 < text.length) {
             i++;
             value += text[i++];
+            column++;
           } else {
             value += text[i++];
+            column++;
           }
         }
-        if (i < text.length) i++; // Skip closing quote
-        tokens.push({ type: TokenType.STRING, value, location: null, _noSpaceBefore: false });
+        if (i < text.length) {
+          i++; // Skip closing quote
+          column++;
+        }
+        const endLine = line;
+        const endColumn = column;
+        tokens.push({ type: TokenType.STRING, value, location: { file: this.preprocessor.filename, start: { line: startLine, column: startColumn }, end: { line: endLine, column: endColumn } }, _noSpaceBefore: false });
         continue;
       }
 
       // Number
       if (/[0-9]/.test(text[i])) {
         let num = '';
-        while (i < text.length && /[0-9a-fA-FxX]/.test(text[i])) num += text[i++];
-        tokens.push({ type: TokenType.INTEGER, value: num, location: null, _noSpaceBefore: false });
+        while (i < text.length && /[0-9a-fA-FxX]/.test(text[i])) {
+          num += text[i++];
+          column++;
+        }
+        const endLine = line;
+        const endColumn = column;
+        tokens.push({ type: TokenType.INTEGER, value: num, location: { file: this.preprocessor.filename, start: { line: startLine, column: startColumn }, end: { line: endLine, column: endColumn } }, _noSpaceBefore: false });
         continue;
       }
 
       // Identifier
       if (/[a-zA-Z_]/.test(text[i])) {
         let ident = '';
-        while (i < text.length && /[a-zA-Z0-9_]/.test(text[i])) ident += text[i++];
-        tokens.push({ type: TokenType.IDENTIFIER, value: ident, location: null, _noSpaceBefore: false });
+        while (i < text.length && /[a-zA-Z0-9_]/.test(text[i])) {
+          ident += text[i++];
+          column++;
+        }
+        const endLine = line;
+        const endColumn = column;
+        tokens.push({ type: TokenType.IDENTIFIER, value: ident, location: { file: this.preprocessor.filename, start: { line: startLine, column: startColumn }, end: { line: endLine, column: endColumn } }, _noSpaceBefore: false });
         continue;
       }
 
@@ -580,14 +616,20 @@ export class LexerCore {
       if (i + 1 < text.length) {
         const two = text[i] + text[i + 1];
         if (['==', '!=', '<=', '>=', '<<', '>>', '&&', '||', '->', '+=', '-=', '*=', '/=', '%='].includes(two)) {
-          tokens.push({ type: two, value: two, location: null, _noSpaceBefore: false });
+          const endLine = line;
+          const endColumn = column + 2;
+          tokens.push({ type: two, value: two, location: { file: this.preprocessor.filename, start: { line: startLine, column: startColumn }, end: { line: endLine, column: endColumn } }, _noSpaceBefore: false });
+          line += 2;
           i += 2;
           continue;
         }
       }
 
       // Single character
-      tokens.push({ type: text[i], value: text[i], location: null, _noSpaceBefore: false });
+      const endLine = line;
+      const endColumn = column + 1;
+      tokens.push({ type: text[i], value: text[i], location: { file: this.preprocessor.filename, start: { line: startLine, column: startColumn }, end: { line: endLine, column: endColumn } }, _noSpaceBefore: false });
+      column++;
       i++;
     }
 

@@ -810,19 +810,34 @@ export class AttributeNode extends ASTNode {
 }
 
 /**
- * AST node for attribute-annotated declarations
- */
+  * AST node for attribute-annotated declarations
+  */
 export class AnnotatedDeclNode extends ASTNode {
   /**
-   * Creates an annotated declaration node
-   * @param {DeclNode|FunctionNode|StructNode} declaration - Original declaration
-   * @param {AttributeNode[]} attributes - Applied attributes
-   * @param {SourceLocation} location - Source location
-   */
+    * Creates an annotated declaration node
+    * @param {DeclNode|FunctionNode|StructNode} declaration - Original declaration
+    * @param {AttributeNode[]} attributes - Applied attributes
+    * @param {SourceLocation} location - Source location
+    */
   constructor(declaration, attributes, location) {
     super('AnnotatedDecl', location);
     this.declaration = declaration;
     this.attributes = attributes;
+  }
+}
+
+/**
+  * AST node for brace-enclosed initializer lists (array/struct initialization)
+  */
+export class InitializerNode extends ASTNode {
+  /**
+    * Creates an initializer node
+    * @param {ASTNode[]} elements - Initializer elements (LiteralNode, InitializerNode for nested, or expression ASTNode)
+    * @param {SourceLocation} location - Source location
+    */
+  constructor(elements, location) {
+    super('Initializer', location);
+    this.elements = elements;
   }
 }
 

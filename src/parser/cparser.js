@@ -394,6 +394,26 @@ export class CPegParser {
       }
     );
 
+    const braceInit = map(
+      seq(
+        lit('{'),
+        opt(seq(
+          lazy(() => initializerElement),
+          many(seq(lit(','), lazy(() => initializerElement)))
+        )),
+        lit('}')
+      ),
+      ([lbrace, elemsOpt, rbrace]) => {
+        const elements = elemsOpt ? [elemsOpt[0], ...elemsOpt[1].map(([, e]) => e)] : [];
+        return new AST.InitializerNode(elements, locFromToken(lbrace));
+      }
+    );
+
+    const initializerElement = alt(
+      lazy(() => this.ruleRefs.assignmentExpr),
+      lazy(() => braceInit)
+    );
+
     const variableDecl = map(
       seq(
         opt(kw('register')),
@@ -405,7 +425,10 @@ export class CPegParser {
           opt(lazy(() => this.ruleRefs.expression)),
           lit(']')
         )),
-        opt(seq(lit('='), lazy(() => this.ruleRefs.expression))),
+        opt(alt(
+          seq(lit('='), braceInit),
+          seq(lit('='), lazy(() => this.ruleRefs.expression))
+        )),
         lit(';')
       ),
       ([regKw, typeSpec, stars, name, arrayDims, init]) => {

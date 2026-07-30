@@ -118,28 +118,41 @@ export class Z80Codegen {
    * Generates a global variable definition
    * @param {Object} global - Global variable descriptor
    */
-  generateGlobal(global) {
-    const name = global.name;
-    
-    if (global.type === 'string') {
-      this.codeLines.push(`${name}: .db ${global.bytes.join(', ')}`);
-    } else if (global.type === 'data') {
-      // Data declaration: db, dw
-      if (global.value !== undefined) {
-        this.codeLines.push(`${name}: .db ${this.formatValue(global.value)}`);
-      } else {
-        // Reserved space
-        const size = global.size || 1;
-        this.codeLines.push(`${name}: .ds ${size}`);
-      }
-    } else if (global.type === 'bss') {
-      // Uninitialized data
-      this.codeLines.push(`${name}: .ds ${global.size || 1}`);
-    } else {
-      const size = global.size || 1;
-      this.codeLines.push(`${name}: .ds ${size}`);
-    }
-  }
+   generateGlobal(global) {
+     const name = global.name;
+     
+     if (global.type === 'string') {
+       this.codeLines.push(`${name}: .db ${global.bytes.join(', ')}`);
+     } else if (global.type === 'data') {
+       // Data declaration: db, dw
+       if (Array.isArray(global.initial)) {
+         this.codeLines.push(`${name}: .db ${global.initial.map(v => this.formatValue(v)).join(', ')}`);
+       } else if (global.value !== undefined) {
+         this.codeLines.push(`${name}: .db ${this.formatValue(global.value)}`);
+       } else {
+         // Reserved space
+         const size = global.size || 1;
+         this.codeLines.push(`${name}: .ds ${size}`);
+       }
+     } else if (global.type === 'bss') {
+       // Uninitialized data
+       this.codeLines.push(`${name}: .ds ${global.size || 1}`);
+     } else if (Array.isArray(global.initial)) {
+       // Array with initializer: emit .db/.dw/.dd for each element
+       const elemSize = global.elemSize || 1;
+       const values = global.initial;
+       if (elemSize === 4) {
+         this.codeLines.push(`${name}: .dd ${values.map(v => this.formatValue(v)).join(', ')}`);
+       } else if (elemSize === 2) {
+         this.codeLines.push(`${name}: .dw ${values.map(v => this.formatValue(v)).join(', ')}`);
+       } else {
+         this.codeLines.push(`${name}: .db ${values.map(v => this.formatValue(v)).join(', ')}`);
+       }
+     } else {
+       const size = global.size || 1;
+       this.codeLines.push(`${name}: .ds ${size}`);
+     }
+   }
 
   /**
    * Generates a complete function definition

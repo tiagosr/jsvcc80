@@ -45,6 +45,39 @@
   },
   "nodes": [
     {
+      "label": "CHANGELOG.md",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "changelog",
+      "community": 45,
+      "community_name": "Current Implementation Status",
+      "norm_label": "changelog.md"
+    },
+    {
+      "label": "\ud83e\uddea Test Results",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "changelog_test_results",
+      "community": 45,
+      "community_name": "Current Implementation Status",
+      "norm_label": "\ud83e\uddea test results"
+    },
+    {
+      "label": "\u2705 Completed",
+      "file_type": "document",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "changelog_completed",
+      "community": 45,
+      "community_name": "Current Implementation Status",
+      "norm_label": "\u2705 completed"
+    },
+    {
       "label": "README.md",
       "file_type": "document",
       "source_file": "README.md",
@@ -103,7 +136,7 @@
       "label": "\ud83d\udcd4 Backlog (issues identified during implementation for later priorization)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L24",
+      "source_location": "L23",
       "_origin": "ast",
       "id": "readme_backlog_issues_identified_during_implementation_for_later_priorization",
       "community": 45,
@@ -111,48 +144,81 @@
       "norm_label": "\ud83d\udcd4 backlog (issues identified during implementation for later priorization)"
     },
     {
+      "label": "vcc80.js",
+      "file_type": "code",
+      "source_file": "bin/vcc80.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "bin_vcc80",
+      "community": 31,
+      "community_name": "Resolved Symbol",
+      "norm_label": "vcc80.js"
+    },
+    {
+      "label": "__filename",
+      "file_type": "code",
+      "source_file": "bin/vcc80.js",
+      "source_location": "L15",
+      "_origin": "ast",
+      "id": "bin_vcc80_filename",
+      "community": 31,
+      "community_name": "Resolved Symbol",
+      "norm_label": "__filename"
+    },
+    {
+      "label": "__dirname",
+      "file_type": "code",
+      "source_file": "bin/vcc80.js",
+      "source_location": "L16",
+      "_origin": "ast",
+      "id": "bin_vcc80_dirname",
+      "community": 31,
+      "community_name": "Resolved Symbol",
+      "norm_label": "__dirname"
+    },
+    {
+      "label": "parseArgs()",
+      "file_type": "code",
+      "source_file": "bin/vcc80.js",
+      "source_location": "L21",
+      "_origin": "ast",
+      "id": "bin_vcc80_parseargs",
+      "community": 31,
+      "community_name": "Resolved Symbol",
+      "norm_label": "parseargs()"
+    },
+    {
+      "label": "processFile()",
+      "file_type": "code",
+      "source_file": "bin/vcc80.js",
+      "source_location": "L160",
+      "_origin": "ast",
+      "id": "bin_vcc80_processfile",
+      "community": 31,
+      "community_name": "Resolved Symbol",
+      "norm_label": "processfile()"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "bin/vcc80.js",
+      "source_location": "L197",
+      "_origin": "ast",
+      "id": "bin_vcc80_main",
+      "community": 31,
+      "community_name": "Resolved Symbol",
+      "norm_label": "main()"
+    },
+    {
       "label": "token-location.test.js",
       "file_type": "code",
       "source_file": "src/tests/token-location.test.js",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "src_tests_token_location_test",
       "community": 101,
       "community_name": "token-location.test.js",
-      "norm_label": "token-location.test.js"
-    },
-    {
-      "label": "CHANGELOG.md",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 31,
-      "community_name": "Resolved Symbol",
-      "norm_label": "changelog.md",
-      "id": "changelog"
-    },
-    {
-      "label": "\ud83e\uddea Test Results",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 31,
-      "community_name": "Resolved Symbol",
-      "norm_label": "\ud83e\uddea test results",
-      "id": "changelog_test_results"
-    },
-    {
-      "label": "\u2705 Completed",
-      "file_type": "document",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L4",
-      "_origin": "ast",
-      "community": 31,
-      "community_name": "Resolved Symbol",
-      "norm_label": "\u2705 completed",
-      "id": "changelog_completed"
+      "norm_label": "token-location.test.js",
+      "id": "src_tests_token_location_test"
     },
     {
       "label": "lexer-core.js",
@@ -428,72 +494,6 @@
       "community_name": "Link Result",
       "norm_label": "._getparentdir()",
       "id": "src_preprocessor_lexer_core_lexercore_getparentdir"
-    },
-    {
-      "label": "vcc80.js",
-      "file_type": "code",
-      "source_file": "bin/vcc80.js",
-      "source_location": "L1",
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "Compiler Options & Loading",
-      "norm_label": "vcc80.js",
-      "id": "bin_vcc80"
-    },
-    {
-      "label": "__filename",
-      "file_type": "code",
-      "source_file": "bin/vcc80.js",
-      "source_location": "L15",
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "Compiler Options & Loading",
-      "norm_label": "__filename",
-      "id": "bin_vcc80_filename"
-    },
-    {
-      "label": "__dirname",
-      "file_type": "code",
-      "source_file": "bin/vcc80.js",
-      "source_location": "L16",
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "Compiler Options & Loading",
-      "norm_label": "__dirname",
-      "id": "bin_vcc80_dirname"
-    },
-    {
-      "label": "parseArgs()",
-      "file_type": "code",
-      "source_file": "bin/vcc80.js",
-      "source_location": "L21",
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "Compiler Options & Loading",
-      "norm_label": "parseargs()",
-      "id": "bin_vcc80_parseargs"
-    },
-    {
-      "label": "processFile()",
-      "file_type": "code",
-      "source_file": "bin/vcc80.js",
-      "source_location": "L160",
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "Compiler Options & Loading",
-      "norm_label": "processfile()",
-      "id": "bin_vcc80_processfile"
-    },
-    {
-      "label": "main()",
-      "file_type": "code",
-      "source_file": "bin/vcc80.js",
-      "source_location": "L197",
-      "_origin": "ast",
-      "community": 22,
-      "community_name": "Compiler Options & Loading",
-      "norm_label": "main()",
-      "id": "bin_vcc80_main"
     },
     {
       "label": "objectfile_viewer.js",
@@ -15114,6 +15114,39 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "changelog",
+      "target": "changelog_completed",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "CHANGELOG.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "changelog",
+      "target": "changelog_test_results",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "readme",
+      "target": "changelog",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "README.md",
       "source_location": "L10",
       "weight": 1.0,
@@ -15126,7 +15159,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L24",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_current_implementation_status",
@@ -15169,24 +15202,81 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L4",
+      "source_file": "bin/vcc80.js",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "changelog",
-      "target": "changelog_completed"
+      "source": "bin_vcc80",
+      "target": "bin_vcc80_dirname",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "CHANGELOG.md",
-      "source_location": "L1",
+      "source_file": "bin/vcc80.js",
+      "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "changelog",
-      "target": "changelog_test_results"
+      "source": "bin_vcc80",
+      "target": "bin_vcc80_filename",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "bin/vcc80.js",
+      "source_location": "L197",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "bin_vcc80",
+      "target": "bin_vcc80_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "bin/vcc80.js",
+      "source_location": "L21",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "bin_vcc80",
+      "target": "bin_vcc80_parseargs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "bin/vcc80.js",
+      "source_location": "L160",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "bin_vcc80",
+      "target": "bin_vcc80_processfile",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "bin/vcc80.js",
+      "source_location": "L198",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "bin_vcc80_main",
+      "target": "bin_vcc80_parseargs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "bin/vcc80.js",
+      "source_location": "L353",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "bin_vcc80_main",
+      "target": "bin_vcc80_processfile",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -16039,98 +16129,6 @@
       "confidence_score": 1.0,
       "source": "src_preprocessor_lexer_core_lexercore_readidentifier",
       "target": "src_preprocessor_lexer_core_lexercore_rescan"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "bin/vcc80.js",
-      "source_location": "L16",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "bin_vcc80",
-      "target": "bin_vcc80_dirname"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "bin/vcc80.js",
-      "source_location": "L15",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "bin_vcc80",
-      "target": "bin_vcc80_filename"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "bin/vcc80.js",
-      "source_location": "L197",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "bin_vcc80",
-      "target": "bin_vcc80_main"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "bin/vcc80.js",
-      "source_location": "L21",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "bin_vcc80",
-      "target": "bin_vcc80_parseargs"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "bin/vcc80.js",
-      "source_location": "L160",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "bin_vcc80",
-      "target": "bin_vcc80_processfile"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "bin/vcc80.js",
-      "source_location": "L198",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "bin_vcc80_main",
-      "target": "bin_vcc80_parseargs"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "bin/vcc80.js",
-      "source_location": "L353",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "bin_vcc80_main",
-      "target": "bin_vcc80_processfile"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "deferred": true,
-      "confidence": "EXTRACTED",
-      "source_file": "bin/vcc80.js",
-      "source_location": "L223",
-      "weight": 1.0,
-      "_origin": "ast",
-      "confidence_score": 1.0,
-      "source": "bin_vcc80_main",
-      "target": "src_disassembler_objectfile_viewer"
     },
     {
       "relation": "contains",
@@ -45089,5 +45087,5 @@
       ]
     }
   ],
-  "built_at_commit": "cf7275b9cfd0193b77898a3ec7bc090a19312f8f"
+  "built_at_commit": "45b80e068c8e82515bc0b98ddbc98a9491043ea6"
 }

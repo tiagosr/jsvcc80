@@ -1,16 +1,16 @@
 # Graph Report - jsvcc80  (2026-07-28)
 
 ## Corpus Check
-- 160 files · ~166,776 words
+- 161 files · ~167,842 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1356 nodes · 2590 edges · 101 communities (63 shown, 38 thin omitted)
+- 1357 nodes · 2589 edges · 99 communities (63 shown, 36 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 6 edges (avg confidence: 0.83)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `47a06942`
+- Built from commit: `cf7275b9`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -52,7 +52,6 @@
 - ControlFlowNode
 - LoadAddrInstruction
 - EnumNode
-- DerefLoadInstruction
 - GotoNode
 - wladxcodegen.js
 - WlaDxCodegen
@@ -72,10 +71,8 @@
 - AnyParser
 - ConstantEvaluator
 - serializeObjectFile
-- RegisterAllocator
 - LinkResult
 - Memory
-- .generate
 - ResolvedSymbol
 - IntrinsicHandler
 - Simulator
@@ -124,7 +121,7 @@
 - **Compilation Pipeline Stages** — agents_preprocessor_lexer, agents_parser_cparser, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_backend_z80codegen [INFERRED]
 - **Core Modules Read Order** — agents_compiler_entry, agents_preprocessor_lexer, agents_parser_combinators, agents_parser_cparser, agents_nanopass_il, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_nanopass_register_passes, agents_backend_z80codegen [INFERRED]
 
-## Communities (101 total, 38 thin omitted)
+## Communities (99 total, 36 thin omitted)
 
 ### Community 0 - "AST Node Definitions"
 Cohesion: 0.04
@@ -145,6 +142,10 @@ Nodes (21): AllocStackInstruction, BinaryOpInstruction, CallIndirectInstruction,
 ### Community 4 - "Plugin Interfaces"
 Cohesion: 0.06
 Nodes (8): AttributeHandler, CodegenPass, IREmissionPass, OptimizationPass, ParserExtension, PluginLoader, PreprocessorExtension, SemanticsPass
+
+### Community 8 - "Z80 Code Generator"
+Cohesion: 0.08
+Nodes (4): Registers, Z80Codegen, compile(), compileToAssembly()
 
 ### Community 9 - "Lexer & C Parser"
 Cohesion: 0.22
@@ -206,10 +207,6 @@ Nodes (3): Compiler, CompilerOptions, PassManager
 Cohesion: 0.11
 Nodes (47): alt(), AltParser, any(), lazy(), LazyParser, lit(), LocationParser, many() (+39 more)
 
-### Community 31 - "Resolved Symbol"
-Cohesion: 0.15
-Nodes (6): Registers, AstToIr, CPegParser, compile(), compile(), compileToAssembly()
-
 ### Community 32 - "PluginRegistry"
 Cohesion: 0.40
 Nodes (4): New SDCC 4.2.0 Z80 function call ABI, z88dk/Old SDCC Z80 `callee` function call ABI, z88dk/Old SDCC Z80 `fastcall` function call ABI, z88dk/Old SDCC Z80 function call ABI
@@ -239,8 +236,8 @@ Cohesion: 0.09
 Nodes (6): globalRegistry, PluginRegistry, CalleeAttributeHandler, CdeclAttributeHandler, FastcallAttributeHandler, NewSdccAttributeHandler
 
 ### Community 45 - "Current Implementation Status"
-Cohesion: 0.22
-Nodes (7): ✅ Completed, 🧪 Test Results, 📔 Backlog (issues identified during implementation for later priorization), ✅ Completed, Current Implementation Status, 🔄 In Progress, 🔜 Next Steps
+Cohesion: 0.33
+Nodes (5): 📔 Backlog (issues identified during implementation for later priorization), ✅ Completed, Current Implementation Status, 🔄 In Progress, 🔜 Next Steps
 
 ### Community 53 - "FINDINGS.md"
 Cohesion: 0.40
@@ -251,8 +248,8 @@ Cohesion: 0.13
 Nodes (3): IntrinsicHandler, IntrinsicMap, TranslationState
 
 ### Community 55 - "CaseClauseNode"
-Cohesion: 0.17
-Nodes (3): Lexer, Keywords, TokenType
+Cohesion: 0.07
+Nodes (11): AstToIr, CPegParser, Lexer, MacroExpander, Keywords, TokenType, compile(), compileToAssembly() (+3 more)
 
 ### Community 56 - "CompoundNode"
 Cohesion: 0.08
@@ -265,10 +262,6 @@ Nodes (16): arrayDimParser, basicFuncPointerPattern, buildExtendedTypeSpecifier(
 ### Community 65 - "serializeObjectFile"
 Cohesion: 0.32
 Nodes (4): BinaryWriter, encodeString(), saveObjectFile(), serializeObjectFile()
-
-### Community 66 - "RegisterAllocator"
-Cohesion: 0.43
-Nodes (3): compile(), parse(), translate()
 
 ### Community 70 - "ResolvedSymbol"
 Cohesion: 0.73
@@ -283,20 +276,20 @@ Cohesion: 0.83
 Nodes (3): buildPrimaryExpr(), kw(), locFromToken()
 
 ## Knowledge Gaps
-- **78 isolated node(s):** `🧪 Test Results`, `✅ Completed`, `✅ Completed`, `🔄 In Progress`, `🔜 Next Steps` (+73 more)
+- **78 isolated node(s):** `✅ Completed`, `🔄 In Progress`, `🔜 Next Steps`, `📔 Backlog (issues identified during implementation for later priorization)`, `🧪 Test Results` (+73 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **38 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **36 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Z80Codegen` connect `Z80 Code Generator` to `GotoNode`, `RegisterAllocator`, `.generate`, `Resolved Symbol`?**
-  _High betweenness centrality (0.063) - this node is a cross-community bridge._
-- **Why does `LexerCore` connect `Link Result` to `CaseClauseNode`?**
-  _High betweenness centrality (0.053) - this node is a cross-community bridge._
-- **Why does `Lexer` connect `CaseClauseNode` to `GotoNode`, `AST Node Definitions`, `RegisterAllocator`, `Resolved Symbol`?**
-  _High betweenness centrality (0.030) - this node is a cross-community bridge._
-- **What connects `🧪 Test Results`, `✅ Completed`, `✅ Completed` to the rest of the system?**
+- **Why does `Z80Codegen` connect `Z80 Code Generator` to `GotoNode`, `CaseClauseNode`?**
+  _High betweenness centrality (0.050) - this node is a cross-community bridge._
+- **Why does `Lexer` connect `CaseClauseNode` to `GotoNode`, `AST Node Definitions`?**
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._
+- **Why does `BlockRegisterAllocator` connect `Register Allocator` to `CompoundNode`?**
+  _High betweenness centrality (0.025) - this node is a cross-community bridge._
+- **What connects `✅ Completed`, `🔄 In Progress`, `🔜 Next Steps` to the rest of the system?**
   _78 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AST Node Definitions` be split into smaller, more focused modules?**
   _Cohesion score 0.04163265306122449 - nodes in this community are weakly interconnected._

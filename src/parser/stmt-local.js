@@ -77,25 +77,21 @@ function buildStatement(ctx) {
   const braceInit = map(
     seq(
       lit('{'),
-      many(seq(
-        literalExpr,
-        opt(lit(','))
+      opt(seq(
+        lazy(() => initializerElement),
+        many(seq(lit(','), lazy(() => initializerElement)))
       )),
       lit('}')
     ),
-    ([, items]) => {
-      // Extract values from the initializer list
-      const values = [];
-      for (const item of items) {
-        const expr = item[0];
-        if (expr instanceof AST.LiteralNode) {
-          values.push(expr.value);
-        } else {
-          values.push(null);
-        }
-      }
-      return values;
+    ([lbrace, elemsOpt, rbrace]) => {
+      const elements = elemsOpt ? [elemsOpt[0], ...elemsOpt[1].map(([, e]) => e)] : [];
+      return new AST.InitializerNode(elements, locFromToken(lbrace));
     }
+  );
+
+  const initializerElement = alt(
+    lazy(() => ctx.ruleRefs.assignmentExpr),
+    lazy(() => braceInit)
   );
 
   const localDecl = map(

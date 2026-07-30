@@ -1,7 +1,9 @@
 ### 🧪 Test Results
-- 1623 passing tests
+- 1645 passing tests
 
 ### ✅ Completed
+- **Array initializer lists** - `InitializerNode` AST type for brace-enclosed initializer lists; parser `braceInit` rule rewritten to accept expressions and nested initializers via `initializerElement` with `lazy()` circular dependency resolution; global `variableDecl` extended to accept brace initializers; `translateExpressionValue` extended to recursively extract values from `InitializerNode`; `translateInitializer` method added for local array element storage sequences; `translateDecl` extended with `elemSize` and `baseType` fields; `generateGlobal` extended to emit `.db/.dw/.dd` directives for array initializers based on element size; 22 new tests
+
 - **Soft-float trigonometric and exponential operations** - Z80 assembly implementations for trigonometric functions (`sinf`, `cosf`, `tanf`, `cotf`, `asinf`, `acosf`, `atanf`, `atan2f`) and exponential/power functions (`sqrtf`, `expf`, `powf`, `logf`, `log10f`); `float.h` extended with all new C API declarations and internal `_float_*` function declarations; Expression translator updated with `floatFuncMapping` for all 13 new functions and `translateFloatCall` extended to handle multi-argument functions (`atan2f`, `powf`); Fixed `translateFloatCall` to handle parser's single-node args storage (converted to array); 36 new tests for trigonometric and exponential functions
 
 - **Deep call nesting compilation verified working** - Tested 20-level deep call nesting (`f20→f19→...→f1`) compiles without failure; CLI `-v/--version` option conflict fixed (line 111 in `bin/vcc80.js` had duplicate `-v` short flag conflicting with `-v/--verbose` on line 105); 9 new tests for version flag

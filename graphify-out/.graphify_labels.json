@@ -38,7 +38,7 @@
   "36": "LoadAddrInstruction",
   "37": "EnumNode",
   "38": "EnumValueNode",
-  "39": "DerefLoadInstruction",
+  "39": "MacroExpander",
   "40": "GotoNode",
   "41": "wladxcodegen.js",
   "42": "WlaDxCodegen",
@@ -65,10 +65,10 @@
   "63": "IREmissionPass",
   "64": "ConstantEvaluator",
   "65": "serializeObjectFile",
-  "66": "RegisterAllocator",
+  "66": "intrinsics.js",
   "67": "LinkResult",
   "68": "Memory",
-  "69": ".generate",
+  "69": "StringLiteralCollector",
   "70": "ResolvedSymbol",
   "71": "IntrinsicHandler",
   "72": "IREmissionPass",
@@ -100,5 +100,10 @@
   "98": "expr-unary.js",
   "99": "ConstantEvaluator",
   "100": "LinkResult",
-  "101": "token-location.test.js"
+  "101": "token-location.test.js",
+  "102": "ManyParser",
+  "103": "OptParser",
+  "104": "PredParser",
+  "105": "SomeParser",
+  "106": "float_trig_exp.test.js"
 }

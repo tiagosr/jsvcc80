@@ -195,8 +195,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1785279506.2048016,
-    "ast_hash": "8ca80c817f7746a6e066c072068047e8",
+    "mtime": 1785263723.8416758,
+    "ast_hash": "df8c423b63acc095934c4d2459397146",
     "semantic_hash": ""
   },
   "FINDINGS.md": {
@@ -335,8 +335,8 @@
     "semantic_hash": ""
   },
   "src/nanopass/expression-translator.js": {
-    "mtime": 1785279482.5302727,
-    "ast_hash": "4374bfd12d4dd6f062082e7c8360a91c",
+    "mtime": 1785236772.7536957,
+    "ast_hash": "680e7ececa414e7af58a2ed470cd1afb",
     "semantic_hash": ""
   },
   "src/nanopass/intrinsics.js": {
@@ -470,8 +470,8 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1785279524.163136,
-    "ast_hash": "c27cef0c2312d60580f6bf79ff10e7a4",
+    "mtime": 1785263716.1619706,
+    "ast_hash": "a888961f31c710f019918a19090863d1",
     "semantic_hash": ""
   },
   "src/tests/linker.crt0.test.js": {
@@ -770,8 +770,8 @@
     "semantic_hash": ""
   },
   "src/core/stdlib/float.h": {
-    "mtime": 1785278793.1918724,
-    "ast_hash": "60c837365a0997406f7e921093ac088b",
+    "mtime": 1785236628.359647,
+    "ast_hash": "5557eacdc9a6f5128d00fd56639adf62",
     "semantic_hash": ""
   },
   "src/tests/float.test.js": {
@@ -802,11 +802,6 @@
   "src/tests/token-location.test.js": {
     "mtime": 1785258493.4599595,
     "ast_hash": "ff85ca45e545330f9dbc0295aa2e7f3e",
-    "semantic_hash": ""
-  },
-  "src/tests/float_trig_exp.test.js": {
-    "mtime": 1785279014.2453427,
-    "ast_hash": "c65c1913f5440c7434386a4d788220ce",
     "semantic_hash": ""
   }
 }

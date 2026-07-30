@@ -144,17 +144,23 @@ export class StatementTranslator {
     });
 
     if (decl.init) {
-      const result = this.expressionTranslator.translateExpression(decl.init);
-      blocks.push(...result.blocks);
-      if (isFuncPtr) {
-        const initBlock = blocks[blocks.length - 1];
-        initBlock.add(new IL.LoadAddrInstruction('fp_addr', decl.name.name));
-        initBlock.add(new IL.BinaryOpInstruction('fp_addr', 'addr', 'fp_addr', result.result));
+      if (decl.init instanceof AST.InitializerNode) {
+        const elemSize = typeInfo.getElementSize(this.context.typeRegistry.structRegistry);
+        const initResult = this.expressionTranslator.translateInitializer(decl.init, decl.name.name, elemSize);
+        blocks.push(...initResult.blocks);
       } else {
-        const storeSize = resolved.baseType === 'float' ? 4 : (size || 1);
-        blocks[blocks.length - 1].add(
-          new IL.StoreInstruction(decl.name.name, result.result, storeSize)
-        );
+        const result = this.expressionTranslator.translateExpression(decl.init);
+        blocks.push(...result.blocks);
+        if (isFuncPtr) {
+          const initBlock = blocks[blocks.length - 1];
+          initBlock.add(new IL.LoadAddrInstruction('fp_addr', decl.name.name));
+          initBlock.add(new IL.BinaryOpInstruction('fp_addr', 'addr', 'fp_addr', result.result));
+        } else {
+          const storeSize = resolved.baseType === 'float' ? 4 : (size || 1);
+          blocks[blocks.length - 1].add(
+            new IL.StoreInstruction(decl.name.name, result.result, storeSize)
+          );
+        }
       }
     } else if (typeInfo.isArray) {
       blocks.push(new IL.BasicBlock(this.context.state.label('alloc'), [

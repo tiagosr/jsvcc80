@@ -1,16 +1,16 @@
-# Graph Report - jsvcc80  (2026-07-29)
+# Graph Report - jsvcc80  (2026-07-28)
 
 ## Corpus Check
-- 162 files · ~169,750 words
+- 161 files · ~167,873 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1359 nodes · 2590 edges · 107 communities (59 shown, 48 thin omitted)
+- 1357 nodes · 2589 edges · 99 communities (64 shown, 35 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 6 edges (avg confidence: 0.83)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `b6904a31`
+- Built from commit: `45b80e06`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -52,7 +52,6 @@
 - ControlFlowNode
 - LoadAddrInstruction
 - EnumNode
-- MacroExpander
 - GotoNode
 - wladxcodegen.js
 - WlaDxCodegen
@@ -72,13 +71,10 @@
 - AnyParser
 - ConstantEvaluator
 - serializeObjectFile
-- intrinsics.js
 - LinkResult
 - Memory
-- StringLiteralCollector
 - ResolvedSymbol
 - IntrinsicHandler
-- bitfields.test.js
 - Simulator
 - CPU
 - StringLiteralCollector
@@ -93,10 +89,6 @@
 - expr-postfix.js
 - ConstantEvaluator
 - LinkResult
-- ManyParser
-- OptParser
-- PredParser
-- SomeParser
 
 ## God Nodes (most connected - your core abstractions)
 1. `Z80Codegen` - 49 edges
@@ -129,27 +121,31 @@
 - **Compilation Pipeline Stages** — agents_preprocessor_lexer, agents_parser_cparser, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_backend_z80codegen [INFERRED]
 - **Core Modules Read Order** — agents_compiler_entry, agents_preprocessor_lexer, agents_parser_combinators, agents_parser_cparser, agents_nanopass_il, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_nanopass_register_passes, agents_backend_z80codegen [INFERRED]
 
-## Communities (107 total, 48 thin omitted)
+## Communities (99 total, 35 thin omitted)
 
 ### Community 0 - "AST Node Definitions"
-Cohesion: 0.03
-Nodes (31): AddressOfNode, AnnotatedDeclNode, BinaryOpNode, CallNode, CaseClauseNode, CompoundNode, ControlFlowNode, DerefNode (+23 more)
+Cohesion: 0.04
+Nodes (22): AddressOfNode, AttributeNode, BinaryOpNode, CallNode, CaseClauseNode, CompoundNode, ControlFlowNode, DeclNode (+14 more)
 
 ### Community 1 - "Parser Combinators"
-Cohesion: 0.11
-Nodes (5): BasicBlock, FunctionIR, LoadInstruction, ProgramIR, ReturnInstruction
+Cohesion: 0.12
+Nodes (4): BasicBlock, FunctionIR, getFunctionCallingConvention(), ProgramIR
 
 ### Community 2 - "Parser Error Handling"
 Cohesion: 0.18
 Nodes (6): BinaryDisassembler, BinaryDisassembly, bytesToHex(), disassembleBinary(), disassembleBinaryFromFile(), resolveSymbolForAddress()
 
 ### Community 3 - "Z80 Codegen & IR Base"
-Cohesion: 0.05
-Nodes (27): AttributeNode, GotoNode, IdentifierNode, IndexNode, makeLocation(), AllocStackInstruction, BinaryOpInstruction, CallIndirectInstruction (+19 more)
+Cohesion: 0.06
+Nodes (21): AllocStackInstruction, BinaryOpInstruction, CallIndirectInstruction, CallInstruction, DerefLoadInstruction, DerefStoreInstruction, FreeStackInstruction, IndexedLoadInstruction (+13 more)
 
 ### Community 4 - "Plugin Interfaces"
 Cohesion: 0.06
 Nodes (8): AttributeHandler, CodegenPass, IREmissionPass, OptimizationPass, ParserExtension, PluginLoader, PreprocessorExtension, SemanticsPass
+
+### Community 8 - "Z80 Code Generator"
+Cohesion: 0.08
+Nodes (4): Registers, Z80Codegen, compile(), compileToAssembly()
 
 ### Community 9 - "Lexer & C Parser"
 Cohesion: 0.22
@@ -176,12 +172,12 @@ Cohesion: 0.18
 Nodes (8): Archive, ArchiveMember, createArchive(), deserializeArchive(), isArchive(), loadArchive(), saveArchive(), serializeArchive()
 
 ### Community 18 - "Object File & Relocations"
-Cohesion: 0.15
-Nodes (14): createCrt0(), getCrt0Size(), resolveCrt0Relocations(), link(), LinkerOptions, ObjectFile, ObjectRelocation, ObjectSymbol (+6 more)
+Cohesion: 0.20
+Nodes (12): getCrt0Size(), resolveCrt0Relocations(), link(), LinkerOptions, ObjectRelocation, ObjectSymbol, RelocationType, SectionType (+4 more)
 
 ### Community 19 - "BinaryOpNode"
-Cohesion: 0.14
-Nodes (9): Registers, AstToIr, CPegParser, compile(), compile(), compileToAssembly(), compile(), parse() (+1 more)
+Cohesion: 0.31
+Nodes (3): computeFieldOffsets(), computeStructSize(), TypeRegistry
 
 ### Community 20 - "Object File Format"
 Cohesion: 0.20
@@ -227,6 +223,14 @@ Nodes (4): ASTNode, CastNode, FunctionNode, ParameterNode
 Cohesion: 0.18
 Nodes (5): CodegenError, CompilerError, LexerError, ParserError, SemanticError
 
+### Community 40 - "GotoNode"
+Cohesion: 0.05
+Nodes (19): AnnotatedDeclNode, EnumNode, JumpNode, LiteralNode, MemberNode, PragmacNode, PreprocNode, ReturnNode (+11 more)
+
+### Community 42 - "WlaDxCodegen"
+Cohesion: 0.15
+Nodes (3): createCrt0(), ObjectFile, ObjectSection
+
 ### Community 43 - "IndexedLoadInstruction"
 Cohesion: 0.50
 Nodes (3): plugin, $schema, .opencode/plugins/graphify.js
@@ -243,9 +247,17 @@ Nodes (7): ✅ Completed, 🧪 Test Results, 📔 Backlog (issues identified dur
 Cohesion: 0.40
 Nodes (4): Context scale issues, Philosophical findings, Software design issues, Tooling issues
 
+### Community 54 - "BinaryOpNode"
+Cohesion: 0.13
+Nodes (3): IntrinsicHandler, IntrinsicMap, TranslationState
+
 ### Community 55 - "CaseClauseNode"
-Cohesion: 0.15
-Nodes (3): Lexer, Keywords, TokenType
+Cohesion: 0.07
+Nodes (11): AstToIr, CPegParser, Lexer, MacroExpander, Keywords, TokenType, compile(), compileToAssembly() (+3 more)
+
+### Community 56 - "CompoundNode"
+Cohesion: 0.08
+Nodes (3): InlineOptimizer, PeepholeOptimizer, RegisterAllocator
 
 ### Community 62 - "AnyParser"
 Cohesion: 0.21
@@ -270,22 +282,22 @@ Nodes (3): buildPrimaryExpr(), kw(), locFromToken()
 ## Knowledge Gaps
 - **78 isolated node(s):** `🧪 Test Results`, `✅ Completed`, `✅ Completed`, `🔄 In Progress`, `🔜 Next Steps` (+73 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **48 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **35 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Z80Codegen` connect `Z80 Code Generator` to `Z80 Codegen & IR Base`, `BinaryOpNode`?**
-  _High betweenness centrality (0.031) - this node is a cross-community bridge._
-- **Why does `Lexer` connect `CaseClauseNode` to `BinaryOpNode`, `AST Node Definitions`, `Z80 Codegen & IR Base`?**
-  _High betweenness centrality (0.030) - this node is a cross-community bridge._
-- **Why does `LexerCore` connect `Link Result` to `CaseClauseNode`?**
-  _High betweenness centrality (0.026) - this node is a cross-community bridge._
+- **Why does `Z80Codegen` connect `Z80 Code Generator` to `GotoNode`, `CaseClauseNode`?**
+  _High betweenness centrality (0.049) - this node is a cross-community bridge._
+- **Why does `Lexer` connect `CaseClauseNode` to `GotoNode`, `AST Node Definitions`?**
+  _High betweenness centrality (0.035) - this node is a cross-community bridge._
+- **Why does `BlockRegisterAllocator` connect `Register Allocator` to `CompoundNode`?**
+  _High betweenness centrality (0.025) - this node is a cross-community bridge._
 - **What connects `🧪 Test Results`, `✅ Completed`, `✅ Completed` to the rest of the system?**
   _78 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AST Node Definitions` be split into smaller, more focused modules?**
-  _Cohesion score 0.030379746835443037 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.04163265306122449 - nodes in this community are weakly interconnected._
 - **Should `Parser Combinators` be split into smaller, more focused modules?**
-  _Cohesion score 0.10952380952380952 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11764705882352941 - nodes in this community are weakly interconnected._
 - **Should `Z80 Codegen & IR Base` be split into smaller, more focused modules?**
-  _Cohesion score 0.046153846153846156 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.061683599419448475 - nodes in this community are weakly interconnected._

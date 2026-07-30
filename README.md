@@ -16,7 +16,7 @@ See [CHANGELOG.md](CHANGELOG.md)
 - Nothing at the moment
 
 ### 🔜 Next Steps
-- Nothing at the moment
+- Implement the `#embed` C23 binary file inclusion preprocessor directive to populate array initializer lists (reads bytes into a comma-separated list) with the `limit(number_of_characters)`, `offset(number_of_bytes)`,  `prefix(comma, separated, list, of, numbers, ending, on, a, comma,)` and `suffix(, comma, separated, comma, initiated, list, of, numbers)` attributes
 
 
 ### 📔 Backlog (issues identified during implementation for later priorization)

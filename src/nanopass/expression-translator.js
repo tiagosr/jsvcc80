@@ -102,6 +102,10 @@ export class ExpressionTranslator {
       return this.context.typeQueryHandler.translateCast(expr);
     }
 
+    if (expr instanceof AST.InitializerNode) {
+      return this.translateInitializer(expr);
+    }
+
     const temp = this.context.state.temp();
     const block = new IL.BasicBlock(this.context.state.label('expr'));
     block.add(new IL.LoadInstruction(temp, 'unknown'));
@@ -688,15 +692,47 @@ export class ExpressionTranslator {
     return { blocks, result: dest };
   }
 
-  /**
-   * Translate expression to a simple value (for initializers)
-   * @param {AST.ASTNode} expr - Expression AST node
-   * @returns {*} Value
-   */
-  translateExpressionValue(expr) {
-    if (expr instanceof AST.LiteralNode) {
-      return expr.value;
-    }
-    return null;
-  }
+   /**
+    * Translate expression to a simple value (for initializers)
+    * @param {AST.ASTNode} expr - Expression AST node
+    * @returns {*} Value or array of values for initializer lists
+    */
+   translateExpressionValue(expr) {
+     if (expr instanceof AST.LiteralNode) {
+       return expr.value;
+     }
+     if (expr instanceof AST.InitializerNode) {
+       return expr.elements.map(el => this.translateExpressionValue(el));
+     }
+     return null;
+   }
+
+   /**
+    * Translate an initializer node for local array initialization
+    * Stores each element sequentially to the target variable
+    * @param {AST.InitializerNode} initializer - Initializer node
+    * @param {string} targetName - Target variable name to store elements
+    * @param {number} elemSize - Element size in bytes
+    * @returns {{blocks: IL.BasicBlock[], result: string}} Blocks and last result register
+    */
+   translateInitializer(initializer, targetName, elemSize) {
+     const blocks = [];
+     let lastResult = null;
+     for (let i = 0; i < initializer.elements.length; i++) {
+       const el = initializer.elements[i];
+       const elResult = this.translateExpression(el);
+       blocks.push(...elResult.blocks);
+       lastResult = elResult.result;
+       const storeBlock = new IL.BasicBlock(this.context.state.label(`init_${i}`));
+       if (elemSize === 4) {
+         storeBlock.add(new IL.StoreInstruction(targetName, elResult.result, 4));
+       } else if (elemSize === 2) {
+         storeBlock.add(new IL.StoreInstruction(targetName, elResult.result, 2));
+       } else {
+         storeBlock.add(new IL.StoreInstruction(targetName, elResult.result, 1));
+       }
+       blocks.push(storeBlock);
+     }
+     return { blocks, result: lastResult || this.context.state.temp() };
+   }
 }

@@ -228,7 +228,9 @@ export class TranslationContext {
       name: decl.name.name,
       type: resolved.baseType,
       size: resolved.getSize(this.typeRegistry.structRegistry),
+      elemSize: resolved.getElementSize(this.typeRegistry.structRegistry),
       initial: decl.init ? this.expressionTranslator.translateExpressionValue(decl.init) : null,
+      baseType: resolved.baseType,
       line: decl.name.location?.line || 0,
       sourceFile: decl.name.location?.file || null
     };

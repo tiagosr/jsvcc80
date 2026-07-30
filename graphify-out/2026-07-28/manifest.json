@@ -195,8 +195,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1785243658.3057117,
-    "ast_hash": "195c98e5178685001efcd914a25a2ef7",
+    "mtime": 1785263572.631128,
+    "ast_hash": "d848190010d246ae6a9ae4ecebee692b",
     "semantic_hash": ""
   },
   "FINDINGS.md": {
@@ -385,8 +385,8 @@
     "semantic_hash": ""
   },
   "src/preprocessor/lexer-core.js": {
-    "mtime": 1785193607.495059,
-    "ast_hash": "4848e42103ac7bbf4a213bd8b0fc479b",
+    "mtime": 1785245969.3536046,
+    "ast_hash": "b336c90f097f5d451ae14d2b184f7f3a",
     "semantic_hash": ""
   },
   "src/preprocessor/macro-expansion.js": {
@@ -470,8 +470,8 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1785243645.3712804,
-    "ast_hash": "f588f69ced9bc7c5719360d9b1135903",
+    "mtime": 1785246833.7527516,
+    "ast_hash": "dbd7134ec71d8677e1a2cc65c610afd0",
     "semantic_hash": ""
   },
   "src/tests/linker.crt0.test.js": {
@@ -797,6 +797,11 @@
   "src/tests/objectfile_viewer.test.js": {
     "mtime": 1785243545.407309,
     "ast_hash": "60fca3c6bee1831c029bec1a25ffc43c",
+    "semantic_hash": ""
+  },
+  "src/tests/token-location.test.js": {
+    "mtime": 1785258493.4599595,
+    "ast_hash": "ff85ca45e545330f9dbc0295aa2e7f3e",
     "semantic_hash": ""
   }
 }

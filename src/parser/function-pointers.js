@@ -215,7 +215,7 @@ function buildExtendedTypeSpecifier(typedefNames, structTags) {
   const typeQualifier = alt(kw('const'), kw('volatile'));
   const signedness = alt(kw('signed'), kw('unsigned'));
   const basicType = alt(
-    kw('void'), kw('char'), kw('_Bool'),
+    kw('void'), kw('char'), kw('_Bool'), kw('bool'),
     kw('short'), kw('int'), kw('long')
   );
   const colon = lit(':');
@@ -227,6 +227,7 @@ function buildExtendedTypeSpecifier(typedefNames, structTags) {
   const withBoth = map(seq(qualifiers, signedness, basicType), ([qs, s, t]) => ({ kind: 'keyword', qualifiers: qs, signToken: s, typeToken: t }));
   const onlySign = map(seq(qualifiers, signedness), ([qs, s]) => ({ kind: 'keyword', qualifiers: qs, signToken: s, typeToken: null }));
   const onlyType = map(seq(qualifiers, basicType), ([qs, t]) => ({ kind: 'keyword', qualifiers: qs, signToken: null, typeToken: t }));
+  const withTypedef = map(seq(qualifiers, typedefNameParser), ([qs, tn]) => ({ kind: 'typedef', qualifiers: qs, token: tn.token }));
 
   return map(
     alt(
@@ -235,14 +236,19 @@ function buildExtendedTypeSpecifier(typedefNames, structTags) {
       withBitWidth,
       withBoth,
       onlySign,
-      onlyType
+      onlyType,
+      withTypedef
     ),
     (value) => {
       if (value.structKind) {
         return value;
       }
       if (value.kind === 'typedef') {
-        return new AST.TypeSpecNode(value.token.value, true, false, false, null, locFromToken(value.token));
+        const qualTokens = value.qualifiers || [];
+        const isConst = qualTokens.some(t => t.value === 'const');
+        const isVolatile = qualTokens.some(t => t.value === 'volatile');
+        const locToken = value.token || (qualTokens.length > 0 ? qualTokens[0] : null);
+        return new AST.TypeSpecNode(value.token.value, true, isConst, isVolatile, null, locFromToken(locToken));
       }
       if (value.kind === 'bitwidth') {
         const qualTokens = value.qualifiers || [];

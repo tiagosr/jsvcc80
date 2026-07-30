@@ -21,7 +21,10 @@ function buildPrimaryExpr(ctx) {
     alt(
       pred(t => t.type === 'IDENTIFIER'),
       pred(t => t.type === 'INTEGER' || t.type === 'FLOAT' || t.type === 'STRING'),
-      pred(t => t.type === 'KEYWORD' && t.value === 'NULL')
+      pred(t => t.type === 'KEYWORD' && t.value === 'NULL'),
+      pred(t => t.type === 'KEYWORD' && t.value === 'nullptr'),
+      pred(t => t.type === 'KEYWORD' && t.value === 'true'),
+      pred(t => t.type === 'KEYWORD' && t.value === 'false')
     ),
     (token) => {
       const loc = locFromToken(token);
@@ -38,6 +41,21 @@ function buildPrimaryExpr(ctx) {
         return new AST.LiteralNode('string', token.value, loc);
       }
       // NULL keyword - treat as integer 0
+      if (token.value === 'NULL') {
+        return new AST.LiteralNode('int', 0, loc);
+      }
+      // nullptr keyword - treat as integer 0
+      if (token.value === 'nullptr') {
+        return new AST.LiteralNode('int', 0, loc);
+      }
+      // true keyword - treat as integer 1
+      if (token.value === 'true') {
+        return new AST.LiteralNode('int', 1, loc);
+      }
+      // false keyword - treat as integer 0
+      if (token.value === 'false') {
+        return new AST.LiteralNode('int', 0, loc);
+      }
       return new AST.LiteralNode('int', 0, loc);
     }
   );

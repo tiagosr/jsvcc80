@@ -416,6 +416,7 @@ export class TypeSpecNode extends ASTNode {
     'void': 0,
     'char': 1,
     '_Bool': 1,
+    'bool': 1,
     'short': 2,
     'int': 2,
     'long': 4,

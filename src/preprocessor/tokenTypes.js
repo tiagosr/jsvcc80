@@ -85,10 +85,10 @@ export const TokenType = {
 export const Keywords = new Set([
   'auto', 'break', 'case', 'char', 'const', 'continue', 'default', 'do',
   'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if',
-  'inline', 'int', 'long', 'offsetof', 'register', 'restrict', 'return', 'short',
+  'inline', 'int', 'long', 'nullptr', 'offsetof', 'register', 'restrict', 'return', 'short',
   'signed', 'sizeof', 'static', 'struct', 'switch', 'typedef', 'typeof', 'union',
-  'unsigned', 'void', 'volatile', 'while', '_Bool', '_Complex', '_Imaginary',
-  'NULL'
+  'unsigned', 'void', 'volatile', 'while', '_Bool', 'bool', '_Complex', '_Imaginary',
+  'NULL', 'true', 'false'
 ]);
 
 /**

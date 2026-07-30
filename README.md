@@ -16,9 +16,8 @@ See [CHANGELOG.md](CHANGELOG.md)
 - Nothing at the moment
 
 ### 🔜 Next Steps
-- Implement `true`, `false`, `nullptr` as keywords, and `bool` and `nullptr_t` types
-- Implement `static_assert()`
 - Implement anonymous unions and structs
+- Implement `static_assert(test, "error message to emit if false")`
 - Implement `constexpr` with AST interpretation
 
 

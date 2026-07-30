@@ -15,6 +15,7 @@ export class TypeRegistry {
     /** @type {Map<string, {name: string, kind: string, fields: AST.StructFieldNode[], size: number, fieldOffsets: Map<string, number>}>} */
     this.structRegistry = new Map();
     this._registerBuiltInStructs();
+    this._registerBuiltInTypedefs();
   }
 
   /**
@@ -72,6 +73,14 @@ export class TypeRegistry {
      });
 
      return { size, fieldOffsets };
+   }
+
+  /**
+    * Register built-in typedefs (nullptr_t, etc.)
+    */
+   _registerBuiltInTypedefs() {
+     const nullptrTType = new AST.TypeSpecNode('bool', true, false, false, null, null);
+     this.typedefs.set('nullptr_t', nullptrTType);
    }
 
   /**

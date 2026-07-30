@@ -116,10 +116,11 @@ export class CPegParser {
    * @param {Token[]} tokens - Token array to scan
    * @returns {string[]} Array of typedef names
    */
-  collectTypedefNames(tokens) {
-     const names = [];
-     let i = 0;
-     while (i < tokens.length) {
+   collectTypedefNames(tokens) {
+      const builtinTypedefNames = ['nullptr_t'];
+      const names = [...builtinTypedefNames];
+      let i = 0;
+      while (i < tokens.length) {
        if (tokens[i].type === 'KEYWORD' && tokens[i].value === 'typedef') {
          i++;
          // Check for typedef struct/union {...} name syntax

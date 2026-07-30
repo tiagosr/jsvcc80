@@ -21,6 +21,7 @@ const TypeInfos = {
   'void':    { baseType: 'void',    isSigned: true,  size: 0  },
   'char':    { baseType: 'char',    isSigned: true,  size: 1  },
   '_Bool':   { baseType: '_Bool',   isSigned: true,  size: 1  },
+  'bool':    { baseType: 'bool',    isSigned: true,  size: 1  },
   'short':   { baseType: 'short',   isSigned: true,  size: 2  },
   'int':     { baseType: 'int',     isSigned: true,  size: 2  },
   'long':    { baseType: 'long',    isSigned: true,  size: 4  },
@@ -143,7 +144,7 @@ function buildTypeSpecifier() {
   const typeQualifier = alt(kw('const'), kw('volatile'));
   const signedness = alt(kw('signed'), kw('unsigned'));
   const basicType = alt(
-    kw('void'), kw('char'), kw('_Bool'),
+    kw('void'), kw('char'), kw('_Bool'), kw('bool'),
     kw('short'), kw('int'), kw('long'),
     kw('float'), kw('double')
   );

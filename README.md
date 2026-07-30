@@ -16,7 +16,10 @@ See [CHANGELOG.md](CHANGELOG.md)
 - Nothing at the moment
 
 ### 🔜 Next Steps
-- Nothing at the moment
+- Implement `true`, `false`, `nullptr` as keywords, and `bool` and `nullptr_t` types
+- Implement `static_assert()`
+- Implement anonymous unions and structs
+- Implement `constexpr` with AST interpretation
 
 
 ### 📔 Backlog (issues identified during implementation for later priorization)

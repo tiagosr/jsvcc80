@@ -125,18 +125,23 @@ export class DirectiveHandler {
 
     const start = offset;
     const end = Math.min(start + limit, fileData.length);
-    const bytes = fileData.subarray(start, end);
+    let bytes = fileData.subarray(start, end);
+
+    // Use if_empty substitute values when file is empty
+    if (bytes.length === 0 && attributes.ifEmpty !== undefined) {
+      return { type: 'embed', items: attributes.ifEmpty, prefix: attributes.prefix || '', suffix: attributes.suffix || '', location };
+    }
 
     return { type: 'embed', bytes, prefix: attributes.prefix || '', suffix: attributes.suffix || '', location };
   }
 
   /**
    * Parses #embed attributes from the attribute string
-   * @param {string} attrString - Attribute string after filename
-   * @returns {{limit?: number, offset?: number, prefix?: string, suffix?: string}}
+    * @param {string} attrString - Attribute string after filename
+    * @returns {{limit?: number, offset?: number, prefix?: string, suffix?: string, ifEmpty?: Array<{type: 'byte', value: number}|{type: 'comma'}>}}
    */
   _parseEmbedAttributes(attrString) {
-    const result = { limit: undefined, offset: undefined, prefix: '', suffix: '' };
+    const result = { limit: undefined, offset: undefined, prefix: '', suffix: '', ifEmpty: undefined };
 
     const trimmed = attrString.trim();
 
@@ -255,6 +260,30 @@ export class DirectiveHandler {
 
     if (lowerName === 'suffix') {
       result.suffix = value;
+      return;
+    }
+
+    if (lowerName === 'if_empty') {
+      // Parse comma-separated values as substitute items (bytes or comma markers)
+      const values = value.split(',').map(v => v.trim());
+      const items = [];
+      for (let i = 0; i < values.length; i++) {
+        const lower = values[i].toLowerCase();
+        if (lower === 'comma') {
+          items.push({ type: 'comma' });
+          continue;
+        }
+        const match = values[i].match(/^(\d+)$/);
+        if (!match) {
+          throw new LexerError(`Invalid if_empty value: ${values[i]}`, { file: this.lexer.preprocessor.filename, start: { line: this.lexer.line, column: this.lexer.column }, end: { line: this.lexer.line, column: this.lexer.column + name.length } });
+        }
+        const num = parseInt(match[1], 10);
+        if (num < 0 || num > 255) {
+          throw new LexerError(`if_empty value out of range (0-255): ${num}`, { file: this.lexer.preprocessor.filename, start: { line: this.lexer.line, column: this.lexer.column }, end: { line: this.lexer.line, column: this.lexer.column + name.length } });
+        }
+        items.push({ type: 'byte', value: num });
+      }
+      result.ifEmpty = items;
       return;
     }
 

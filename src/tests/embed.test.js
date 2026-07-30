@@ -493,4 +493,140 @@ int x;`;
       assert.strictEqual(integers.length, 3);
     });
   });
+
+  describe('if_empty attribute', () => {
+    it('should emit substitute values when embedded file is empty', () => {
+      writeBinaryFile('empty.bin', new Uint8Array([]));
+
+      const source = `#embed "${join(testDir, 'empty.bin')}" (if_empty(0, comma, 1, comma, 2))
+int x;`;
+
+      const tokens = tokenize(source);
+      const integers = tokens.filter(t => t.type === TokenType.INTEGER);
+
+      assert.strictEqual(integers.length, 3);
+      assert.strictEqual(integers[0].value, '0');
+      assert.strictEqual(integers[1].value, '1');
+      assert.strictEqual(integers[2].value, '2');
+    });
+
+    it('should emit substitute values with single value when file is empty', () => {
+      writeBinaryFile('empty.bin', new Uint8Array([]));
+
+      const source = `#embed "${join(testDir, 'empty.bin')}" (if_empty(255))
+int x;`;
+
+      const tokens = tokenize(source);
+      const integers = tokens.filter(t => t.type === TokenType.INTEGER);
+
+      assert.strictEqual(integers.length, 1);
+      assert.strictEqual(integers[0].value, '255');
+    });
+
+    it('should ignore if_empty when file is not empty', () => {
+      writeBinaryFile('data.bin', new Uint8Array([10, 20, 30]));
+
+      const source = `#embed "${join(testDir, 'data.bin')}" (if_empty(0, comma, 1))
+int x;`;
+
+      const tokens = tokenize(source);
+      const integers = tokens.filter(t => t.type === TokenType.INTEGER);
+
+      assert.strictEqual(integers.length, 3);
+      assert.strictEqual(integers[0].value, '10');
+      assert.strictEqual(integers[1].value, '20');
+      assert.strictEqual(integers[2].value, '30');
+    });
+
+    it('should emit multiple substitute values when file is empty', () => {
+      writeBinaryFile('empty.bin', new Uint8Array([]));
+
+      const source = `#embed "${join(testDir, 'empty.bin')}" (if_empty(1, comma, 2, comma, 3, comma, 4, comma, 5))
+int x;`;
+
+      const tokens = tokenize(source);
+      const integers = tokens.filter(t => t.type === TokenType.INTEGER);
+
+      assert.strictEqual(integers.length, 5);
+      assert.strictEqual(integers[0].value, '1');
+      assert.strictEqual(integers[1].value, '2');
+      assert.strictEqual(integers[2].value, '3');
+      assert.strictEqual(integers[3].value, '4');
+      assert.strictEqual(integers[4].value, '5');
+    });
+
+    it('should error on invalid if_empty value', () => {
+      writeBinaryFile('empty.bin', new Uint8Array([]));
+
+      const source = `#embed "${join(testDir, 'empty.bin')}" (if_empty(abc))
+int x;`;
+
+      assert.throws(() => tokenize(source), /Invalid if_empty value/);
+    });
+
+    it('should error on if_empty value out of range', () => {
+      writeBinaryFile('empty.bin', new Uint8Array([]));
+
+      const source = `#embed "${join(testDir, 'empty.bin')}" (if_empty(256))
+int x;`;
+
+      assert.throws(() => tokenize(source), /if_empty value out of range/);
+    });
+
+    it('should error on negative if_empty value', () => {
+      writeBinaryFile('empty.bin', new Uint8Array([]));
+
+      const source = `#embed "${join(testDir, 'empty.bin')}" (if_empty(-1))
+int x;`;
+
+      assert.throws(() => tokenize(source), /Invalid if_empty value/);
+    });
+
+    it('should work with if_empty combined with other attributes', () => {
+      writeBinaryFile('empty.bin', new Uint8Array([]));
+
+      const source = `#embed "${join(testDir, 'empty.bin')}" (limit(10), offset(0), if_empty(42, comma, 99), prefix(0, comma, suffix(1,))
+int x;`;
+
+      const tokens = tokenize(source);
+      const integers = tokens.filter(t => t.type === TokenType.INTEGER);
+
+      assert.strictEqual(integers.length, 5);
+      assert.strictEqual(integers[0].value, '0');
+      assert.strictEqual(integers[1].value, '1');
+      assert.strictEqual(integers[2].value, '42');
+      assert.strictEqual(integers[3].value, '99');
+      assert.strictEqual(integers[4].value, '1');
+    });
+
+    it('should work with if_empty in active conditional block', () => {
+      writeBinaryFile('empty.bin', new Uint8Array([]));
+
+      const source = `#if 1
+#embed "${join(testDir, 'empty.bin')}" (if_empty(7, comma, 8))
+#endif
+int x;`;
+
+      const tokens = tokenize(source);
+      const integers = tokens.filter(t => t.type === TokenType.INTEGER);
+
+      assert.strictEqual(integers.length, 2);
+      assert.strictEqual(integers[0].value, '7');
+      assert.strictEqual(integers[1].value, '8');
+    });
+
+    it('should skip if_empty in inactive conditional block', () => {
+      writeBinaryFile('empty.bin', new Uint8Array([]));
+
+      const source = `#if 0
+#embed "${join(testDir, 'empty.bin')}" (if_empty(7, comma, 8))
+#endif
+int x;`;
+
+      const tokens = tokenize(source);
+      const integers = tokens.filter(t => t.type === TokenType.INTEGER);
+
+      assert.strictEqual(integers.length, 0);
+    });
+  });
 });

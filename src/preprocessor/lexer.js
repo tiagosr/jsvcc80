@@ -336,9 +336,19 @@ export class Lexer extends LexerCore {
       tokens.push(...this._tokenizeString(embedResult.prefix, location));
     }
 
-    // Tokenize each byte as an INTEGER
-    for (let i = 0; i < embedResult.bytes.length; i++) {
-      tokens.push(this.makeToken(TokenType.INTEGER, String(embedResult.bytes[i]), location));
+    // Tokenize items (if_empty substitute) or bytes (normal embed)
+    if (embedResult.items) {
+      for (const item of embedResult.items) {
+        if (item.type === 'byte') {
+          tokens.push(this.makeToken(TokenType.INTEGER, String(item.value), location));
+        } else if (item.type === 'comma') {
+          tokens.push(this.makeToken(TokenType.COMMA, ',', location));
+        }
+      }
+    } else if (embedResult.bytes) {
+      for (let i = 0; i < embedResult.bytes.length; i++) {
+        tokens.push(this.makeToken(TokenType.INTEGER, String(embedResult.bytes[i]), location));
+      }
     }
 
     // Tokenize suffix

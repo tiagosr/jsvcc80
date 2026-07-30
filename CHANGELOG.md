@@ -1,7 +1,9 @@
 ### 🧪 Test Results
-- 1645 passing tests
+- 1653 passing tests
 
 ### ✅ Completed
+- **`#embed` C23 binary file inclusion preprocessor directive** - `_handleEmbed` method in `directives.js` parses file reference (quote/angle), optional attributes (`limit(n)`, `offset(n)`, `prefix(text)`, `suffix(text)`) with nested parenthesis support; binary file reading with offset/limit byte extraction; `_tokenizeEmbedResult` in `lexer.js` converts bytes to INTEGER tokens with prefix/suffix tokenization; `_tokenizeString` helper tokenizes arbitrary text into lexer tokens; macro expansion in embed line content; 8 new test suites covering basic embed, limit, offset, combination, prefix, suffix, edge cases, errors, conditional blocks, location tracking, multiple embed, and macro interaction
+
 - **Array initializer lists** - `InitializerNode` AST type for brace-enclosed initializer lists; parser `braceInit` rule rewritten to accept expressions and nested initializers via `initializerElement` with `lazy()` circular dependency resolution; global `variableDecl` extended to accept brace initializers; `translateExpressionValue` extended to recursively extract values from `InitializerNode`; `translateInitializer` method added for local array element storage sequences; `translateDecl` extended with `elemSize` and `baseType` fields; `generateGlobal` extended to emit `.db/.dw/.dd` directives for array initializers based on element size; 22 new tests
 
 - **Soft-float trigonometric and exponential operations** - Z80 assembly implementations for trigonometric functions (`sinf`, `cosf`, `tanf`, `cotf`, `asinf`, `acosf`, `atanf`, `atan2f`) and exponential/power functions (`sqrtf`, `expf`, `powf`, `logf`, `log10f`); `float.h` extended with all new C API declarations and internal `_float_*` function declarations; Expression translator updated with `floatFuncMapping` for all 13 new functions and `translateFloatCall` extended to handle multi-argument functions (`atan2f`, `powf`); Fixed `translateFloatCall` to handle parser's single-node args storage (converted to array); 36 new tests for trigonometric and exponential functions

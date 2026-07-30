@@ -58,12 +58,207 @@ export class DirectiveHandler {
     if (kw === 'endif') return this._handleEndif(location);
     if (kw === 'pragma') return this._handlePragma(location);
     if (kw === 'include') return this._handleInclude(location);
+    if (kw === 'embed') return this._handleEmbed(location);
 
     // Unknown directive - backtrack and emit POUND token
     this.lexer.pos = this.lexer.tokenStartPos;
     this.lexer.line = this.lexer.tokenStartLine;
     this.lexer.column = this.lexer.tokenStartColumn;
     return this.lexer.makeToken(TokenType.POUND, '#');
+  }
+
+  /**
+   * Handles #embed directive for binary file inclusion
+   * @param {Object} location - Source location
+   * @returns {Object|null} Embed result or null
+   */
+  _handleEmbed(location) {
+    if (this.lexer.preprocessor.skipDepth > 0 || !this.lexer.preprocessor.isEffectivelyActive()) {
+      this.lexer._readLineContent();
+      return null;
+    }
+
+    let lineContent = this.lexer._readLineContent();
+
+    // Expand object-like macros in line content
+    for (const [name, macro] of this.lexer.preprocessor.macros) {
+      const regex = new RegExp(`\\b${macro.name}\\b`, 'g');
+      lineContent = lineContent.replace(regex, macro.replacement);
+    }
+
+    let filename;
+    let isSystem = false;
+
+    const quoteMatch = lineContent.match(/^\s*"([^"]+)"\s*(.*)$/);
+    const angleMatch = lineContent.match(/^\s*<([^>]+)>\s*(.*)$/);
+
+    let attrString = '';
+    if (quoteMatch) {
+      filename = quoteMatch[1];
+      attrString = quoteMatch[2] || '';
+      isSystem = false;
+    } else if (angleMatch) {
+      filename = angleMatch[1];
+      attrString = angleMatch[2] || '';
+      isSystem = true;
+    } else {
+      throw new LexerError(`Invalid #embed directive: ${lineContent}`, location);
+    }
+
+    const currentDir = this.lexer._getParentDir(this.lexer.preprocessor.filename);
+    const resolvedPath = this.lexer.preprocessor.resolveInclude(filename, isSystem, currentDir);
+
+    if (!resolvedPath) {
+      throw new LexerError(`Cannot open embed file: ${filename}`, location);
+    }
+
+    const attributes = this._parseEmbedAttributes(attrString);
+
+    const fileData = readFileSync(resolvedPath);
+
+    const offset = attributes.offset !== undefined ? attributes.offset : 0;
+    const limit = attributes.limit !== undefined ? attributes.limit : fileData.length;
+
+    if (offset > fileData.length) {
+      throw new LexerError(`Embed offset (${offset}) exceeds file size (${fileData.length})`, location);
+    }
+
+    const start = offset;
+    const end = Math.min(start + limit, fileData.length);
+    const bytes = fileData.subarray(start, end);
+
+    return { type: 'embed', bytes, prefix: attributes.prefix || '', suffix: attributes.suffix || '', location };
+  }
+
+  /**
+   * Parses #embed attributes from the attribute string
+   * @param {string} attrString - Attribute string after filename
+   * @returns {{limit?: number, offset?: number, prefix?: string, suffix?: string}}
+   */
+  _parseEmbedAttributes(attrString) {
+    const result = { limit: undefined, offset: undefined, prefix: '', suffix: '' };
+
+    const trimmed = attrString.trim();
+
+    if (!trimmed) return result;
+
+    if (trimmed[0] !== '(') {
+      throw new LexerError(`#embed attributes must be enclosed in parentheses`, { file: this.lexer.preprocessor.filename, start: { line: this.lexer.line, column: this.lexer.column }, end: { line: this.lexer.line, column: this.lexer.column + 1 } });
+    }
+
+    let i = 1; // Skip outer '('
+
+    while (i < trimmed.length) {
+      i = this._skipWhitespace(trimmed, i);
+      if (i >= trimmed.length || trimmed[i] === ')') {
+        if (i < trimmed.length && trimmed[i] === ')') {
+          return result;
+        }
+        break;
+      }
+
+      // Read attribute name
+      let name = '';
+      while (i < trimmed.length && /[a-zA-Z_]/.test(trimmed[i])) {
+        name += trimmed[i++];
+      }
+
+      // Skip whitespace after name
+      i = this._skipWhitespace(trimmed, i);
+
+      // Expect '('
+      if (i >= trimmed.length || trimmed[i] !== '(') {
+        throw new LexerError(`Expected '(' after attribute name '${name}'`, { file: this.lexer.preprocessor.filename, start: { line: this.lexer.line, column: this.lexer.column }, end: { line: this.lexer.line, column: this.lexer.column + i } });
+      }
+      i++; // Skip '('
+
+      // Find matching closing parenthesis for this attribute's value
+      let valueDepth = 1;
+      let valueStart = i;
+      while (i < trimmed.length && valueDepth > 0) {
+        if (trimmed[i] === '(') valueDepth++;
+        else if (trimmed[i] === ')') valueDepth--;
+        i++;
+      }
+
+      if (valueDepth !== 0) {
+        throw new LexerError(`Unclosed parenthesis in attribute '${name}'`, { file: this.lexer.preprocessor.filename, start: { line: this.lexer.line, column: this.lexer.column }, end: { line: this.lexer.line, column: this.lexer.column + i } });
+      }
+
+      const value = trimmed.substring(valueStart, i - 1).trim();
+      this._processEmbedAttribute(name, value, result);
+
+      // Skip whitespace after attribute
+      i = this._skipWhitespace(trimmed, i);
+
+      // Check for end of attribute list
+      if (i >= trimmed.length) {
+        return result;
+      }
+
+      // Expect comma or closing parenthesis
+      if (trimmed[i] === ')') {
+        return result;
+      }
+      if (trimmed[i] === ',') {
+        i++; // Skip comma
+      }
+    }
+
+    throw new LexerError('Unclosed parenthesis in #embed attributes', { file: this.lexer.preprocessor.filename, start: { line: this.lexer.line, column: this.lexer.column }, end: { line: this.lexer.line, column: this.lexer.column + trimmed.length } });
+  }
+
+  /**
+   * Skips whitespace in a string starting from given position
+   * @param {string} str - String to skip whitespace in
+   * @param {number} pos - Starting position
+   * @returns {number} New position after whitespace
+   */
+  _skipWhitespace(str, pos) {
+    while (pos < str.length && /\s/.test(str[pos])) {
+      pos++;
+    }
+    return pos;
+  }
+
+  /**
+   * Processes a single #embed attribute
+   * @param {string} name - Attribute name (e.g., "limit", "prefix")
+   * @param {string} value - Attribute value (e.g., "100", "comma, separated")
+   * @param {Object} result - Result object to populate
+   */
+  _processEmbedAttribute(name, value, result) {
+    const lowerName = name.toLowerCase();
+
+    if (lowerName === 'limit') {
+      const match = value.match(/^(\d+)$/);
+      if (!match) {
+        throw new LexerError(`Invalid limit value: ${value}`, { file: this.lexer.preprocessor.filename, start: { line: this.lexer.line, column: this.lexer.column }, end: { line: this.lexer.line, column: this.lexer.column + name.length } });
+      }
+      result.limit = parseInt(match[1], 10);
+      return;
+    }
+
+    if (lowerName === 'offset') {
+      const match = value.match(/^(\d+)$/);
+      if (!match) {
+        throw new LexerError(`Invalid offset value: ${value}`, { file: this.lexer.preprocessor.filename, start: { line: this.lexer.line, column: this.lexer.column }, end: { line: this.lexer.line, column: this.lexer.column + name.length } });
+      }
+      result.offset = parseInt(match[1], 10);
+      return;
+    }
+
+    if (lowerName === 'prefix') {
+      result.prefix = value;
+      return;
+    }
+
+    if (lowerName === 'suffix') {
+      result.suffix = value;
+      return;
+    }
+
+    throw new LexerError(`Unknown #embed attribute: ${name}`, { file: this.lexer.preprocessor.filename, start: { line: this.lexer.line, column: this.lexer.column }, end: { line: this.lexer.line, column: this.lexer.column + name.length } });
   }
 
   /**

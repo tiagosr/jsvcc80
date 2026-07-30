@@ -1,4 +1,4 @@
-import { TokenType } from './tokenTypes.js';
+import { TokenType, Keywords } from './tokenTypes.js';
 import { PreprocessedSource as _PreprocessedSource } from './preprocessed-source.js';
 import { LexerCore } from './lexer-core.js';
 import { MacroExpander } from './macro-expansion.js';
@@ -280,6 +280,13 @@ export class Lexer extends LexerCore {
         continue;
       }
 
+      // Handle embed directive
+      if (token.type === 'embed') {
+        const embedTokens = this._tokenizeEmbedResult(token);
+        tokens.push(...embedTokens);
+        continue;
+      }
+
       // Skip pragma directive results
       if (token.type === 'pragma_once' || token.type === 'pragma_pack' || token.type === 'pragma_pack_push' || token.type === 'pragma_pack_pop') {
         continue;
@@ -313,5 +320,96 @@ export class Lexer extends LexerCore {
 
     const includeLexer = new Lexer(source, includePreprocessor);
     return includeLexer.tokenize();
+  }
+
+  /**
+   * Tokenizes an embed directive result into INTEGER tokens
+   * @param {Object} embedResult - Embed result with bytes, prefix, suffix, location
+   * @returns {Token[]} Array of tokens from the embed
+   */
+  _tokenizeEmbedResult(embedResult) {
+    const tokens = [];
+    const location = embedResult.location;
+
+    // Tokenize prefix
+    if (embedResult.prefix) {
+      tokens.push(...this._tokenizeString(embedResult.prefix, location));
+    }
+
+    // Tokenize each byte as an INTEGER
+    for (let i = 0; i < embedResult.bytes.length; i++) {
+      tokens.push(this.makeToken(TokenType.INTEGER, String(embedResult.bytes[i]), location));
+    }
+
+    // Tokenize suffix
+    if (embedResult.suffix) {
+      tokens.push(...this._tokenizeString(embedResult.suffix, location));
+    }
+
+    return tokens;
+  }
+
+  /**
+   * Tokenizes a string into lexer tokens
+   * @param {string} str - String to tokenize
+   * @param {Object} location - Source location
+   * @returns {Token[]} Array of tokens
+   */
+  _tokenizeString(str, location) {
+    const tokens = [];
+    let i = 0;
+
+    while (i < str.length) {
+      const ch = str[i];
+
+      if (/\s/.test(ch)) {
+        i++;
+        continue;
+      }
+
+      if (/^[0-9]/.test(ch)) {
+        let num = '';
+        while (i < str.length && /^[0-9]/.test(str[i])) {
+          num += str[i++];
+        }
+        tokens.push(this.makeToken(TokenType.INTEGER, num, location));
+        continue;
+      }
+
+      if (ch === ',') {
+        tokens.push(this.makeToken(TokenType.COMMA, ',', location));
+        i++;
+        continue;
+      }
+
+      if (/^[a-zA-Z_]/.test(ch)) {
+        let ident = '';
+        while (i < str.length && /^[a-zA-Z0-9_]/.test(str[i])) {
+          ident += str[i++];
+        }
+        const type = Keywords.has(ident) ? TokenType.KEYWORD : TokenType.IDENTIFIER;
+        tokens.push(this.makeToken(type, ident, location));
+        continue;
+      }
+
+      if (ch === '(' || ch === ')' || ch === '[' || ch === ']') {
+        tokens.push(this.makeToken(ch, ch, location));
+        i++;
+        continue;
+      }
+
+      const twoChar = ch + (str[i + 1] || '');
+      const twoOps = ['++', '--', '==', '!=', '<=', '>=', '<<', '>>', '&&', '||', '->', '+=', '-=', '*=', '/=', '%=', '&=', '|=', '^=', '<<=', '>>='];
+      if (twoOps.includes(twoChar)) {
+        tokens.push(this.makeToken(twoChar, twoChar, location));
+        i += 2;
+        continue;
+      }
+
+      tokens.push(this.makeToken(ch, ch, location));
+      i++;
+    }
+
+    return tokens;
   }
 }

@@ -16,9 +16,8 @@ See [CHANGELOG.md](CHANGELOG.md)
 - Nothing at the moment
 
 ### 🔜 Next Steps
-- Implement `constexpr` with AST interpretation
-- Implement `#elifdef`, `#elifndef`, `#warning`
 - Implement `_Noreturn`
+- Implement `constexpr`, building on the `static_assert` functionality
 
 
 ### 📔 Backlog (issues identified during implementation for later priorization)

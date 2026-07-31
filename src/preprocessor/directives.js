@@ -5,7 +5,7 @@ import { readFileSync } from 'fs';
 
 /**
  * Handles preprocessor directives: #define, #undef, #if, #ifdef,
- * #ifndef, #elif, #else, #endif, #pragma, #include.
+ * #ifndef, #elif, #elifdef, #elifndef, #else, #endif, #pragma, #include, #warning.
  * Operates on a lexer instance passed in the constructor.
  */
 export class DirectiveHandler {
@@ -54,11 +54,14 @@ export class DirectiveHandler {
     if (kw === 'ifdef') return this._handleIfdef(location);
     if (kw === 'ifndef') return this._handleIfndef(location);
     if (kw === 'elif') return this._handleElif(location);
+    if (kw === 'elifdef') return this._handleElifdef(location);
+    if (kw === 'elifndef') return this._handleElifndef(location);
     if (kw === 'else') return this._handleElse(location);
     if (kw === 'endif') return this._handleEndif(location);
     if (kw === 'pragma') return this._handlePragma(location);
     if (kw === 'include') return this._handleInclude(location);
     if (kw === 'embed') return this._handleEmbed(location);
+    if (kw === 'warning') return this._handleWarning(location);
 
     // Unknown directive - backtrack and emit POUND token
     this.lexer.pos = this.lexer.tokenStartPos;
@@ -136,7 +139,18 @@ export class DirectiveHandler {
   }
 
   /**
-    * Parses #embed attributes from the attribute string
+   * Handle #warning directive - emit warning and continue compilation
+   * @param {object} location - Source location
+   * @returns {null}
+   */
+  _handleWarning(location) {
+    const lineContent = this.lexer._readLineContent();
+    console.warn(`vcc80: warning: ${lineContent}`);
+    return null;
+  }
+
+  /**
+     * Parses #embed attributes from the attribute string
      * @param {string} attrString - Attribute string after filename
      * @returns {{limit?: number, offset?: number, prefix?: string, suffix?: string, ifEmpty?: Array<{type: 'byte', value: number}|{type: 'comma'}>}}
     */
@@ -470,7 +484,47 @@ export class DirectiveHandler {
   }
 
   /**
-   * Handles #ifdef directive
+   * Handle #elifdef directive - true if macro is defined
+   * @param {object} location - Source location
+   * @returns {null}
+   */
+  _handleElifdef(location) {
+    if (this.lexer.preprocessor.skipDepth > 0) { this.lexer._readLineContent(); return null; }
+    const stack = this.lexer.preprocessor.conditionalStack;
+    if (stack.length === 0) throw new LexerError('#elifdef without matching #if/#ifdef', location);
+    const top = stack[stack.length - 1];
+    if (top.branchTaken) { top.active = false; this.lexer._readLineContent(); return null; }
+    const lineContent = this.lexer._readLineContent();
+    const macroName = lineContent.trim();
+    const parentActive = stack.length > 1 ? stack.every(f => f.active) : true;
+    const isActive = parentActive && this.lexer.preprocessor.isMacroDefined(macroName);
+    top.active = isActive;
+    top.branchTaken = isActive || top.branchTaken;
+    return null;
+  }
+
+  /**
+   * Handle #elifndef directive - true if macro is NOT defined
+   * @param {object} location - Source location
+   * @returns {null}
+   */
+  _handleElifndef(location) {
+    if (this.lexer.preprocessor.skipDepth > 0) { this.lexer._readLineContent(); return null; }
+    const stack = this.lexer.preprocessor.conditionalStack;
+    if (stack.length === 0) throw new LexerError('#elifndef without matching #if/#ifdef', location);
+    const top = stack[stack.length - 1];
+    if (top.branchTaken) { top.active = false; this.lexer._readLineContent(); return null; }
+    const lineContent = this.lexer._readLineContent();
+    const macroName = lineContent.trim();
+    const parentActive = stack.length > 1 ? stack.every(f => f.active) : true;
+    const isActive = parentActive && !this.lexer.preprocessor.isMacroDefined(macroName);
+    top.active = isActive;
+    top.branchTaken = isActive || top.branchTaken;
+    return null;
+  }
+
+  /**
+    * Handles #ifdef directive
    * @param {Object} location - Source location
    * @returns {null} No token emitted
    */

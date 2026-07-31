@@ -146,7 +146,7 @@ function buildTypeSpecifier() {
   const basicType = alt(
     kw('void'), kw('char'), kw('_Bool'), kw('bool'),
     kw('short'), kw('int'), kw('long'),
-    kw('float'), kw('double')
+    kw('float'), kw('double'), kw('nullptr_t')
   );
   const colon = lit(':');
   const integerLiteral = pred(t => t.type === 'INTEGER');

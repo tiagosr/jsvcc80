@@ -423,6 +423,7 @@ export class TypeSpecNode extends ASTNode {
     'unsigned': 2,
     'float': 4,
     'double': 4,
+    'nullptr_t': 2
   };
 
   /**

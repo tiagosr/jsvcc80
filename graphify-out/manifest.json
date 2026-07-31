@@ -105,8 +105,8 @@
     "semantic_hash": "ca938d193286ef0e8f7aa0994334f5bb"
   },
   "src/preprocessor/lexer.js": {
-    "mtime": 1785451705.2856872,
-    "ast_hash": "7928874af137910e384ef38f4bc8172f",
+    "mtime": 1785458554.913361,
+    "ast_hash": "d0e7a5540f48f77ccde41a9ed8f9e327",
     "semantic_hash": ""
   },
   "src/preprocessor/tokenTypes.js": {
@@ -130,8 +130,8 @@
     "semantic_hash": ""
   },
   "src/tests/cparser.test.js": {
-    "mtime": 1785241806.9540358,
-    "ast_hash": "278ee99871c570b0b130f45c3e697366",
+    "mtime": 1785456389.3587475,
+    "ast_hash": "593dd74b77dc222b7f2eb67317384a76",
     "semantic_hash": ""
   },
   "src/tests/il.test.js": {
@@ -270,8 +270,8 @@
     "semantic_hash": ""
   },
   "src/parser/function-pointers.js": {
-    "mtime": 1785452867.9982498,
-    "ast_hash": "7b4b436f53c34723d5fd9026094ab0e2",
+    "mtime": 1785456002.6878524,
+    "ast_hash": "c065e8ea73f138a930cec833c129b386",
     "semantic_hash": ""
   },
   "src/parser/stmt-control.js": {
@@ -380,8 +380,8 @@
     "semantic_hash": ""
   },
   "src/preprocessor/directives.js": {
-    "mtime": 1785451710.2101064,
-    "ast_hash": "7c8682fef768ca1ce242d8e291dda2ac",
+    "mtime": 1785458176.861781,
+    "ast_hash": "29a20d047f08fa6e195c65c2f85ed705",
     "semantic_hash": ""
   },
   "src/preprocessor/lexer-core.js": {
@@ -470,8 +470,8 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1785453129.4801388,
-    "ast_hash": "94f0ac318c553f440b5a884d1cf86a4e",
+    "mtime": 1785458728.4419224,
+    "ast_hash": "193b645ab0f607bbccf20b37194b0af8",
     "semantic_hash": ""
   },
   "src/tests/linker.crt0.test.js": {
@@ -815,8 +815,8 @@
     "semantic_hash": ""
   },
   "src/tests/embed.test.js": {
-    "mtime": 1785451777.348807,
-    "ast_hash": "a1728523f1f020ed45ddd93c948a2387",
+    "mtime": 1785458462.7608933,
+    "ast_hash": "f4ea6a3246d12afb75f4e0ccde46eeb9",
     "semantic_hash": ""
   },
   "src/tests/bool-types.test.js": {

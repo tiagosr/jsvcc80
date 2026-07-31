@@ -10,8 +10,8 @@
     "semantic_hash": ""
   },
   "src/ast/nodes.js": {
-    "mtime": 1785371036.9710622,
-    "ast_hash": "a228b3ba22589e7ae5e56be8a0442807",
+    "mtime": 1785452243.5478609,
+    "ast_hash": "2cac6ebf52541ad9a8ec9c6815527325",
     "semantic_hash": ""
   },
   "src/backend/z80codegen.js": {
@@ -95,8 +95,8 @@
     "semantic_hash": ""
   },
   "src/parser/cparser.js": {
-    "mtime": 1785371496.4897592,
-    "ast_hash": "b49e6c03de22a5e8eadb9bd0f77bb974",
+    "mtime": 1785452727.12792,
+    "ast_hash": "9fb69ce2043587ebd61049ce25e8b38c",
     "semantic_hash": ""
   },
   "src/plugins/interfaces.js": {
@@ -110,8 +110,8 @@
     "semantic_hash": ""
   },
   "src/preprocessor/tokenTypes.js": {
-    "mtime": 1785370575.7762427,
-    "ast_hash": "1f359460b561946fed7f7f721961c7a9",
+    "mtime": 1785452680.5218194,
+    "ast_hash": "1f4fe8025be170f1b441b3bb3090df21",
     "semantic_hash": ""
   },
   "src/tests/archive.test.js": {
@@ -195,8 +195,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1785451815.53878,
-    "ast_hash": "5b5a4b218c9ddffa5ce1468437670016",
+    "mtime": 1785453112.8022099,
+    "ast_hash": "20742da0af2c56441bc5c5e58ba09d21",
     "semantic_hash": ""
   },
   "FINDINGS.md": {
@@ -245,8 +245,8 @@
     "semantic_hash": ""
   },
   "src/parser/expr-primary.js": {
-    "mtime": 1785370575.77391,
-    "ast_hash": "a4ca28d5fbba1c74c08cd936b8cddfc7",
+    "mtime": 1785452278.6639395,
+    "ast_hash": "e92c9c5fe5d8b15b1028462a9690c508",
     "semantic_hash": ""
   },
   "src/parser/expr-rel.js": {
@@ -270,8 +270,8 @@
     "semantic_hash": ""
   },
   "src/parser/function-pointers.js": {
-    "mtime": 1785160471.2483046,
-    "ast_hash": "74327947060560c807d2dc536ee3ef4c",
+    "mtime": 1785452867.9982498,
+    "ast_hash": "7b4b436f53c34723d5fd9026094ab0e2",
     "semantic_hash": ""
   },
   "src/parser/stmt-control.js": {
@@ -285,8 +285,8 @@
     "semantic_hash": ""
   },
   "src/parser/type-system.js": {
-    "mtime": 1785193667.678173,
-    "ast_hash": "8add87aee13c6237c3f34c35759098c8",
+    "mtime": 1785452314.583304,
+    "ast_hash": "ed9ec28f081df0a0d822e2150e4f1172",
     "semantic_hash": ""
   },
   "src/tests/function_pointer_ir.test.js": {
@@ -370,8 +370,8 @@
     "semantic_hash": ""
   },
   "src/nanopass/type-registry.js": {
-    "mtime": 1785241704.0018837,
-    "ast_hash": "9b2813f5ddf5b54eb6f8b5cf3fbe89bf",
+    "mtime": 1785452307.3428137,
+    "ast_hash": "5c21daa33e1de6571f5f3335a8023faa",
     "semantic_hash": ""
   },
   "src/preprocessor/const-eval.js": {
@@ -470,8 +470,8 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1785451808.671478,
-    "ast_hash": "54c221b80d06cf2e1e0dffb650596a94",
+    "mtime": 1785453129.4801388,
+    "ast_hash": "94f0ac318c553f440b5a884d1cf86a4e",
     "semantic_hash": ""
   },
   "src/tests/linker.crt0.test.js": {
@@ -817,6 +817,11 @@
   "src/tests/embed.test.js": {
     "mtime": 1785451777.348807,
     "ast_hash": "a1728523f1f020ed45ddd93c948a2387",
+    "semantic_hash": ""
+  },
+  "src/tests/bool-types.test.js": {
+    "mtime": 1785452431.7782345,
+    "ast_hash": "284bc836a455c26d2d62e7efca3ffbf4",
     "semantic_hash": ""
   }
 }

@@ -107,11 +107,18 @@
   "105": "SomeParser",
   "106": "float_trig_exp.test.js",
   "107": "StructNode",
+  "108": "PreprocessedSource",
   "109": "CallNode",
+  "110": "cparser.js",
   "111": "CompoundNode",
   "112": "ControlFlowNode",
   "113": "DerefNode",
+  "114": "TypeRegistry",
+  "115": "function-pointers.js",
   "116": "IdentifierNode",
+  "117": "pointers.test.js",
   "118": "JumpNode",
+  "119": "ConstantEvaluator",
+  "120": "embed.test.js",
   "123": "ReturnNode"
 }

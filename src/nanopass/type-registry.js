@@ -79,8 +79,6 @@ export class TypeRegistry {
     * Register built-in typedefs (nullptr_t, etc.)
     */
    _registerBuiltInTypedefs() {
-     const nullptrTType = new AST.TypeSpecNode('bool', true, false, false, null, null);
-     this.typedefs.set('nullptr_t', nullptrTType);
    }
 
   /**

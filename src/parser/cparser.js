@@ -117,8 +117,7 @@ export class CPegParser {
    * @returns {string[]} Array of typedef names
    */
    collectTypedefNames(tokens) {
-      const builtinTypedefNames = ['nullptr_t'];
-      const names = [...builtinTypedefNames];
+      const names = [];
       let i = 0;
       while (i < tokens.length) {
        if (tokens[i].type === 'KEYWORD' && tokens[i].value === 'typedef') {

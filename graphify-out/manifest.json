@@ -10,18 +10,18 @@
     "semantic_hash": ""
   },
   "src/ast/nodes.js": {
-    "mtime": 1785460918.484589,
-    "ast_hash": "e674c8ae0df8b4ca2c26e97f696180d7",
+    "mtime": 1785489372.2557676,
+    "ast_hash": "b6ecee62a56b6c5241f95048dcadb3e3",
     "semantic_hash": ""
   },
   "src/backend/z80codegen.js": {
-    "mtime": 1785371802.645125,
-    "ast_hash": "12f80d3efd86b61b612ec9cb511ef614",
+    "mtime": 1785489441.9763205,
+    "ast_hash": "dee54e172558b4c31735565c34a27151",
     "semantic_hash": ""
   },
   "src/compiler.js": {
-    "mtime": 1785462953.3358667,
-    "ast_hash": "3a6c218d548c20f8c162bffb38fb69a2",
+    "mtime": 1785489465.7591064,
+    "ast_hash": "701aa4f34c868b207e0ade1d2ae9667a",
     "semantic_hash": ""
   },
   "src/core/errors.js": {
@@ -95,8 +95,8 @@
     "semantic_hash": ""
   },
   "src/parser/cparser.js": {
-    "mtime": 1785459476.6832829,
-    "ast_hash": "110939b258889299daab38d23188a816",
+    "mtime": 1785489432.4455862,
+    "ast_hash": "508738c94315febc1c74decf63c2b7ad",
     "semantic_hash": ""
   },
   "src/plugins/interfaces.js": {
@@ -110,8 +110,8 @@
     "semantic_hash": ""
   },
   "src/preprocessor/tokenTypes.js": {
-    "mtime": 1785484037.282065,
-    "ast_hash": "2ed735339be071b608a04a8359e04e74",
+    "mtime": 1785489302.860187,
+    "ast_hash": "f9a448368293aa7eaed4b77077bd7506",
     "semantic_hash": ""
   },
   "src/tests/archive.test.js": {
@@ -195,13 +195,13 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1785463180.2183304,
-    "ast_hash": "7a82e8e6107cd0384e5705ba399de63e",
+    "mtime": 1785490704.2029889,
+    "ast_hash": "fb719d16cf82086c002fb783abf3ca0c",
     "semantic_hash": ""
   },
   "FINDINGS.md": {
-    "mtime": 1785162820.5338337,
-    "ast_hash": "e092272a44e261d24343800606ee11ec",
+    "mtime": 1785487359.1474233,
+    "ast_hash": "0ce11c48bf67dcddb79b52d890ac8f50",
     "semantic_hash": ""
   },
   "src/parser/decl-global.js": {
@@ -285,8 +285,8 @@
     "semantic_hash": ""
   },
   "src/parser/type-system.js": {
-    "mtime": 1785484007.188604,
-    "ast_hash": "f79a06bafb3efc3d04868241eb5b8719",
+    "mtime": 1785489349.2994578,
+    "ast_hash": "d9e56056429e85b7b8a8853315a5ea2c",
     "semantic_hash": ""
   },
   "src/tests/function_pointer_ir.test.js": {
@@ -360,8 +360,8 @@
     "semantic_hash": ""
   },
   "src/nanopass/translation-context.js": {
-    "mtime": 1785371789.3771405,
-    "ast_hash": "bd4cf6af590af7d26009e567fad3be8f",
+    "mtime": 1785489438.6722803,
+    "ast_hash": "708016f40c1df0cb07f4194e52ee25b1",
     "semantic_hash": ""
   },
   "src/nanopass/type-queries.js": {
@@ -380,8 +380,8 @@
     "semantic_hash": ""
   },
   "src/preprocessor/directives.js": {
-    "mtime": 1785458176.861781,
-    "ast_hash": "29a20d047f08fa6e195c65c2f85ed705",
+    "mtime": 1785488235.29981,
+    "ast_hash": "b741be3ee0d5e22b21c784fe75c3bc37",
     "semantic_hash": ""
   },
   "src/preprocessor/lexer-core.js": {
@@ -470,8 +470,8 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1785484548.6135678,
-    "ast_hash": "443191c798a2a7d7f62c143718d827c9",
+    "mtime": 1785490702.142258,
+    "ast_hash": "d19ce6ffd28a4aed6203b421175064f6",
     "semantic_hash": ""
   },
   "src/tests/linker.crt0.test.js": {
@@ -800,8 +800,8 @@
     "semantic_hash": ""
   },
   "src/tests/token-location.test.js": {
-    "mtime": 1785258493.4599595,
-    "ast_hash": "ff85ca45e545330f9dbc0295aa2e7f3e",
+    "mtime": 1785484897.648481,
+    "ast_hash": "536eb6a6050fa782df70e7189655b2e7",
     "semantic_hash": ""
   },
   "src/tests/float_trig_exp.test.js": {
@@ -832,6 +832,21 @@
   "src/tests/static-assert.test.js": {
     "mtime": 1785484516.6359417,
     "ast_hash": "c3228e2a15f9323c22adaca3d081e2b8",
+    "semantic_hash": ""
+  },
+  "src/tests/preprocessor.elifdef-directive.test.js": {
+    "mtime": 1785488351.6852903,
+    "ast_hash": "e151311fb8489973a5c364b20c0a1adf",
+    "semantic_hash": ""
+  },
+  "src/tests/preprocessor.warning-directive.test.js": {
+    "mtime": 1785488293.9423735,
+    "ast_hash": "979b4c7786967e3d99595e700f75234c",
+    "semantic_hash": ""
+  },
+  "src/tests/noreturn.test.js": {
+    "mtime": 1785490644.9892716,
+    "ast_hash": "9c8c5e6875678e2ca8d883b0c439146e",
     "semantic_hash": ""
   }
 }

@@ -88,7 +88,7 @@ export const Keywords = new Set([
   'inline', 'int', 'long', 'nullptr', 'offsetof', 'register', 'restrict', 'return', 'short',
   'signed', 'sizeof', 'static', 'struct', 'switch', 'typedef', 'typeof', 'union',
   'unsigned', 'void', 'volatile', 'while', 'static_assert', '_Bool', 'bool', '_Complex', '_Imaginary',
-  'NULL', 'true', 'false'
+  'NULL', 'true', 'false', 'nullptr_t'
 ]);
 
 /**

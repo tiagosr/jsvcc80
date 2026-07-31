@@ -224,7 +224,7 @@ export class LexerCore {
       /[xX]/.test(this.peekNext(1))) {
       isHex = true;
       value += this.advance(); // 0
-      this.advance(); // x or X
+      value += this.advance(); // x or X
 
       while (/[0-9a-fA-F]/.test(this.peek())) {
         value += this.advance();

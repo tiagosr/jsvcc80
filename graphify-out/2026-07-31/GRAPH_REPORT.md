@@ -1,16 +1,16 @@
 # Graph Report - jsvcc80  (2026-07-31)
 
 ## Corpus Check
-- 165 files · ~176,056 words
+- 165 files · ~175,926 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1381 nodes · 2619 edges · 115 communities (64 shown, 51 thin omitted)
+- 1381 nodes · 2601 edges · 123 communities (65 shown, 58 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 6 edges (avg confidence: 0.83)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `600d21a5`
+- Built from commit: `82f16f8d`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -96,12 +96,20 @@
 - PreprocNode
 - SizeOfNode
 - StructNode
+- PreprocessedSource
 - CallNode
+- cparser.js
 - CompoundNode
 - ControlFlowNode
 - DerefNode
+- TypeRegistry
+- function-pointers.js
 - IdentifierNode
+- pointers.test.js
 - JumpNode
+- ConstantEvaluator
+- embed.test.js
+- SwitchNode
 - ReturnNode
 
 ## God Nodes (most connected - your core abstractions)
@@ -125,8 +133,8 @@
   src/linker/archive.js → src/linker/objectfile_loader.js
 - `atoi()` --calls--> `strtoi()`  [INFERRED]
   src/core/stdlib/atoi.c → src/core/stdlib/strtoi.c
-- `buildExtendedTypeSpecifier()` --calls--> `buildStructTypeRef()`  [EXTRACTED]
-  src/parser/function-pointers.js → src/parser/type-system.js
+- `buildAdditiveExpr()` --calls--> `map()`  [EXTRACTED]
+  src/parser/expr-add.js → src/parser/combinators.js
 
 ## Import Cycles
 - None detected.
@@ -135,11 +143,11 @@
 - **Compilation Pipeline Stages** — agents_preprocessor_lexer, agents_parser_cparser, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_backend_z80codegen [INFERRED]
 - **Core Modules Read Order** — agents_compiler_entry, agents_preprocessor_lexer, agents_parser_combinators, agents_parser_cparser, agents_nanopass_il, agents_nanopass_ast_to_ir, agents_nanopass_optimizations, agents_nanopass_register_passes, agents_backend_z80codegen [INFERRED]
 
-## Communities (115 total, 51 thin omitted)
+## Communities (123 total, 58 thin omitted)
 
 ### Community 0 - "AST Node Definitions"
 Cohesion: 0.05
-Nodes (20): AnnotatedDeclNode, AttributeNode, BinaryOpNode, CaseClauseNode, EnumNode, EnumValueNode, ExprStmtNode, FunctionPointerCallNode (+12 more)
+Nodes (19): AnnotatedDeclNode, CaseClauseNode, DerefNode, EnumNode, EnumValueNode, ExprStmtNode, FunctionPointerCallNode, GotoNode (+11 more)
 
 ### Community 1 - "Parser Combinators"
 Cohesion: 0.12
@@ -159,7 +167,7 @@ Nodes (8): AttributeHandler, CodegenPass, IREmissionPass, OptimizationPass, Pars
 
 ### Community 8 - "Z80 Code Generator"
 Cohesion: 0.07
-Nodes (5): Z80Codegen, computeFieldOffsets(), computeStructSize(), TypeRegistry, compileToAssembly()
+Nodes (6): Z80Codegen, computeFieldOffsets(), computeStructSize(), TypeRegistry, compile(), compileToAssembly()
 
 ### Community 9 - "Lexer & C Parser"
 Cohesion: 0.22
@@ -188,6 +196,10 @@ Nodes (8): Archive, ArchiveMember, createArchive(), deserializeArchive(), isArch
 ### Community 18 - "Object File & Relocations"
 Cohesion: 0.20
 Nodes (12): getCrt0Size(), resolveCrt0Relocations(), link(), LinkerOptions, ObjectRelocation, ObjectSymbol, RelocationType, SectionType (+4 more)
+
+### Community 19 - "BinaryOpNode"
+Cohesion: 0.83
+Nodes (3): buildPrimaryExpr(), kw(), locFromToken()
 
 ### Community 20 - "Object File Format"
 Cohesion: 0.20
@@ -257,13 +269,9 @@ Nodes (7): ✅ Completed, 🧪 Test Results, 📔 Backlog (issues identified dur
 Cohesion: 0.40
 Nodes (4): Context scale issues, Philosophical findings, Software design issues, Tooling issues
 
-### Community 55 - "CaseClauseNode"
-Cohesion: 0.06
-Nodes (7): ConstantEvaluator, Lexer, PreprocessedSource, Keywords, TokenType, tokenize(), tokenizeWithPaths()
-
 ### Community 62 - "AnyParser"
-Cohesion: 0.08
-Nodes (30): Registers, AstToIr, CPegParser, buildPrimaryExpr(), kw(), locFromToken(), arrayDimParser, basicFuncPointerPattern (+22 more)
+Cohesion: 0.17
+Nodes (7): Registers, AstToIr, compile(), compileToAssembly(), compile(), parse(), translate()
 
 ### Community 65 - "serializeObjectFile"
 Cohesion: 0.32
@@ -277,32 +285,36 @@ Nodes (5): buildEnumDecl(), buildStructDecl(), buildTypedefDecl(), kw(), locFrom
 Cohesion: 0.06
 Nodes (3): BreakpointManager, CallTracker, Simulator
 
-### Community 84 - "StringLiteralCollector"
-Cohesion: 0.19
-Nodes (3): IntrinsicHandler, IntrinsicMap, StringLiteralCollector
-
 ### Community 102 - "ManyParser"
 Cohesion: 0.08
 Nodes (9): CallIndirectInstruction, DerefLoadInstruction, DerefStoreInstruction, FreeStackInstruction, IndexedLoadInstruction, IndexedStoreInstruction, Instruction, IntrinsicInstruction (+1 more)
 
+### Community 110 - "cparser.js"
+Cohesion: 0.19
+Nodes (10): CPegParser, buildStructTypeRef(), buildTypeSpecifier(), createFunctionPointerType(), createTypeSpec(), kw(), locFromToken(), mergeDeclaratorType() (+2 more)
+
+### Community 115 - "function-pointers.js"
+Cohesion: 0.29
+Nodes (9): arrayDimParser, basicFuncPointerPattern, buildExtendedTypeSpecifier(), buildFunctionPointerDeclarator(), buildParamList(), buildRecursiveFuncPointerParam(), FunctionPointerDeclaratorParser, kw() (+1 more)
+
 ## Knowledge Gaps
-- **78 isolated node(s):** `🧪 Test Results`, `✅ Completed`, `✅ Completed`, `🔄 In Progress`, `🔜 Next Steps` (+73 more)
+- **78 isolated node(s):** `TypeInfos`, `🧪 Test Results`, `✅ Completed`, `basicFuncPointerPattern`, `arrayDimParser` (+73 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **51 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **58 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Z80Codegen` connect `Z80 Code Generator` to `GotoNode`, `AnyParser`?**
-  _High betweenness centrality (0.055) - this node is a cross-community bridge._
+- **Why does `Z80Codegen` connect `Z80 Code Generator` to `GotoNode`, `cparser.js`, `AnyParser`?**
+  _High betweenness centrality (0.056) - this node is a cross-community bridge._
 - **Why does `BlockRegisterAllocator` connect `Register Allocator` to `CompoundNode`?**
-  _High betweenness centrality (0.038) - this node is a cross-community bridge._
-- **Why does `IrToObjectFile` connect `Symbol Table` to `Object File & Relocations`, `Z80 Codegen & IR Base`?**
-  _High betweenness centrality (0.028) - this node is a cross-community bridge._
-- **What connects `🧪 Test Results`, `✅ Completed`, `✅ Completed` to the rest of the system?**
+  _High betweenness centrality (0.037) - this node is a cross-community bridge._
+- **Why does `DirectiveHandler` connect `IR to Object File` to `CaseClauseNode`?**
+  _High betweenness centrality (0.029) - this node is a cross-community bridge._
+- **What connects `TypeInfos`, `🧪 Test Results`, `✅ Completed` to the rest of the system?**
   _78 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `AST Node Definitions` be split into smaller, more focused modules?**
-  _Cohesion score 0.046464646464646465 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05 - nodes in this community are weakly interconnected._
 - **Should `Parser Combinators` be split into smaller, more focused modules?**
   _Cohesion score 0.11764705882352941 - nodes in this community are weakly interconnected._
 - **Should `Z80 Codegen & IR Base` be split into smaller, more focused modules?**

@@ -163,10 +163,10 @@ describe('static_assert - Passing (expression evaluates to non-zero)', () => {
     assert.strictEqual(result.errors.length, 0);
   });
 
-  it('should pass static_assert(1 ^ 1, "fail") - bitwise xor', () => {
+  it('should pass static_assert(1 ^ 0, "fail") - bitwise xor', () => {
     const options = new CompilerOptions({ source: 'test.c' });
     const compiler = new Compiler(options);
-    const result = compiler.compileToObjectFile('int main() { static_assert(1 ^ 1, "fail"); return 0; }');
+    const result = compiler.compileToObjectFile('int main() { static_assert(1 ^ 0, "fail"); return 0; }');
     assert.strictEqual(result.success, true);
     assert.strictEqual(result.errors.length, 0);
   });

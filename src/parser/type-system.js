@@ -29,6 +29,7 @@ const TypeInfos = {
   'double':  { baseType: 'double',  isSigned: false, size: 4  },
   'signed':  { baseType: 'int',     isSigned: true,  size: 2  },
   'unsigned':{ baseType: 'unsigned', isSigned: false, size: 2  },
+  'nullptr_t':{ baseType: 'void',   isSigned: false, size: 2  },
 };
 
 /**

@@ -16,7 +16,7 @@ See [CHANGELOG.md](CHANGELOG.md)
 - Nothing at the moment
 
 ### 🔜 Next Steps
-- Implement `static_assert(expression, "error message to emit if false")`, where `expression` is an expression that can be evaluated at compile time and returns a boolean result - if false, halt the compilation and emit the error message, else proceed with the compilation
+- Implement `constexpr` with AST interpretation
 - Implement `#elifdef`, `#elifndef`, `#warning`
 - Implement `_Noreturn`
 

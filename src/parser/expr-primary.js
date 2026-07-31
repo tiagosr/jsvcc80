@@ -32,7 +32,13 @@ function buildPrimaryExpr(ctx) {
         return new AST.IdentifierNode(token.value, loc);
       }
       if (token.type === 'INTEGER') {
-        return new AST.LiteralNode('int', parseInt(token.value, 10), loc);
+        let numValue;
+        if (/^0[xX]/.test(token.value)) {
+          numValue = parseInt(token.value, 16);
+        } else {
+          numValue = parseInt(token.value, 10);
+        }
+        return new AST.LiteralNode('int', numValue, loc);
       }
       if (token.type === 'FLOAT') {
         return new AST.LiteralNode('float', parseFloat(token.value), loc);

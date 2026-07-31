@@ -872,3 +872,20 @@ export class CastNode extends ASTNode {
     };
   }
 }
+
+/**
+ * AST node for static_assert (C23 compile-time assertion)
+ */
+export class StaticAssertNode extends ASTNode {
+  /**
+   * Creates a static_assert node
+   * @param {ASTNode} expression - Compile-time expression to evaluate
+   * @param {string} message - Error message to emit if expression is false
+   * @param {SourceLocation} location - Source location
+   */
+  constructor(expression, message, location) {
+    super('StaticAssert', location);
+    this.expression = expression;
+    this.message = message;
+  }
+}

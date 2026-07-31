@@ -6,7 +6,7 @@ import { Lexer, PreprocessedSource } from './preprocessor/lexer.js';
 import { CPegParser } from './parser/cparser.js';
 import { globalRegistry } from './core/plugins.js';
 import { ProgramIR } from './nanopass/il.js';
-import { ParserError } from './core/errors.js';
+import { ParserError, SemanticError } from './core/errors.js';
 import { AstToIr } from './nanopass/ast_to_ir.js';
 import { Z80Codegen } from './backend/z80codegen.js';
 import { IrToObjectFile } from './linker/objectfile.js';
@@ -15,6 +15,8 @@ import { loadObjectFile, saveObjectFile } from './linker/objectfile_loader.js';
 import { loadArchive, Archive } from './linker/archive.js';
 import './nanopass/register_passes.js';
 import './plugins/register_attributes.js';
+import { StaticAssertEvaluator } from './nanopass/static-assert-eval.js';
+import * as AST from './ast/nodes.js';
 
 /**
  * Compiler options and configuration
@@ -324,14 +326,29 @@ export class Compiler {
     * @param {ASTNode} ast - AST to analyze
     * @returns {ASTNode} Analyzed AST
     */
-   analyze(ast) {
-     const symbolMap = new Map();
-     const functionConventionMap = new Map();
-     
-     function processNode(node) {
-       if (!node) return node;
-       
-       if (node.type === 'Function') {
+    analyze(ast) {
+      const symbolMap = new Map();
+      const functionConventionMap = new Map();
+      const typeRegistry = this._typeRegistry || null;
+      
+       const processNode = (node) => {
+        if (!node) return node;
+        
+        if (node.type === 'StaticAssert') {
+          const value = this._evaluateStaticAssert(node, symbolMap, typeRegistry);
+          if (value === null) {
+            throw new SemanticError(
+              `static_assert: expression cannot be evaluated at compile time`,
+              node.location
+            );
+          }
+          if (value === 0) {
+            throw new SemanticError(node.message, node.location);
+          }
+          return node;
+        }
+        
+        if (node.type === 'Function') {
           const funcName = node.name ? node.name.name : null;
          const conventions = [];
          
@@ -351,15 +368,19 @@ export class Compiler {
            functionConventionMap.set(funcName, conventions);
          }
          
-         symbolMap.set(funcName, {
-           kind: 'function',
-           type: node.returnType,
-           parameters: node.parameters,
-           conventions: conventions
-         });
-         
-         return node;
-       }
+          symbolMap.set(funcName, {
+            kind: 'function',
+            type: node.returnType,
+            parameters: node.parameters,
+            conventions: conventions
+          });
+          
+          if (node.body) {
+            node.body = processNode(node.body);
+          }
+          
+          return node;
+        }
        
        if (node.type === 'AnnotatedDecl') {
          const decl = node.declaration;
@@ -413,19 +434,64 @@ export class Compiler {
          return node;
        }
        
-       return node;
-     }
-     
-     const analyzed = processNode(ast);
-     analyzed.meta = analyzed.meta || {};
-     analyzed.meta.symbolMap = symbolMap;
-     analyzed.meta.functionConventionMap = functionConventionMap;
-     
-     return analyzed;
-   }
+        return node;
+      };
+      
+      const analyzed = processNode(ast);
+      analyzed.meta = analyzed.meta || {};
+      analyzed.meta.symbolMap = symbolMap;
+      analyzed.meta.functionConventionMap = functionConventionMap;
+      this._analysisSymbolMap = symbolMap;
+      this._analysisTypeRegistry = typeRegistry;
+      
+      return analyzed;
+    }
 
-  /**
-   * IR generation stage - translates AST to intermediate representation
+   /**
+    * Evaluate a static_assert expression at compile time
+    * @param {AST.StaticAssertNode} node - Static assert node
+    * @param {Map} symbolMap - Symbol table from analysis
+    * @param {Object} typeRegistry - Type registry for sizeof/offsetof lookup
+    * @returns {number|null} Evaluated value or null if cannot evaluate
+    */
+   _evaluateStaticAssert(node, symbolMap, typeRegistry) {
+    const evaluator = new StaticAssertEvaluator({
+      state: { symbolTable: symbolMap },
+      typeRegistry: typeRegistry,
+      typeQueryHandler: {
+        translateSizeOf: (sizeOf) => {
+          const operand = sizeOf.operand;
+          let size;
+          if (operand instanceof AST.TypeSpecNode) {
+            size = operand.getSize(typeRegistry?.structRegistry);
+          } else if (operand instanceof AST.IdentifierNode) {
+            const sym = symbolMap?.lookup(operand.name);
+            if (sym) size = sym.size || sym.elemSize || 2;
+            else size = 2;
+          } else if (typeof operand === 'string') {
+            size = typeRegistry?.structRegistry?.get(operand)?.size || 2;
+          } else {
+            size = 2;
+          }
+          return size;
+        },
+        translateOffsetOf: (offsetOf) => {
+          const structDef = typeRegistry?.structRegistry?.get(offsetOf.typeName);
+          if (structDef) {
+            const fieldOffset = structDef.fieldOffsets?.get(offsetOf.fieldName);
+            if (fieldOffset !== undefined) return fieldOffset;
+          }
+          return 0;
+        }
+      }
+    });
+    const result = evaluator.evaluate(node.expression);
+    if (result === null) return 0;
+    return result;
+  }
+
+   /**
+    * IR generation stage - translates AST to intermediate representation
    * @param {ASTNode} ast - Analyzed AST
    * @returns {ProgramIR} Program intermediate representation
    */

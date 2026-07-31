@@ -87,7 +87,7 @@ export const Keywords = new Set([
   'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if',
   'inline', 'int', 'long', 'nullptr', 'offsetof', 'register', 'restrict', 'return', 'short',
   'signed', 'sizeof', 'static', 'struct', 'switch', 'typedef', 'typeof', 'union',
-  'unsigned', 'void', 'volatile', 'while', '_Bool', 'bool', '_Complex', '_Imaginary',
+  'unsigned', 'void', 'volatile', 'while', 'static_assert', '_Bool', 'bool', '_Complex', '_Imaginary',
   'NULL', 'true', 'false'
 ]);
 

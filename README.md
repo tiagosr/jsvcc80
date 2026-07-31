@@ -16,9 +16,9 @@ See [CHANGELOG.md](CHANGELOG.md)
 - Nothing at the moment
 
 ### 🔜 Next Steps
-- Implement anonymous unions and structs
-- Implement `static_assert(test, "error message to emit if false")`
-- Implement `constexpr` with AST interpretation
+- Implement `static_assert(expression, "error message to emit if false")`, where `expression` is an expression that can be evaluated at compile time and returns a boolean result - if false, halt the compilation and emit the error message, else proceed with the compilation
+- Implement `#elifdef`, `#elifndef`, `#warning`
+- Implement `_Noreturn`
 
 
 ### 📔 Backlog (issues identified during implementation for later priorization)

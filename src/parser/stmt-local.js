@@ -167,6 +167,23 @@ function buildStatement(ctx) {
     }
   );
 
+  const staticAssert = map(
+    seq(
+      kw('static_assert'),
+      lit('('),
+      lazy(() => ctx.ruleRefs.assignmentExpr),
+      lit(','),
+      pred(t => t.type === 'STRING'),
+      lit(')'),
+      lit(';')
+    ),
+    ([keyword, , expression, , messageStr, , semi]) => {
+      const expr = Array.isArray(expression) ? expression[0] : expression;
+      const message = Array.isArray(messageStr) ? messageStr[0].value : messageStr.value;
+      return new AST.StaticAssertNode(expr, message, locFromToken(keyword));
+    }
+  );
+
   const exprStmt = map(
     seq(
       lazy(() => ctx.ruleRefs.expression),
@@ -191,6 +208,7 @@ function buildStatement(ctx) {
     returnStmt,
     localDeclWithFuncPointer,
     localDecl,
+    staticAssert,
     exprStmt
   );
 }

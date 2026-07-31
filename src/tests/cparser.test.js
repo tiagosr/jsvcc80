@@ -827,8 +827,9 @@ describe('C PEG Parser', () => {
       const tokens = lexer.tokenize();
       const parser = new CPegParser();
       const typedefNames = parser.collectTypedefNames(tokens);
-      assert.strictEqual(typedefNames.length, 1);
-      assert.strictEqual(typedefNames[0], 'MyStruct');
+      assert.strictEqual(typedefNames.length, 2);
+      assert.strictEqual(typedefNames[0], 'nullptr_t');
+      assert.strictEqual(typedefNames[1], 'MyStruct');
     });
 
     it('should collect typedef names from typedef union declarations', () => {
@@ -837,8 +838,9 @@ describe('C PEG Parser', () => {
       const tokens = lexer.tokenize();
       const parser = new CPegParser();
       const typedefNames = parser.collectTypedefNames(tokens);
-      assert.strictEqual(typedefNames.length, 1);
-      assert.strictEqual(typedefNames[0], 'MyUnion');
+      assert.strictEqual(typedefNames.length, 2);
+      assert.strictEqual(typedefNames[0], 'nullptr_t');
+      assert.strictEqual(typedefNames[1], 'MyUnion');
     });
 
     it('should parse typedef struct with typedef field types', () => {
@@ -882,11 +884,12 @@ typedef union { int x; float y; } Variant;`;
       const tokens = lexer.tokenize();
       const parser = new CPegParser();
       const typedefNames = parser.collectTypedefNames(tokens);
-      assert.strictEqual(typedefNames.length, 4);
-      assert.strictEqual(typedefNames[0], 'myint');
-      assert.strictEqual(typedefNames[1], 'Point');
-      assert.strictEqual(typedefNames[2], 'uint');
-      assert.strictEqual(typedefNames[3], 'Variant');
+      assert.strictEqual(typedefNames.length, 5);
+      assert.strictEqual(typedefNames[0], 'nullptr_t');
+      assert.strictEqual(typedefNames[1], 'myint');
+      assert.strictEqual(typedefNames[2], 'Point');
+      assert.strictEqual(typedefNames[3], 'uint');
+      assert.strictEqual(typedefNames[4], 'Variant');
     });
   });
 });

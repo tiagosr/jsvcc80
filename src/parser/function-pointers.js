@@ -216,7 +216,8 @@ function buildExtendedTypeSpecifier(typedefNames, structTags) {
   const signedness = alt(kw('signed'), kw('unsigned'));
   const basicType = alt(
     kw('void'), kw('char'), kw('_Bool'), kw('bool'),
-    kw('short'), kw('int'), kw('long')
+    kw('short'), kw('int'), kw('long'),
+    kw('float'), kw('double')
   );
   const colon = lit(':');
   const integerLiteral = pred(t => t.type === 'INTEGER');

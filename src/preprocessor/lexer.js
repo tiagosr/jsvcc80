@@ -328,36 +328,46 @@ export class Lexer extends LexerCore {
    * @returns {Token[]} Array of tokens from the embed
    */
   _tokenizeEmbedResult(embedResult) {
-    const tokens = [];
-    const location = embedResult.location;
+     const tokens = [];
+     const location = embedResult.location;
 
-    // Tokenize prefix
-    if (embedResult.prefix) {
-      tokens.push(...this._tokenizeString(embedResult.prefix, location));
-    }
+     // Tokenize prefix
+     if (embedResult.prefix) {
+       tokens.push(...this._tokenizeString(embedResult.prefix, location));
+     }
 
-    // Tokenize items (if_empty substitute) or bytes (normal embed)
-    if (embedResult.items) {
-      for (const item of embedResult.items) {
-        if (item.type === 'byte') {
-          tokens.push(this.makeToken(TokenType.INTEGER, String(item.value), location));
-        } else if (item.type === 'comma') {
-          tokens.push(this.makeToken(TokenType.COMMA, ',', location));
-        }
-      }
-    } else if (embedResult.bytes) {
-      for (let i = 0; i < embedResult.bytes.length; i++) {
-        tokens.push(this.makeToken(TokenType.INTEGER, String(embedResult.bytes[i]), location));
-      }
-    }
+     // Separator: comma between prefix and content when both prefix and suffix exist
+     if (embedResult.prefix && embedResult.suffix) {
+       tokens.push(this.makeToken(TokenType.COMMA, ',', location));
+     }
 
-    // Tokenize suffix
-    if (embedResult.suffix) {
-      tokens.push(...this._tokenizeString(embedResult.suffix, location));
-    }
+     // Trailing comma when bytes are empty and no suffix
+     if ((embedResult.bytes === undefined || embedResult.bytes.length === 0) && !embedResult.suffix) {
+       tokens.push(this.makeToken(TokenType.COMMA, ',', location));
+     }
 
-    return tokens;
-  }
+     // Tokenize items (if_empty substitute) or bytes (normal embed)
+     if (embedResult.items) {
+       for (const item of embedResult.items) {
+         if (item.type === 'byte') {
+           tokens.push(this.makeToken(TokenType.INTEGER, String(item.value), location));
+         } else if (item.type === 'comma') {
+           tokens.push(this.makeToken(TokenType.COMMA, ',', location));
+         }
+       }
+     } else if (embedResult.bytes) {
+       for (let i = 0; i < embedResult.bytes.length; i++) {
+         tokens.push(this.makeToken(TokenType.INTEGER, String(embedResult.bytes[i]), location));
+       }
+     }
+
+     // Tokenize suffix
+     if (embedResult.suffix) {
+       tokens.push(...this._tokenizeString(embedResult.suffix, location));
+     }
+
+     return tokens;
+   }
 
   /**
    * Tokenizes a string into lexer tokens

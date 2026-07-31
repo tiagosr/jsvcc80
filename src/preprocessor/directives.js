@@ -136,82 +136,78 @@ export class DirectiveHandler {
   }
 
   /**
-   * Parses #embed attributes from the attribute string
-    * @param {string} attrString - Attribute string after filename
-    * @returns {{limit?: number, offset?: number, prefix?: string, suffix?: string, ifEmpty?: Array<{type: 'byte', value: number}|{type: 'comma'}>}}
-   */
-  _parseEmbedAttributes(attrString) {
-    const result = { limit: undefined, offset: undefined, prefix: '', suffix: '', ifEmpty: undefined };
+    * Parses #embed attributes from the attribute string
+     * @param {string} attrString - Attribute string after filename
+     * @returns {{limit?: number, offset?: number, prefix?: string, suffix?: string, ifEmpty?: Array<{type: 'byte', value: number}|{type: 'comma'}>}}
+    */
+   _parseEmbedAttributes(attrString) {
+     const result = { limit: undefined, offset: undefined, prefix: '', suffix: '', ifEmpty: undefined };
 
-    const trimmed = attrString.trim();
+     const trimmed = attrString.trim();
 
-    if (!trimmed) return result;
+     if (!trimmed) return result;
 
-    if (trimmed[0] !== '(') {
-      throw new LexerError(`#embed attributes must be enclosed in parentheses`, { file: this.lexer.preprocessor.filename, start: { line: this.lexer.line, column: this.lexer.column }, end: { line: this.lexer.line, column: this.lexer.column + 1 } });
-    }
+     let i = 0;
 
-    let i = 1; // Skip outer '('
+     while (i < trimmed.length) {
+       i = this._skipWhitespace(trimmed, i);
+       if (i >= trimmed.length || trimmed[i] === ')') {
+         if (i < trimmed.length && trimmed[i] === ')') {
+           return result;
+         }
+         break;
+       }
 
-    while (i < trimmed.length) {
-      i = this._skipWhitespace(trimmed, i);
-      if (i >= trimmed.length || trimmed[i] === ')') {
-        if (i < trimmed.length && trimmed[i] === ')') {
-          return result;
-        }
-        break;
-      }
+       // Read attribute name
+       let name = '';
+       while (i < trimmed.length && /[a-zA-Z_]/.test(trimmed[i])) {
+         name += trimmed[i++];
+       }
 
-      // Read attribute name
-      let name = '';
-      while (i < trimmed.length && /[a-zA-Z_]/.test(trimmed[i])) {
-        name += trimmed[i++];
-      }
+       // Skip whitespace after name
+       i = this._skipWhitespace(trimmed, i);
 
-      // Skip whitespace after name
-      i = this._skipWhitespace(trimmed, i);
+       // Expect '('
+       if (i >= trimmed.length || trimmed[i] !== '(') {
+         throw new LexerError(`Expected '(' after attribute name '${name}'`, { file: this.lexer.preprocessor.filename, start: { line: this.lexer.line, column: this.lexer.column }, end: { line: this.lexer.line, column: this.lexer.column + i } });
+       }
+       i++; // Skip '('
 
-      // Expect '('
-      if (i >= trimmed.length || trimmed[i] !== '(') {
-        throw new LexerError(`Expected '(' after attribute name '${name}'`, { file: this.lexer.preprocessor.filename, start: { line: this.lexer.line, column: this.lexer.column }, end: { line: this.lexer.line, column: this.lexer.column + i } });
-      }
-      i++; // Skip '('
+       // Find matching closing parenthesis for this attribute's value
+       let valueDepth = 1;
+       let valueStart = i;
+       while (i < trimmed.length && valueDepth > 0) {
+         if (trimmed[i] === '(') valueDepth++;
+         else if (trimmed[i] === ')') valueDepth--;
+         i++;
+       }
 
-      // Find matching closing parenthesis for this attribute's value
-      let valueDepth = 1;
-      let valueStart = i;
-      while (i < trimmed.length && valueDepth > 0) {
-        if (trimmed[i] === '(') valueDepth++;
-        else if (trimmed[i] === ')') valueDepth--;
-        i++;
-      }
+       if (valueDepth !== 0) {
+         throw new LexerError(`Unclosed parenthesis in attribute '${name}'`, { file: this.lexer.preprocessor.filename, start: { line: this.lexer.line, column: this.lexer.column }, end: { line: this.lexer.line, column: this.lexer.column + i } });
+       }
 
-      if (valueDepth !== 0) {
-        throw new LexerError(`Unclosed parenthesis in attribute '${name}'`, { file: this.lexer.preprocessor.filename, start: { line: this.lexer.line, column: this.lexer.column }, end: { line: this.lexer.line, column: this.lexer.column + i } });
-      }
+       const value = trimmed.substring(valueStart, i - 1).trim();
+       this._processEmbedAttribute(name, value, result);
 
-      const value = trimmed.substring(valueStart, i - 1).trim();
-      this._processEmbedAttribute(name, value, result);
+       // Skip whitespace after attribute
+       i = this._skipWhitespace(trimmed, i);
 
-      // Skip whitespace after attribute
-      i = this._skipWhitespace(trimmed, i);
+       // Check for end of attribute list
+       if (i >= trimmed.length) {
+         return result;
+       }
 
-      // Check for end of attribute list
-      if (i >= trimmed.length) {
-        return result;
-      }
+       // Expect comma or closing parenthesis
+       if (trimmed[i] === ')') {
+         return result;
+       }
+       if (trimmed[i] === ',') {
+         i++; // Skip comma
+       }
+     }
 
-      // Expect comma or closing parenthesis
-      if (trimmed[i] === ')') {
-        return result;
-      }
-      if (trimmed[i] === ',') {
-        i++; // Skip comma
-      }
-    }
-
-    throw new LexerError('Unclosed parenthesis in #embed attributes', { file: this.lexer.preprocessor.filename, start: { line: this.lexer.line, column: this.lexer.column }, end: { line: this.lexer.line, column: this.lexer.column + trimmed.length } });
-  }
+     throw new LexerError('Unclosed parenthesis in #embed attributes', { file: this.lexer.preprocessor.filename, start: { line: this.lexer.line, column: this.lexer.column }, end: { line: this.lexer.line, column: this.lexer.column + trimmed.length } });
+   }
 
   /**
    * Skips whitespace in a string starting from given position

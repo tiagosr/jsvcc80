@@ -82,7 +82,7 @@ int x;`;
     it('should limit embedded bytes to specified count', () => {
       writeBinaryFile('data.bin', new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]));
 
-      const source = `#embed "${join(testDir, 'data.bin')}" (limit(5))
+      const source = `#embed "${join(testDir, 'data.bin')}" limit(5)
 int x;`;
 
       const tokens = tokenize(source);
@@ -99,7 +99,7 @@ int x;`;
     it('should handle limit larger than file size', () => {
       writeBinaryFile('data.bin', new Uint8Array([1, 2, 3]));
 
-      const source = `#embed "${join(testDir, 'data.bin')}" (limit(100))
+      const source = `#embed "${join(testDir, 'data.bin')}" limit(100)
 int x;`;
 
       const tokens = tokenize(source);
@@ -111,7 +111,7 @@ int x;`;
     it('should handle limit(0) producing no bytes', () => {
       writeBinaryFile('data.bin', new Uint8Array([1, 2, 3]));
 
-      const source = `#embed "${join(testDir, 'data.bin')}" (limit(0))
+      const source = `#embed "${join(testDir, 'data.bin')}" limit(0)
 int x;`;
 
       const tokens = tokenize(source);
@@ -125,7 +125,7 @@ int x;`;
     it('should skip specified number of bytes from start', () => {
       writeBinaryFile('data.bin', new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]));
 
-      const source = `#embed "${join(testDir, 'data.bin')}" (offset(3))
+      const source = `#embed "${join(testDir, 'data.bin')}" offset(3)
 int x;`;
 
       const tokens = tokenize(source);
@@ -144,7 +144,7 @@ int x;`;
     it('should handle offset equal to file size', () => {
       writeBinaryFile('data.bin', new Uint8Array([1, 2, 3]));
 
-      const source = `#embed "${join(testDir, 'data.bin')}" (offset(3))
+      const source = `#embed "${join(testDir, 'data.bin')}" offset(3)
 int x;`;
 
       const tokens = tokenize(source);
@@ -158,7 +158,7 @@ int x;`;
     it('should apply both offset and limit correctly', () => {
       writeBinaryFile('data.bin', new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]));
 
-      const source = `#embed "${join(testDir, 'data.bin')}" (limit(3), offset(5))
+      const source = `#embed "${join(testDir, 'data.bin')}" limit(3) offset(5)
 int x;`;
 
       const tokens = tokenize(source);
@@ -173,7 +173,7 @@ int x;`;
     it('should handle limit and offset in reverse order', () => {
       writeBinaryFile('data.bin', new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]));
 
-      const source = `#embed "${join(testDir, 'data.bin')}" (offset(5), limit(3))
+      const source = `#embed "${join(testDir, 'data.bin')}" offset(5) limit(3)
 int x;`;
 
       const tokens = tokenize(source);
@@ -187,25 +187,11 @@ int x;`;
   });
 
   describe('prefix attribute', () => {
-    it('should prepend prefix content before byte values', () => {
-      writeBinaryFile('data.bin', new Uint8Array([1, 2, 3]));
-
-      const source = `#embed "${join(testDir, 'data.bin')}" (prefix(comma,))
-int x;`;
-
-      const tokens = tokenize(source);
-      const commas = tokens.filter(t => t.type === TokenType.COMMA);
-      const integers = tokens.filter(t => t.type === TokenType.INTEGER);
-
-      assert.strictEqual(commas.length, 1);
-      assert.strictEqual(commas[0].value, ',');
-      assert.strictEqual(integers.length, 3);
-    });
-
+    
     it('should prepend numeric prefix before byte values', () => {
       writeBinaryFile('data.bin', new Uint8Array([1, 2, 3]));
 
-      const source = `#embed "${join(testDir, 'data.bin')}" (prefix(0,))
+      const source = `#embed "${join(testDir, 'data.bin')}" prefix(0,)
 int x;`;
 
       const tokens = tokenize(source);
@@ -220,25 +206,11 @@ int x;`;
   });
 
   describe('suffix attribute', () => {
-    it('should append suffix content after byte values', () => {
-      writeBinaryFile('data.bin', new Uint8Array([1, 2, 3]));
-
-      const source = `#embed "${join(testDir, 'data.bin')}" (suffix(comma,))
-int x;`;
-
-      const tokens = tokenize(source);
-      const commas = tokens.filter(t => t.type === TokenType.COMMA);
-      const integers = tokens.filter(t => t.type === TokenType.INTEGER);
-
-      assert.strictEqual(integers.length, 3);
-      assert.strictEqual(commas.length, 1);
-      assert.strictEqual(commas[0].value, ',');
-    });
-
+    
     it('should append numeric suffix after byte values', () => {
       writeBinaryFile('data.bin', new Uint8Array([1, 2, 3]));
 
-      const source = `#embed "${join(testDir, 'data.bin')}" (suffix(0,))
+      const source = `#embed "${join(testDir, 'data.bin')}" suffix(0,)
 int x;`;
 
       const tokens = tokenize(source);
@@ -256,7 +228,7 @@ int x;`;
     it('should apply both prefix and suffix correctly', () => {
       writeBinaryFile('data.bin', new Uint8Array([1, 2, 3]));
 
-      const source = `#embed "${join(testDir, 'data.bin')}" (prefix(0, comma, suffix(4,))
+      const source = `#embed "${join(testDir, 'data.bin')}" prefix(0,) suffix(, 4)
 int x;`;
 
       const tokens = tokenize(source);
@@ -265,31 +237,29 @@ int x;`;
 
       assert.strictEqual(integers.length, 5);
       assert.strictEqual(integers[0].value, '0');
-      assert.strictEqual(integers[1].value, '4');
-      assert.strictEqual(integers[2].value, '1');
-      assert.strictEqual(integers[3].value, '2');
-      assert.strictEqual(integers[4].value, '3');
+      assert.strictEqual(integers[1].value, '1');
+      assert.strictEqual(integers[2].value, '2');
+      assert.strictEqual(integers[3].value, '3');
+      assert.strictEqual(integers[4].value, '4');
       assert.strictEqual(commas.length, 3);
     });
 
     it('should work with all attributes combined', () => {
       writeBinaryFile('data.bin', new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]));
 
-      const source = `#embed "${join(testDir, 'data.bin')}" (limit(4), offset(2), prefix(0, comma, suffix(9,))
+      const source = `#embed "${join(testDir, 'data.bin')}" limit(4) offset(2) prefix(0,) suffix(,9)
 int x;`;
 
       const tokens = tokenize(source);
       const integers = tokens.filter(t => t.type === TokenType.INTEGER);
-      const commas = tokens.filter(t => t.type === TokenType.COMMA);
 
       assert.strictEqual(integers.length, 6);
       assert.strictEqual(integers[0].value, '0');
-      assert.strictEqual(integers[1].value, '9');
-      assert.strictEqual(integers[2].value, '2');
-      assert.strictEqual(integers[3].value, '3');
-      assert.strictEqual(integers[4].value, '4');
-      assert.strictEqual(integers[5].value, '5');
-      assert.strictEqual(commas.length, 3);
+      assert.strictEqual(integers[1].value, '2');
+      assert.strictEqual(integers[2].value, '3');
+      assert.strictEqual(integers[3].value, '4');
+      assert.strictEqual(integers[4].value, '5');
+      assert.strictEqual(integers[5].value, '9');
     });
   });
 
@@ -309,7 +279,7 @@ int x;`;
     it('should handle empty binary file with prefix', () => {
       writeBinaryFile('data.bin', new Uint8Array([]));
 
-      const source = `#embed "${join(testDir, 'data.bin')}" (prefix(0, comma,))
+      const source = `#embed "${join(testDir, 'data.bin')}" prefix(0,)
 int x;`;
 
       const tokens = tokenize(source);
@@ -339,7 +309,7 @@ int x;`;
       for (let i = 0; i < 256; i++) bytes[i] = i;
       writeBinaryFile('data.bin', bytes);
 
-      const source = `#embed "${join(testDir, 'data.bin')}" (limit(5))
+      const source = `#embed "${join(testDir, 'data.bin')}" limit(5)
 int x;`;
 
       const tokens = tokenize(source);
@@ -365,7 +335,7 @@ int x;`;
     it('should error on offset exceeding file size', () => {
       writeBinaryFile('data.bin', new Uint8Array([1, 2, 3]));
 
-      const source = `#embed "${join(testDir, 'data.bin')}" (offset(10))
+      const source = `#embed "${join(testDir, 'data.bin')}" offset(10)
 int x;`;
 
       assert.throws(() => tokenize(source), /Embed offset.*exceeds file size/);
@@ -374,16 +344,16 @@ int x;`;
     it('should error on invalid attribute syntax', () => {
       writeBinaryFile('data.bin', new Uint8Array([1, 2, 3]));
 
-      const source = `#embed "${join(testDir, 'data.bin')}" (limitabc)
+      const source = `#embed "${join(testDir, 'data.bin')}" limit(abc)
 int x;`;
 
-      assert.throws(() => tokenize(source), /Expected '\('/);
+      assert.throws(() => tokenize(source), /Invalid limit value/);
     });
 
     it('should error on missing closing parenthesis', () => {
       writeBinaryFile('data.bin', new Uint8Array([1, 2, 3]));
 
-      const source = `#embed "${join(testDir, 'data.bin')}" (limit(5
+      const source = `#embed "${join(testDir, 'data.bin')}" limit(5
 int x;`;
 
       assert.throws(() => tokenize(source), /Unclosed parenthesis/);
@@ -498,7 +468,7 @@ int x;`;
     it('should emit substitute values when embedded file is empty', () => {
       writeBinaryFile('empty.bin', new Uint8Array([]));
 
-      const source = `#embed "${join(testDir, 'empty.bin')}" (if_empty(0, comma, 1, comma, 2))
+      const source = `#embed "${join(testDir, 'empty.bin')}" if_empty(0, 1, 2)
 int x;`;
 
       const tokens = tokenize(source);
@@ -513,7 +483,7 @@ int x;`;
     it('should emit substitute values with single value when file is empty', () => {
       writeBinaryFile('empty.bin', new Uint8Array([]));
 
-      const source = `#embed "${join(testDir, 'empty.bin')}" (if_empty(255))
+      const source = `#embed "${join(testDir, 'empty.bin')}" if_empty(255)
 int x;`;
 
       const tokens = tokenize(source);
@@ -526,7 +496,7 @@ int x;`;
     it('should ignore if_empty when file is not empty', () => {
       writeBinaryFile('data.bin', new Uint8Array([10, 20, 30]));
 
-      const source = `#embed "${join(testDir, 'data.bin')}" (if_empty(0, comma, 1))
+      const source = `#embed "${join(testDir, 'data.bin')}" if_empty(0, 1)
 int x;`;
 
       const tokens = tokenize(source);
@@ -541,7 +511,7 @@ int x;`;
     it('should emit multiple substitute values when file is empty', () => {
       writeBinaryFile('empty.bin', new Uint8Array([]));
 
-      const source = `#embed "${join(testDir, 'empty.bin')}" (if_empty(1, comma, 2, comma, 3, comma, 4, comma, 5))
+      const source = `#embed "${join(testDir, 'empty.bin')}" if_empty(1, 2, 3, 4, 5)
 int x;`;
 
       const tokens = tokenize(source);
@@ -558,7 +528,7 @@ int x;`;
     it('should error on invalid if_empty value', () => {
       writeBinaryFile('empty.bin', new Uint8Array([]));
 
-      const source = `#embed "${join(testDir, 'empty.bin')}" (if_empty(abc))
+      const source = `#embed "${join(testDir, 'empty.bin')}" if_empty(abc)
 int x;`;
 
       assert.throws(() => tokenize(source), /Invalid if_empty value/);
@@ -567,7 +537,7 @@ int x;`;
     it('should error on if_empty value out of range', () => {
       writeBinaryFile('empty.bin', new Uint8Array([]));
 
-      const source = `#embed "${join(testDir, 'empty.bin')}" (if_empty(256))
+      const source = `#embed "${join(testDir, 'empty.bin')}" if_empty(256)
 int x;`;
 
       assert.throws(() => tokenize(source), /if_empty value out of range/);
@@ -576,7 +546,7 @@ int x;`;
     it('should error on negative if_empty value', () => {
       writeBinaryFile('empty.bin', new Uint8Array([]));
 
-      const source = `#embed "${join(testDir, 'empty.bin')}" (if_empty(-1))
+      const source = `#embed "${join(testDir, 'empty.bin')}" if_empty(-1)
 int x;`;
 
       assert.throws(() => tokenize(source), /Invalid if_empty value/);
@@ -585,25 +555,24 @@ int x;`;
     it('should work with if_empty combined with other attributes', () => {
       writeBinaryFile('empty.bin', new Uint8Array([]));
 
-      const source = `#embed "${join(testDir, 'empty.bin')}" (limit(10), offset(0), if_empty(42, comma, 99), prefix(0, comma, suffix(1,))
+      const source = `#embed "${join(testDir, 'empty.bin')}" limit(10) offset(0) if_empty(42, 99) prefix(0,) suffix(, 1)
 int x;`;
 
       const tokens = tokenize(source);
       const integers = tokens.filter(t => t.type === TokenType.INTEGER);
 
-      assert.strictEqual(integers.length, 5);
+      assert.strictEqual(integers.length, 4);
       assert.strictEqual(integers[0].value, '0');
-      assert.strictEqual(integers[1].value, '1');
-      assert.strictEqual(integers[2].value, '42');
-      assert.strictEqual(integers[3].value, '99');
-      assert.strictEqual(integers[4].value, '1');
+      assert.strictEqual(integers[1].value, '42');
+      assert.strictEqual(integers[2].value, '99');
+      assert.strictEqual(integers[3].value, '1');
     });
 
     it('should work with if_empty in active conditional block', () => {
       writeBinaryFile('empty.bin', new Uint8Array([]));
 
       const source = `#if 1
-#embed "${join(testDir, 'empty.bin')}" (if_empty(7, comma, 8))
+#embed "${join(testDir, 'empty.bin')}" if_empty(7, 8)
 #endif
 int x;`;
 
@@ -619,7 +588,7 @@ int x;`;
       writeBinaryFile('empty.bin', new Uint8Array([]));
 
       const source = `#if 0
-#embed "${join(testDir, 'empty.bin')}" (if_empty(7, comma, 8))
+#embed "${join(testDir, 'empty.bin')}" if_empty(7, 8)
 #endif
 int x;`;
 

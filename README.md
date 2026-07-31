@@ -16,7 +16,6 @@ See [CHANGELOG.md](CHANGELOG.md)
 - Nothing at the moment
 
 ### 🔜 Next Steps
-- Implement `_Noreturn`
 - Implement `constexpr`, building on the `static_assert` functionality
 
 

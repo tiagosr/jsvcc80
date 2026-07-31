@@ -440,25 +440,27 @@ export class TypeSpecNode extends ASTNode {
    * @param {string} [structType] - Struct/union type name (e.g., 'Point')
    * @param {string} [structKind] - 'struct' or 'union' (null for non-struct types)
    * @param {boolean} [isFunctionPointer] - Whether this is a function pointer type
-   * @param {TypeSpecNode|null} [functionReturnType] - Return type of function (for function pointers)
-   * @param {ParameterNode[]|null} [functionParams] - Parameter types of function (for function pointers)
-   */
-  constructor(baseType, isSigned = true, isConst = false, isVolatile = false, bitWidth = null, location, pointerDepth = 0, isArray = false, arrayLength = null, structType = null, structKind = null, isFunctionPointer = false, functionReturnType = null, functionParams = null) {
-    super('TypeSpec', location);
-    this.baseType = baseType;
-    this.isSigned = isSigned;
-    this.isConst = isConst;
-    this.isVolatile = isVolatile;
-    this.bitWidth = bitWidth;
-    this.pointerDepth = pointerDepth;
-    this.isArray = isArray;
-    this.arrayLength = arrayLength;
-    this.structType = structType;
-    this.structKind = structKind;
-    this.isFunctionPointer = isFunctionPointer;
-    this.functionReturnType = functionReturnType;
-    this.functionParams = functionParams;
-  }
+    * @param {TypeSpecNode|null} [functionReturnType] - Return type of function (for function pointers)
+    * @param {ParameterNode[]|null} [functionParams] - Parameter types of function (for function pointers)
+    * @param {boolean} [isNoreturn] - Whether this type has _Noreturn qualifier
+    */
+   constructor(baseType, isSigned = true, isConst = false, isVolatile = false, bitWidth = null, location, pointerDepth = 0, isArray = false, arrayLength = null, structType = null, structKind = null, isFunctionPointer = false, functionReturnType = null, functionParams = null, isNoreturn = false) {
+     super('TypeSpec', location);
+     this.baseType = baseType;
+     this.isSigned = isSigned;
+     this.isConst = isConst;
+     this.isVolatile = isVolatile;
+     this.bitWidth = bitWidth;
+     this.pointerDepth = pointerDepth;
+     this.isArray = isArray;
+     this.arrayLength = arrayLength;
+     this.structType = structType;
+     this.structKind = structKind;
+     this.isFunctionPointer = isFunctionPointer;
+     this.functionReturnType = functionReturnType;
+     this.functionParams = functionParams;
+     this.isNoreturn = isNoreturn;
+   }
 
   /**
     * Returns the size in bytes for this type on the Z80 target
@@ -556,19 +558,21 @@ export class FunctionNode extends ASTNode {
    * @param {ParameterList[]} parameters - Function parameters
    * @param {StatementNode} body - Function body
    * @param {SourceLocation} location - Source location
-   * @param {AttributeNode[]} [attributes] - Optional attribute annotations
-   * @param {boolean} [isInline] - Whether function has inline keyword
-   */
-  constructor(name, returnType, parameters, body, location, attributes = [], isInline = false) {
-    super('Function', location);
-    this.name = name;
-    this.returnType = returnType;
-    this.parameters = parameters;
-    this.body = body;
-    this.attributes = attributes;
-    this.isVariadic = parameters.some(p => p && p.isVariadic);
-    this.isInline = isInline;
-  }
+    * @param {AttributeNode[]} [attributes] - Optional attribute annotations
+    * @param {boolean} [isInline] - Whether function has inline keyword
+    * @param {boolean} [isNoreturn] - Whether function has _Noreturn qualifier
+    */
+   constructor(name, returnType, parameters, body, location, attributes = [], isInline = false, isNoreturn = false) {
+     super('Function', location);
+     this.name = name;
+     this.returnType = returnType;
+     this.parameters = parameters;
+     this.body = body;
+     this.attributes = attributes;
+     this.isVariadic = parameters.some(p => p && p.isVariadic);
+     this.isInline = isInline;
+     this.isNoreturn = isNoreturn;
+   }
 
   /**
    * Returns JSON representation of the function node
@@ -582,6 +586,7 @@ export class FunctionNode extends ASTNode {
       parameters: this.parameters.map(p => p.toJSON ? p.toJSON() : p),
       isVariadic: this.isVariadic,
       isInline: this.isInline,
+      isNoreturn: this.isNoreturn,
       attributes: this.attributes.map(a => a.toJSON ? a.toJSON() : a)
     };
   }

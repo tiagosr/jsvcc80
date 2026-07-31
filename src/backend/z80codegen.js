@@ -218,11 +218,15 @@ export class Z80Codegen {
    * Generates function epilogue (stack frame teardown)
    * @param {FunctionIR} func - Function IR
    */
-  generateEpilogue(func) {
-    // Restore frame pointer and return
-    this.codeLines.push('  pop ix');
-    this.codeLines.push('  ret');
-  }
+   generateEpilogue(func) {
+     // Restore frame pointer and return
+     this.codeLines.push('  pop ix');
+     if (func.metadata?.isNoreturn) {
+       this.codeLines.push('  halt');
+     } else {
+       this.codeLines.push('  ret');
+     }
+   }
 
   /**
    * Generates a basic block of instructions

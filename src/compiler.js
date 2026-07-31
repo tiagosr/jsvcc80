@@ -375,12 +375,42 @@ export class Compiler {
             conventions: conventions
           });
           
-          if (node.body) {
-            node.body = processNode(node.body);
-          }
-          
-          return node;
-        }
+           if (node.body) {
+             node.body = processNode(node.body);
+           }
+           
+           if (node.isNoreturn && node.body) {
+             let foundReturn = false;
+             function walkForReturn(stmt) {
+               if (stmt instanceof AST.ReturnNode) {
+                 foundReturn = true;
+                 return;
+               }
+               if (stmt instanceof AST.CompoundNode && stmt.statements) {
+                 for (const s of stmt.statements) {
+                   walkForReturn(s);
+                   if (foundReturn) return;
+                 }
+               }
+               if (stmt instanceof AST.IfNode) {
+                 if (stmt.consequent) { walkForReturn(stmt.consequent); if (foundReturn) return; }
+                 if (stmt.alternate) { walkForReturn(stmt.alternate); if (foundReturn) return; }
+               }
+               if (stmt instanceof AST.WhileNode && stmt.body) { walkForReturn(stmt.body); if (foundReturn) return; }
+               if (stmt instanceof AST.ForNode && stmt.body) { walkForReturn(stmt.body); if (foundReturn) return; }
+               if (stmt instanceof AST.DoWhileNode && stmt.body) { walkForReturn(stmt.body); if (foundReturn) return; }
+             }
+             walkForReturn(node.body);
+             if (foundReturn) {
+               throw new SemanticError(
+                 `_Noreturn function must not contain a return statement`,
+                 node.location
+               );
+             }
+           }
+           
+           return node;
+         }
        
        if (node.type === 'AnnotatedDecl') {
          const decl = node.declaration;

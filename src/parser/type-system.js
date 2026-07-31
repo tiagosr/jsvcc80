@@ -39,15 +39,16 @@ const TypeInfos = {
  * @param {Token} token - Token for location
  * @param {boolean} [isConst] - Whether const qualified
  * @param {boolean} [isVolatile] - Whether volatile qualified
+ * @param {boolean} [isNoreturn] - Whether noreturn qualified
  * @returns {AST.TypeSpecNode}
  */
-function createTypeSpec(typeKw, isSigned, token, isConst = false, isVolatile = false) {
+function createTypeSpec(typeKw, isSigned, token, isConst = false, isVolatile = false, isNoreturn = false) {
   const info = TypeInfos[typeKw];
   if (!info) {
-    return new AST.TypeSpecNode(typeKw, isSigned !== false, isConst, isVolatile, null, locFromToken(token));
+    return new AST.TypeSpecNode(typeKw, isSigned !== false, isConst, isVolatile, null, locFromToken(token), 0, false, null, null, null, false, null, null, isNoreturn);
   }
   const effectiveSigned = isSigned !== undefined ? isSigned : info.isSigned;
-  return new AST.TypeSpecNode(info.baseType, effectiveSigned, isConst, isVolatile, null, locFromToken(token));
+  return new AST.TypeSpecNode(info.baseType, effectiveSigned, isConst, isVolatile, null, locFromToken(token), 0, false, null, null, null, false, null, null, isNoreturn);
 }
 
 /**
@@ -142,7 +143,7 @@ function createFunctionPointerType(returnType, params, location) {
  * @returns {Object} Parser rule
  */
 function buildTypeSpecifier() {
-  const typeQualifier = alt(kw('const'), kw('volatile'));
+  const typeQualifier = alt(kw('const'), kw('volatile'), kw('_Noreturn'));
   const signedness = alt(kw('signed'), kw('unsigned'));
   const basicType = alt(
     kw('void'), kw('char'), kw('_Bool'), kw('bool'),

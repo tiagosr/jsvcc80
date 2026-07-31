@@ -344,6 +344,7 @@ export class CPegParser {
     const functionDef = map(
       seq(
         opt(kw('inline')),
+        opt(kw('_Noreturn')),
         lazy(() => this.ruleRefs.typeSpecifier),
         many(lit('*')),
         pred(t => t.type === 'IDENTIFIER'),
@@ -353,7 +354,7 @@ export class CPegParser {
         many(attributeParser),
         this.ruleRefs.statement
       ),
-      ([inlineKw, returnType, stars, name, , params, , attrs, body]) => {
+      ([inlineKw, noreturnKw, returnType, stars, name, , params, , attrs, body]) => {
         // Merge pointer depth into return type
         const pointerDepth = stars.length;
         let mergedReturnType = returnType;
@@ -382,6 +383,7 @@ export class CPegParser {
         }
         const attributes = Array.isArray(attrs) ? attrs : [];
         const isInline = inlineKw !== null;
+        const isNoreturn = noreturnKw !== null;
         return new AST.FunctionNode(
           new AST.IdentifierNode(name.value, locFromToken(name)),
           mergedReturnType,
@@ -389,7 +391,8 @@ export class CPegParser {
           body,
           locFromToken(returnType),
           attributes,
-          isInline
+          isInline,
+          isNoreturn
         );
       }
     );

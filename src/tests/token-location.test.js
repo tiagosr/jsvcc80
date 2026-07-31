@@ -101,7 +101,7 @@ describe('Token line:column location tracking', () => {
     assert.strictEqual(numToken.location.end.line, 1);
     assert.strictEqual(numToken.location.end.column, 4);
     assert.strictEqual(numToken.type, TokenType.INTEGER);
-    assert.strictEqual(numToken.value, '0FF');
+    assert.strictEqual(numToken.value, '0xFF');
   });
 
   it('should track identifier location', () => {

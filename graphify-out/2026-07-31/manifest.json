@@ -10,8 +10,8 @@
     "semantic_hash": ""
   },
   "src/ast/nodes.js": {
-    "mtime": 1785459077.4747555,
-    "ast_hash": "fac8b0733358fea44b7318d5a14d4050",
+    "mtime": 1785460918.484589,
+    "ast_hash": "e674c8ae0df8b4ca2c26e97f696180d7",
     "semantic_hash": ""
   },
   "src/backend/z80codegen.js": {
@@ -20,8 +20,8 @@
     "semantic_hash": ""
   },
   "src/compiler.js": {
-    "mtime": 1785234066.4572523,
-    "ast_hash": "b9584ade88ba5d832b3caa5e6af74343",
+    "mtime": 1785462953.3358667,
+    "ast_hash": "3a6c218d548c20f8c162bffb38fb69a2",
     "semantic_hash": ""
   },
   "src/core/errors.js": {
@@ -110,8 +110,8 @@
     "semantic_hash": ""
   },
   "src/preprocessor/tokenTypes.js": {
-    "mtime": 1785452680.5218194,
-    "ast_hash": "1f4fe8025be170f1b441b3bb3090df21",
+    "mtime": 1785460410.0847757,
+    "ast_hash": "129326c8483b948ce1b2f76697a2213c",
     "semantic_hash": ""
   },
   "src/tests/archive.test.js": {
@@ -195,8 +195,8 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1785459312.0673144,
-    "ast_hash": "20742da0af2c56441bc5c5e58ba09d21",
+    "mtime": 1785463180.2183304,
+    "ast_hash": "7a82e8e6107cd0384e5705ba399de63e",
     "semantic_hash": ""
   },
   "FINDINGS.md": {
@@ -280,8 +280,8 @@
     "semantic_hash": ""
   },
   "src/parser/stmt-local.js": {
-    "mtime": 1785371491.622739,
-    "ast_hash": "fb8fb0dbf0eb870cdf33766c5b93abce",
+    "mtime": 1785462857.7785873,
+    "ast_hash": "f67548e08dd5dcab014005c3788f2acc",
     "semantic_hash": ""
   },
   "src/parser/type-system.js": {
@@ -470,8 +470,8 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1785458728.4419224,
-    "ast_hash": "193b645ab0f607bbccf20b37194b0af8",
+    "mtime": 1785463162.8001468,
+    "ast_hash": "d06be5c0a850e7e70122dc9fd4cd9ac8",
     "semantic_hash": ""
   },
   "src/tests/linker.crt0.test.js": {
@@ -822,6 +822,16 @@
   "src/tests/bool-types.test.js": {
     "mtime": 1785452431.7782345,
     "ast_hash": "284bc836a455c26d2d62e7efca3ffbf4",
+    "semantic_hash": ""
+  },
+  "src/nanopass/static-assert-eval.js": {
+    "mtime": 1785463078.8091807,
+    "ast_hash": "fdb49bf60b28c2bb6758bf410c6cb249",
+    "semantic_hash": ""
+  },
+  "src/tests/static-assert.test.js": {
+    "mtime": 1785460777.8448179,
+    "ast_hash": "f259384ad5c9be193ae6a7dbe5a5aa2c",
     "semantic_hash": ""
   }
 }

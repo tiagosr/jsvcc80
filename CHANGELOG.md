@@ -1,5 +1,5 @@
 ### 🧪 Test Results
-- 154 passing tests
+- 1722 passing tests
 
 ### ✅ Completed
 - **`_Noreturn` C11 noreturn specifier** - `_Noreturn` added to Keywords Set in tokenTypes.js; `TypeSpecNode` and `FunctionNode` extended with `isNoreturn` field; parser handles `_Noreturn` as type qualifier in `typeQualifier` alt and before function return type in `functionDef`; semantic check in compiler.js throws error if `_Noreturn` function body contains `return` statement; FunctionIR metadata propagates `isNoreturn`; Z80 codegen emits `halt` instead of `ret` in epilogue for noreturn functions; 25 new tests covering parsing across all return types, IR metadata, semantic error, and codegen output

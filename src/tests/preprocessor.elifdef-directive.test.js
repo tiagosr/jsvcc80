@@ -106,11 +106,11 @@ int included;
 
     const identifiers = tokens.filter(t => t.type === TokenType.IDENTIFIER);
     assert.strictEqual(identifiers.length, 1);
-    assert.strictEqual(identifiers[0].value, 'excluded1');
+    assert.strictEqual(identifiers[0].value, 'included');
   });
 
   it('should exclude code when macro is defined in elifndef branch', () => {
-    const source = `#define FOO 1
+    const source = `#undef FOO
 #define BAR 2
 #ifdef FOO
 int excluded1;
